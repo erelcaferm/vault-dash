@@ -18,11 +18,14 @@ func _initialize() -> void:
 	if not args.is_empty():
 		out_dir = args[0]
 	var tower = TowerScript.new()
-	tower.build(Rooms.ROOMS)
+	tower.build(Rooms.ROOMS, 7)
+	tower.room_limit = 20
 	var solver = Solver.new(tower)
 	solver.run()
 	route = solver.solution.duplicate()
 	game = load("res://scenes/main.tscn").instantiate()
+	game.test_seed = 7
+	game.test_room_limit = 20
 	root.add_child(game)
 
 
@@ -39,11 +42,11 @@ func _process(_delta: float) -> bool:
 	if frames == 20:
 		_shot("1_title")
 	elif frames > 20 and game.state != game.State.DEAD:
-		if game.run_floor >= 7 and not shots.has("2_cracked_walls"):
+		if game.run_floor >= 8 and not shots.has("2_cracked_walls"):
 			if game.is_idle():
 				_shot("2_cracked_walls")
 			return false
-		if game.run_floor >= 12 and game.is_idle() and not shots.has("3_jungle"):
+		if game.run_floor >= 13 and game.is_idle() and not shots.has("3_jungle"):
 			_shot("3_jungle")
 			# Stand still so the lava catches up.
 			route.clear()

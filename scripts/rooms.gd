@@ -1,17 +1,18 @@
 extends RefCounted
-## Hand-made rooms, listed bottom (first) to top (last).
+## Hand-made rooms, roughly easiest (first) to hardest (last).
 ##
-## Every room is 11 wide and 10 tall. Rooms stack on top of each other and
-## connect through a one-tile door in column 5 of their top and bottom rows.
+## Every room is 11 wide and 10 tall. The tower is endless: room 0 is always
+## the start, then rooms are picked from this list, with harder ones unlocked
+## the higher you climb (see tower.gd). Rooms connect through a one-tile door
+## in column 5 of their top and bottom rows.
 ##
 ##   #  wall          c  coin
 ##   .  empty         ^  spikes (deadly)
-##   x  cracked wall  S  start (first room only)
+##   x  cracked wall  S  start (room 0 only)
 ##      (stops you once, then crumbles)
-##   G  exit (last room only)
 ##
-## Room 0-1 teach sliding, 2-4 add spikes, 5-8 add cracked walls,
-## 9-14 mix everything. tests/test_rooms.gd checks every room is solvable.
+## Room 1 teaches turning, 2-4 add spikes, 5-8 add cracked walls,
+## 9-14 mix everything. tests/test_rooms.gd checks they are always escapable.
 
 const ROOMS := [
 	# 0: swipe up
@@ -196,14 +197,14 @@ const ROOMS := [
 		"#.^.......#",
 		"#####.#####",
 	],
-	# 14: the exit
+	# 14: last stretch
 	[
-		"###########",
-		"#^...G....#",
+		"#####.#####",
+		"#^..#c....#",
 		"#.........#",
 		"#..^...c..#",
 		"#.......^.#",
-		"#.c.......#",
+		"#.c.#.....#",
 		"#....#....#",
 		"#.#.......#",
 		"#..^...^..#",

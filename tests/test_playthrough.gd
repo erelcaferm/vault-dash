@@ -1,6 +1,6 @@
 extends SceneTree
-## Plays the real game scene with the solver's route and checks it escapes,
-## then stands still and checks the lava catches the player.
+## Plays the real game scene up a fixed tower along the solver's route and
+## checks it reaches the top, then stands still and checks the lava wins.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 
 const TowerScript := preload("res://scripts/tower.gd")
@@ -12,14 +12,20 @@ var route: Array = []
 var phase := "escape"
 var frames := 0
 
+const SEED := 42
+const HEIGHT := 30
+
 
 func _initialize() -> void:
 	var tower = TowerScript.new()
-	tower.build(Rooms.ROOMS)
+	tower.build(Rooms.ROOMS, SEED)
+	tower.room_limit = HEIGHT
 	var solver = Solver.new(tower)
 	solver.run()
 	route = solver.solution.duplicate()
 	game = load("res://scenes/main.tscn").instantiate()
+	game.test_seed = SEED
+	game.test_room_limit = HEIGHT
 	root.add_child(game)
 
 
@@ -27,8 +33,9 @@ func _process(_delta: float) -> bool:
 	frames += 1
 	if phase == "escape":
 		if game.state == game.State.WON:
-			print("PASS: escaped in %.1f s of game time with %d coins" % [game.elapsed, game.run_coins])
+			print("PASS: climbed %d floors in %.1f s of game time with %d coins" % [HEIGHT, game.elapsed, game.run_coins])
 			game.state_time = 1.0
+			game.test_room_limit = -1
 			game._on_tap()
 			game._on_swipe(Vector2i.LEFT)
 			phase = "lava"
@@ -39,7 +46,7 @@ func _process(_delta: float) -> bool:
 		elif game.is_idle() and not route.is_empty():
 			game._on_swipe(route.pop_front())
 		elif frames > 60 * 120:
-			printerr("FAIL: did not escape in time")
+			printerr("FAIL: did not reach the top in time")
 			quit(1)
 	elif phase == "lava":
 		if game.state == game.State.DEAD:

@@ -10,7 +10,7 @@ const SLIDE_SPEED := 24.0        # tiles per second while sliding
 const SWIPE_MIN_DIST := 24.0     # pixels before a drag counts as a swipe
 const LAVA_START_SPEED := 0.5    # tiles per second
 const LAVA_ACCEL := 0.012        # extra tiles per second, gained each second
-const LAVA_MAX_SPEED := 2.0
+const LAVA_MAX_SPEED := 2.6
 const LAVA_MAX_GAP := 11.0       # the lava never falls further behind than this
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
@@ -48,6 +48,10 @@ var run_floor := 1
 var last_biome := 0
 var bursts: Array = []           # short-lived pops from coins and cracked walls
 
+## Tests set these to build a fixed tower with an exit at the given room.
+var test_seed := -1
+var test_room_limit := -1
+
 var total_coins := 0
 var best_floor := 0
 var best_time := 0.0
@@ -78,12 +82,13 @@ func _ready() -> void:
 
 func reset() -> void:
 	tower = TowerScript.new()
-	tower.build(Rooms.ROOMS)
+	tower.build(Rooms.ROOMS, test_seed if test_seed >= 0 else randi())
+	tower.room_limit = test_room_limit
 	cell = tower.start
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
 	queued_dir = Vector2i.ZERO
-	lava_y = (tower.height + 3) * TILE
+	lava_y = (tower.start.y + 6) * TILE
 	elapsed = 0.0
 	state_time = 0.0
 	run_coins = 0
@@ -97,7 +102,7 @@ func reset() -> void:
 	var best := ""
 	if best_floor > 0:
 		best = "\n\nBest floor: %d\nCoins banked: %d" % [best_floor, total_coins]
-	_show_message("VAULT DASH\n\nSwipe to slide.\nClimb before\nthe lava gets you.%s" % best)
+	_show_message("VAULT DASH\n\nSwipe to slide.\nClimb as high as you can\nbefore the lava gets you.%s" % best)
 
 
 # --- Game loop -------------------------------------------------------------
@@ -210,11 +215,11 @@ func _die(reason: String) -> void:
 	_show_message("%s\n\n+%d coins\nBest: floor %d\n\nSwipe to try again" % [reason % run_floor, run_coins, best_floor])
 
 
+## Only reachable when a test gives the tower an exit.
 func _win() -> void:
 	state = State.WON
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
-	run_floor = tower.room_count
 	if best_time == 0.0 or elapsed < best_time:
 		best_time = elapsed
 	_bank_run()
@@ -357,7 +362,7 @@ func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 
 func _update_hud() -> void:
 	coins_label.text = "● %d" % run_coins
-	floor_label.text = "Floor %d/%d" % [run_floor, tower.room_count]
+	floor_label.text = "Floor %d" % run_floor
 
 
 func _show_message(text: String) -> void:
@@ -405,7 +410,7 @@ func _player_center() -> Vector2:
 
 
 func _biome_index(row: int) -> int:
-	return clampi(floori(tower.room_of(row) / 5.0), 0, BIOMES.size() - 1)
+	return posmod(floori(maxi(tower.room_of(row), 0) / 5.0), BIOMES.size())
 
 
 func _draw() -> void:
@@ -413,8 +418,8 @@ func _draw() -> void:
 	var center := camera.get_screen_center_position()
 	var top := center.y - view.y * 0.5 - TILE
 	var bottom := center.y + view.y * 0.5 + TILE
-	var y0 := maxi(0, floori(top / TILE))
-	var y1 := mini(tower.height - 1, ceili(bottom / TILE))
+	var y0 := floori(top / TILE)
+	var y1 := ceili(bottom / TILE)
 
 	for y in range(y0, y1 + 1):
 		var biome: Dictionary = BIOMES[_biome_index(y)]
