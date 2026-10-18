@@ -1,5 +1,5 @@
 extends Control
-## The coin shop: hero colours, cracked-wall skins and slide trails.
+## The coin shop: hero colours, cracked-wall skins, slide trails and lava.
 ## Coins, owned items and what's equipped live in main.gd, which saves them.
 
 signal closed
@@ -49,13 +49,13 @@ func setup(main_game) -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 8)
 	column.add_child(tabs)
-	for t in [["hero", "Hero"], ["walls", "Walls"], ["trail", "Trails"]]:
+	for t in [["hero", "Hero"], ["walls", "Walls"], ["trail", "Trails"], ["lava", "Lava"]]:
 		var b := Button.new()
 		b.text = t[1]
 		b.toggle_mode = true
 		b.size_flags_horizontal = SIZE_EXPAND_FILL
 		b.custom_minimum_size.y = 44
-		b.add_theme_font_size_override("font_size", 18)
+		b.add_theme_font_size_override("font_size", 16)
 		b.pressed.connect(_show_tab.bind(t[0]))
 		tabs.add_child(b)
 		_tab_buttons[t[0]] = b
@@ -109,7 +109,7 @@ func _refresh() -> void:
 
 
 func _card(item: Dictionary) -> Button:
-	var equipped: String = {"hero": game.equipped_hero, "walls": game.equipped_wall, "trail": game.equipped_trail}[tab]
+	var equipped: String = {"hero": game.equipped_hero, "walls": game.equipped_wall, "trail": game.equipped_trail, "lava": game.equipped_lava}[tab]
 	var owned: bool = game.owns(item)
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(0, 132)

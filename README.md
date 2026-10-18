@@ -48,6 +48,7 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 - **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
 - **Cracked-wall skins:** Rubble is free. Mud, Snow, Wood, Glass, Crystal and Gold Bars cost 150–800.
 - **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy.
+- **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum and Plasma cost 250–500. Molten Gold only drops from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
 
@@ -74,7 +75,7 @@ The **TROPHIES** button lists 31 achievements with your progress on each. A bann
 
 - **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
 - **Coins:** collect 10, 250 and 1,000 (Treasure walls).
-- **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths, 10 spike deaths and 5 fake-floor falls.
+- **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths (Ash lava), 10 spike deaths and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
 - **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, grab 25 power-ups, and play 25 runs.
 - **Daily Climb:** play one (coins), hit the daily goal 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.

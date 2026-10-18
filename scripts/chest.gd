@@ -69,7 +69,7 @@ static func _item(rarity: Dictionary, entry: Array) -> Dictionary:
 ## Every shop item matching `filter`, as [kind, item] pairs.
 static func _items(filter: Callable) -> Array:
 	var out: Array = []
-	for kind in ["hero", "walls", "trail"]:
+	for kind in ["hero", "walls", "trail", "lava"]:
 		for item in Skins.list(kind):
 			if filter.call(item):
 				out.append([kind, item])

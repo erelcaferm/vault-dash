@@ -65,8 +65,6 @@ const BIOMES := [
 ]
 const COIN_COLOR := Color("ffd23f")
 const SPIKE_COLOR := Color("e84855")
-const LAVA_COLOR := Color("ff5a1f")
-const LAVA_GLOW := Color("ffb347")
 
 var tower: TowerScript
 var state := State.READY
@@ -98,6 +96,7 @@ var owned: Array = []            # ids of shop items bought (free ones aren't li
 var equipped_hero := "white"
 var equipped_wall := "rubble"
 var equipped_trail := "afterimage"
+var equipped_lava := "classic"
 var rainbow_phase := 0.0
 
 var touch_start := Vector2.ZERO
@@ -1268,6 +1267,8 @@ func equip(kind: String, id: String) -> void:
 			equipped_hero = id
 		"trail":
 			equipped_trail = id
+		"lava":
+			equipped_lava = id
 		_:
 			equipped_wall = id
 	_save()
@@ -1311,6 +1312,7 @@ func _load_save() -> void:
 		equipped_hero = cfg.get_value("shop", "hero", "white")
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 		equipped_trail = cfg.get_value("shop", "trail", "afterimage")
+		equipped_lava = cfg.get_value("shop", "lava", "classic")
 		missions = cfg.get_value("missions", "active", [])
 
 
@@ -1323,6 +1325,7 @@ func _save() -> void:
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("shop", "trail", equipped_trail)
+	cfg.set_value("shop", "lava", equipped_lava)
 	cfg.set_value("missions", "active", missions)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
@@ -1523,17 +1526,6 @@ func _draw_powerup_icon(kind: String, mid: Vector2, r: float, color: Color) -> v
 
 
 func _draw_lava(view: Vector2) -> void:
-	var left := -view.x
-	var right := tower.width * TILE + view.x
-	var points := PackedVector2Array()
-	var steps := 40
-	for i in steps + 1:
-		var x := lerpf(left, right, float(i) / steps)
-		points.append(Vector2(x, lava_y + sin(x * 0.045 + anim_time * 3.0) * 5.0))
-	var glow := points.duplicate()
-	points.append(Vector2(right, lava_y + view.y * 2))
-	points.append(Vector2(left, lava_y + view.y * 2))
 	# Frozen lava turns icy blue, thawing back over its last second.
-	var ice := clampf(freeze_time, 0.0, 1.0)
-	draw_colored_polygon(points, LAVA_COLOR.lerp(Color("6fc3e8"), ice))
-	draw_polyline(glow, LAVA_GLOW.lerp(Color("e8fbff"), ice), 4.0)
+	Skins.draw_lava(self, Skins.find(Skins.LAVA, equipped_lava), -view.x, tower.width * TILE + view.x,
+			lava_y, lava_y + view.y * 2, anim_time, clampf(freeze_time, 0.0, 1.0))

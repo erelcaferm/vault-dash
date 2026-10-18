@@ -23,7 +23,7 @@ const LIST := [
 	{"id": "oops", "name": "Oops", "desc": "Die for the first time", "stat": "deaths", "goal": 1, "coins": 10},
 	{"id": "persistent", "name": "Persistent", "desc": "Die 5 times", "stat": "deaths", "goal": 5, "coins": 25},
 	{"id": "never_give_up", "name": "Never Give Up", "desc": "Die 50 times", "stat": "deaths", "goal": 50, "item": ["hero", "ghost"]},
-	{"id": "hot_feet", "name": "Hot Feet", "desc": "Get caught by the lava 10 times", "stat": "deaths_lava", "goal": 10, "coins": 50},
+	{"id": "hot_feet", "name": "Hot Feet", "desc": "Get caught by the lava 10 times", "stat": "deaths_lava", "goal": 10, "item": ["lava", "ash"]},
 	{"id": "pincushion", "name": "Pincushion", "desc": "Land on spikes 10 times", "stat": "deaths_spikes", "goal": 10, "coins": 50},
 	{"id": "gravity", "name": "Gravity Wins", "desc": "Fall through a fake floor 5 times", "stat": "deaths_fake", "goal": 5, "coins": 50},
 	# Chests

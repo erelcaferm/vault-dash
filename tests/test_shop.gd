@@ -42,6 +42,9 @@ func _initialize() -> void:
 	game._open_shop()
 	game.shop._show_tab("trail")
 	_expect(game.shop._grid.get_child_count() == Skins.TRAILS.size(), "the Trails tab lists every trail")
+	var acid := Skins.find(Skins.LAVA, "acid")
+	game.total_coins += acid.price
+	_expect(game.buy("lava", acid) and game.equipped_lava == "acid", "buys and equips a lava skin")
 	game.shop.visible = false
 
 	game.equip("hero", "black")
@@ -51,7 +54,7 @@ func _initialize() -> void:
 	await process_frame
 	_expect(reloaded.total_coins == 5, "coins survive a restart")
 	_expect(reloaded.owns(rainbow) and reloaded.owns(glass), "purchases survive a restart")
-	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass" and reloaded.equipped_trail == "fire", "equipped items survive a restart")
+	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass" and reloaded.equipped_trail == "fire" and reloaded.equipped_lava == "acid", "equipped items survive a restart")
 
 	var red := Skins.hero_color(rainbow, 0.0)
 	var later := Skins.hero_color(rainbow, 0.25)

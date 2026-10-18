@@ -68,6 +68,18 @@ const TRAILS := [
 	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
 ]
 
+## What rises from below. `color` fills it, `glow` lines the surface, and
+## `bubbles` adds popping bubbles of that colour.
+const LAVA := [
+	{"id": "classic", "name": "Lava", "price": 0, "color": Color("ff5a1f"), "glow": Color("ffb347")},
+	{"id": "acid", "name": "Acid", "price": 250, "color": Color("3fbf3f"), "glow": Color("b6ff6b"), "bubbles": Color("d9ff9e")},
+	{"id": "chocolate", "name": "Chocolate", "price": 300, "color": Color("5b3420"), "glow": Color("8a5634")},
+	{"id": "bubblegum", "name": "Bubblegum", "price": 350, "color": Color("ff70a6"), "glow": Color("ffc2da"), "bubbles": Color("ffe0ec")},
+	{"id": "plasma", "name": "Plasma", "price": 500, "color": Color("5a189a"), "glow": Color("e0aaff"), "bubbles": Color("c77dff")},
+	{"id": "molten_gold", "name": "Molten Gold", "price": -1, "chest_only": true, "color": Color("d4a017"), "glow": Color("fff1a8"), "bubbles": Color("ffe066")},
+	{"id": "ash", "name": "Ash", "price": -1, "achievement": "hot_feet", "color": Color("3a3a40"), "glow": Color("ff7b1c"), "bubbles": Color("ff9e4a")},
+]
+
 ## How fast the rainbow hero cycles through every colour, in full cycles per
 ## second, standing still and while sliding.
 const RAINBOW_IDLE_SPEED := 0.25
@@ -81,6 +93,8 @@ static func list(kind: String) -> Array:
 			return HERO
 		"trail":
 			return TRAILS
+		"lava":
+			return LAVA
 	return WALLS
 
 
@@ -91,6 +105,8 @@ static func kind_name(kind: String) -> String:
 			return "colour"
 		"trail":
 			return "trail"
+		"lava":
+			return "lava"
 	return "wall skin"
 
 
@@ -177,6 +193,36 @@ static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, di
 				var r := base * (0.45 - i * 0.04)
 				canvas.draw_circle(center - dir * back, r, Color.from_hsv(hue, 0.65, 1.0, 0.75 - i * 0.07))
 			_sparkle(canvas, center - dir * tile * 0.6 + side * base * 0.5, base * 0.2, Color(1, 1, 1, 0.9))
+
+
+## Draws lava (or whatever the skin is) with its wavy surface at `top`,
+## filling `left`..`right` down to `bottom`. `tint` blends it toward ice.
+static func draw_lava(canvas: CanvasItem, item: Dictionary, left: float, right: float, top: float, bottom: float, time: float, tint := 0.0) -> void:
+	var color: Color = item.color
+	var glow: Color = item.glow
+	if tint > 0.0:
+		color = color.lerp(Color("6fc3e8"), tint)
+		glow = glow.lerp(Color("e8fbff"), tint)
+	var points := PackedVector2Array()
+	var steps := 40
+	for i in steps + 1:
+		var x := lerpf(left, right, float(i) / steps)
+		points.append(Vector2(x, top + sin(x * 0.045 + time * 3.0) * 5.0))
+	var surface := points.duplicate()
+	points.append(Vector2(right, bottom))
+	points.append(Vector2(left, bottom))
+	canvas.draw_colored_polygon(points, color)
+	canvas.draw_polyline(surface, glow, 4.0)
+	if item.has("bubbles") and tint < 0.5:
+		var bubble: Color = item.bubbles
+		var width := right - left
+		# About one bubble per 60 pixels of surface.
+		for i in maxi(3, int(width / 60.0)):
+			# Each bubble rises a little way and pops, then starts again elsewhere.
+			var life := fposmod(time * 0.7 + i * 0.37, 1.0)
+			var x := left + fposmod(i * 0.29 + floorf(time * 0.7 + i * 0.37) * 0.53, 1.0) * width
+			var y := top + 18.0 - life * 16.0
+			canvas.draw_arc(Vector2(x, y), 2.0 + life * 3.5, 0, TAU, 12, Color(bubble, 1.0 - life), 2.0)
 
 
 static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time := 0.0) -> void:
