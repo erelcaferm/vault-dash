@@ -10,6 +10,8 @@ const Chest := preload("res://scripts/chest.gd")
 const ChestScreen := preload("res://scripts/chest_screen.gd")
 const PillStyle := preload("res://scripts/pill_style.gd")
 const Ads := preload("res://scripts/ads.gd")
+## The bottom bars are one pill split into buttons, all this colour.
+const BAR_COLOR := Color("2f7fd0")
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
@@ -1221,14 +1223,14 @@ func _build_hud() -> void:
 	menu_bar.offset_right = 172
 	menu_bar.offset_top = -74
 	menu_bar.offset_bottom = -20
-	menu_bar.add_theme_constant_override("separation", 6)
+	menu_bar.add_theme_constant_override("separation", 0)
 	hud.add_child(menu_bar)
-	shop_button = _menu_button("SHOP", _open_shop, Color("d98a12"))
-	_menu_button("LEVELS", _open_levels, Color("2f8fd8"))
+	shop_button = _menu_button("SHOP", _open_shop, BAR_COLOR)
+	_menu_button("LEVELS", _open_levels, BAR_COLOR)
 	daily_button = _menu_button("DAILY", func():
 		daily_mode = not daily_mode
-		reset(), Color("d8462f"))
-	_menu_button("TROPHIES", _open_achievements, Color("8a4fd0"))
+		reset(), BAR_COLOR)
+	_menu_button("TROPHIES", _open_achievements, BAR_COLOR)
 
 	pause_button = Button.new()
 	pause_button.text = "II"
@@ -1249,15 +1251,15 @@ func _build_hud() -> void:
 	level_bar.offset_right = 172
 	level_bar.offset_top = -74
 	level_bar.offset_bottom = -20
-	level_bar.add_theme_constant_override("separation", 6)
+	level_bar.add_theme_constant_override("separation", 0)
 	level_bar.visible = false
 	hud.add_child(level_bar)
-	level_back_button = _bar_button(level_bar, "LEVELS", _leave_level, Color("2f8fd8"))
+	level_back_button = _bar_button(level_bar, "LEVELS", _leave_level, BAR_COLOR)
 	_bar_button(level_bar, "RETRY", func():
 		if state == State.PAUSED:
 			state = State.DEAD
-		reset(), Color("d98a12"))
-	level_next_button = _bar_button(level_bar, "NEXT", func(): start_campaign_level(level_index + 1), Color("3aa856"))
+		reset(), BAR_COLOR)
+	level_next_button = _bar_button(level_bar, "NEXT", func(): start_campaign_level(level_index + 1), BAR_COLOR)
 
 	revive_button = Button.new()
 	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -1286,7 +1288,7 @@ func _build_hud() -> void:
 	ad_bar.offset_top = -200
 	ad_bar.offset_bottom = -154
 	ad_bar.alignment = BoxContainer.ALIGNMENT_CENTER
-	ad_bar.add_theme_constant_override("separation", 8)
+	ad_bar.add_theme_constant_override("separation", 0)
 	ad_bar.visible = false
 	hud.add_child(ad_bar)
 	ad_revive_button = _bar_button(ad_bar, "FREE REVIVE", ad_revive, Color("3aa856"))
@@ -1490,6 +1492,7 @@ func _bar_button(bar: HBoxContainer, text: String, action: Callable, color: Colo
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	b.add_theme_stylebox_override("pressed", PillStyle.new(color, true))
 	b.add_theme_stylebox_override("disabled", PillStyle.new(color.darkened(0.4)))
+	b.visibility_changed.connect(_style_bar.bind(bar))
 	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
 		b.add_theme_color_override(key, Color.WHITE)
 	b.add_theme_color_override("font_outline_color", color.darkened(0.65))
@@ -1503,15 +1506,30 @@ func _bar_button(bar: HBoxContainer, text: String, action: Callable, color: Colo
 	return b
 
 
+## Rounds the ends of the first and last visible buttons and puts a dividing
+## line after every other one, so the bar reads as one pill.
+func _style_bar(bar: HBoxContainer) -> void:
+	var shown: Array = bar.get_children().filter(func(b): return b.visible)
+	for i in shown.size():
+		var b: Button = shown[i]
+		for key in ["normal", "pressed", "disabled"]:
+			var face: PillStyle = b.get_theme_stylebox(key)
+			face.round_left = i == 0
+			face.round_right = i == shown.size() - 1
+			face.divider = i < shown.size() - 1
+		b.queue_redraw()
+
+
 ## Shrinks the bar buttons' text to fit, after the language changes.
 func _fit_bar(bar: HBoxContainer) -> void:
+	_style_bar(bar)
 	var count := bar.get_child_count()
 	for b: Button in bar.get_children():
 		b.add_theme_font_size_override("font_size", 16)
 		var label := Label.new()
 		label.text = b.text
 		label.add_theme_font_size_override("font_size", 16)
-		fit_font(label, (344.0 - 6.0 * (count - 1)) / count - 26.0, 10)
+		fit_font(label, 344.0 / count - 22.0, 10)
 		b.add_theme_font_size_override("font_size", label.get_theme_font_size("font_size"))
 		label.free()
 
