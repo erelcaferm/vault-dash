@@ -194,6 +194,7 @@ var time_left := 0.0
 var level_coins := 0             # coins in the level when it started
 var levels_cleared: Array = []   # saved; campaign levels cleared
 var level_times := {}            # saved; best time per campaign level
+var level_stars := {}            # saved; star bits per campaign level (see levels.gd)
 var custom_levels: Array = []    # saved; codes of levels made or added by the player
 var levels_screen: Control
 var level_editor: Control
@@ -1254,6 +1255,10 @@ func stat(id: String) -> int:
 			return best_floor
 		"daily_streak":
 			return daily_streak
+		"levels_cleared":
+			return levels_cleared.size()
+		"level_stars":
+			return total_stars()
 		"heroes_owned":
 			var n := 0
 			for item in Skins.HERO:
@@ -1620,6 +1625,7 @@ func _load_save() -> void:
 		missions = cfg.get_value("missions", "active", [])
 		levels_cleared = cfg.get_value("levels", "cleared", [])
 		level_times = cfg.get_value("levels", "times", {})
+		level_stars = cfg.get_value("levels", "stars", {})
 		custom_levels = cfg.get_value("levels", "custom", [])
 
 
@@ -1637,6 +1643,7 @@ func _save() -> void:
 	cfg.set_value("missions", "active", missions)
 	cfg.set_value("levels", "cleared", levels_cleared)
 	cfg.set_value("levels", "times", level_times)
+	cfg.set_value("levels", "stars", level_stars)
 	cfg.set_value("levels", "custom", custom_levels)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
@@ -1908,9 +1915,23 @@ func level_title() -> String:
 	return level.name if level.name != "" else tr("Untitled level")
 
 
+func total_stars() -> int:
+	var n := 0
+	for i in level_stars:
+		n += Levels.star_count(level_stars[i])
+	return n
+
+
+## "★★☆" for a campaign level's best.
+func stars_text(i: int) -> String:
+	var n := Levels.star_count(level_stars.get(i, 0))
+	return "★".repeat(n) + "☆".repeat(Levels.STARS_PER_LEVEL - n)
+
+
 func _level_best_text() -> String:
 	var text := tr("Time limit: %s") % _clock(level.time)
 	if level_source == "campaign":
+		text += "\n" + tr("★ Under %d s   ★ Every coin") % Levels.par(level_index)
 		var best: float = level_times.get(level_index, 0.0)
 		if best > 0.0:
 			text += "\n" + tr("Best: %.1f s") % best
@@ -1970,6 +1991,16 @@ func _level_won() -> void:
 	var lines: Array = [tr("LEVEL CLEAR!"), "%s   ● %d/%d" % [tr("%.1f seconds") % elapsed, run_coins, level_coins]]
 	match level_source:
 		"campaign":
+			var earned := Levels.STAR_CLEAR
+			if elapsed <= Levels.par(level_index):
+				earned |= Levels.STAR_PAR
+			if run_coins >= level_coins:
+				earned |= Levels.STAR_COINS
+			var had: int = level_stars.get(level_index, 0)
+			level_stars[level_index] = had | earned
+			lines[0] = "%s   %s" % [tr("LEVEL CLEAR!"), "★".repeat(Levels.star_count(earned)) + "☆".repeat(Levels.STARS_PER_LEVEL - Levels.star_count(earned))]
+			if (had | earned) != had and had != 0:
+				lines.append(tr("New star!"))
 			var best: float = level_times.get(level_index, 0.0)
 			if best == 0.0 or elapsed < best:
 				level_times[level_index] = snappedf(elapsed, 0.1)
@@ -1980,6 +2011,7 @@ func _level_won() -> void:
 				var reward: Dictionary = Levels.LEVELS[level_index].reward
 				_grant_level_reward(reward)
 				lines.append(tr("Reward: %s") % Achievements.reward_text(reward))
+			check_achievements()
 			_save()
 		"test":
 			level_editor.mark_tested()

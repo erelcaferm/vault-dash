@@ -287,6 +287,25 @@ const LEVELS := [
 ]
 
 
+## Stars: one for clearing a level, one for clearing it within its par
+## time, and one for grabbing every coin on the way. Stars are kept as bits,
+## and the best of every run counts, so they can be earned on different runs.
+const STAR_CLEAR := 1
+const STAR_PAR := 2
+const STAR_COINS := 4
+const STARS_PER_LEVEL := 3
+
+
+## The time to beat for the second star: a second and a half per move of
+## the shortest solution, plus 5 seconds to look around.
+static func par(i: int) -> int:
+	return int(LEVELS[i].moves * 1.5) + 5
+
+
+static func star_count(bits: int) -> int:
+	return (bits & STAR_CLEAR) + ((bits & STAR_PAR) >> 1) + ((bits & STAR_COINS) >> 2)
+
+
 ## Level `i` as {name, time, rows}, ready to play.
 static func level(i: int) -> Dictionary:
 	var l: Dictionary = LEVELS[i]

@@ -22,7 +22,7 @@ CALLS = [r"\btr", r"TranslationServer\.translate", r"_label", r"_menu_button", r
          r"_celebrate", r"_die", r"_plain_label"]
 # Data fields that are shown to the player.
 FIELDS = ["name", "desc", "text", "one"]
-SKIP = {"", "II", "● %d/%d", "✕", "-", "+", "%d/%d", "%d / %d", "● %d", "%s\\n%s", "%s\\n%s\\n%s", "+ ", "\\n",
+SKIP = {"", "II", "● %d/%d", "★ %d/%d", "✕", "-", "+", "%d/%d", "%d / %d", "● %d", "%s\\n%s", "%s\\n%s\\n%s", "+ ", "\\n",
         # Language names are always shown in their own language.
         "English", "Español", "Français", "Deutsch", "Türkçe", "Русский", "简体中文", "繁體中文"}
 # Shown, but only reachable through an expression the patterns above miss.

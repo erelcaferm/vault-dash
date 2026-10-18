@@ -13,6 +13,7 @@ const BAD := Color("ff6b5b")
 
 var game
 var _grid: GridContainer
+var _star_total: Label
 var _list: VBoxContainer
 var _code_panel: PanelContainer
 var _code_title: Label
@@ -41,7 +42,13 @@ func setup(main_game) -> void:
 	column.add_theme_constant_override("separation", 8)
 	margin.add_child(column)
 
-	column.add_child(_label("LEVELS", 28))
+	var header := HBoxContainer.new()
+	column.add_child(header)
+	var title := _label("LEVELS", 28)
+	title.size_flags_horizontal = SIZE_EXPAND_FILL
+	header.add_child(title)
+	_star_total = _label("", 18, GOLD)
+	header.add_child(_star_total)
 	column.add_child(_label("Reach the exit before the time runs out.", 13, DIM))
 	_grid = GridContainer.new()
 	_grid.columns = 4
@@ -80,6 +87,7 @@ func open() -> void:
 
 
 func _refresh() -> void:
+	_star_total.text = "★ %d/%d" % [game.total_stars(), Levels.LEVELS.size() * Levels.STARS_PER_LEVEL]
 	for c in _grid.get_children():
 		c.queue_free()
 	for i in Levels.LEVELS.size():
@@ -110,7 +118,7 @@ func _campaign_card(i: int) -> Button:
 	box.add_child(_label(str(i + 1), 22, Color.WHITE if unlocked else Color(1, 1, 1, 0.3)))
 	var sub: Label
 	if cleared:
-		sub = _label("%.1f s" % game.level_times.get(i, 0.0), 12, DONE)
+		sub = _label(game.stars_text(i), 14, GOLD)
 	elif unlocked:
 		var reward: Dictionary = Levels.LEVELS[i].reward
 		sub = _label("● %d" % reward.coins if reward.has("coins") else tr("Skin"), 12, GOLD)

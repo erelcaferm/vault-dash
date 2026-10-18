@@ -46,6 +46,11 @@ const LIST := [
 	# Missions
 	{"id": "busy_bee", "name": "Busy Bee", "desc": "Finish 10 missions", "stat": "missions_done", "goal": 10, "coins": 100},
 	{"id": "mission_master", "name": "Mission Master", "desc": "Finish 50 missions", "stat": "missions_done", "goal": 50, "item": ["hat", "halo"]},
+	# Levels
+	{"id": "maze_runner", "name": "Maze Runner", "desc": "Clear 6 levels", "stat": "levels_cleared", "goal": 6, "coins": 100},
+	{"id": "level_master", "name": "Level Master", "desc": "Clear all 12 levels", "stat": "levels_cleared", "goal": 12, "coins": 300},
+	{"id": "star_collector", "name": "Star Collector", "desc": "Earn 18 level stars", "stat": "level_stars", "goal": 18, "coins": 200},
+	{"id": "perfectionist", "name": "Perfectionist", "desc": "Earn all 36 level stars", "stat": "level_stars", "goal": 36, "item": ["hero", "starlight"]},
 	# Collecting
 	{"id": "fashionista", "name": "Fashionista", "desc": "Own 5 hero colours", "stat": "heroes_owned", "goal": 5, "coins": 100},
 ]

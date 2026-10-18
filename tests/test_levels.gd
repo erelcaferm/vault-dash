@@ -54,6 +54,17 @@ func _initialize() -> void:
 	_expect(game.level_times.get(0, 0.0) > 0.0, "the best time is kept")
 	await _play_campaign(game, 0)
 	_expect(game.total_coins == coins + Levels.LEVELS[0].reward.coins, "the reward is paid only once")
+	# Stars: the bot is fast enough for par. Whether it passes every coin
+	# depends on which shortest route the solver picks, so that star isn't checked.
+	var bits: int = game.level_stars.get(0, 0)
+	_expect(bits & Levels.STAR_CLEAR and bits & Levels.STAR_PAR, "a fast clear earns the clear and par stars")
+	_expect(game.total_stars() == Levels.star_count(bits), "stars add up")
+	game.level_stars[5] = Levels.STAR_CLEAR | Levels.STAR_COINS
+	_expect(game.stars_text(5) == "★★☆" and game.total_stars() == Levels.star_count(bits) + 2, "stars show as filled and empty")
+	game.level_stars.erase(5)
+	_expect(Levels.par(0) == int(Levels.LEVELS[0].moves * 1.5) + 5, "par comes from the shortest solution")
+	for i in Levels.LEVELS.size():
+		_expect(Levels.par(i) < Levels.LEVELS[i].time, "level %d's par is inside its time limit" % (i + 1))
 	# Level 3 gives a skin.
 	game.levels_cleared.append(1)
 	await _play_campaign(game, 2)
@@ -147,6 +158,15 @@ func _initialize() -> void:
 	# Codes made before sizes could change still load, as 13 x 18.
 	var first := Levels.level(0)
 	_expect(LevelCode.decode(_old_code(first)).rows == first.rows, "an old 13 x 18 code still loads")
+
+	# All 36 stars unlock the Perfectionist trophy and its hero.
+	for i in Levels.LEVELS.size():
+		game.level_stars[i] = 7
+		if not game.levels_cleared.has(i):
+			game.levels_cleared.append(i)
+	game.check_achievements()
+	_expect(game.unlocked.has("perfectionist") and game.unlocked.has("level_master"), "level trophies unlock")
+	_expect(game.owned.has("starlight"), "Perfectionist gives the Starlight hero")
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	print("PASS: levels, codes, timer, rewards and editor" if failures == 0 else "FAIL: %d level checks" % failures)
