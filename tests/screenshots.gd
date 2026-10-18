@@ -18,9 +18,10 @@ func _initialize() -> void:
 	if not args.is_empty():
 		out_dir = args[0]
 	var tower = TowerScript.new()
-	tower.build(Rooms.ROOMS, 7)
+	tower.build(Rooms.START, Rooms.LAYOUTS, 7)
 	tower.room_limit = 20
 	var solver = Solver.new(tower)
+	solver.upward_only = true
 	solver.run()
 	route = solver.solution.duplicate()
 	game = load("res://scenes/main.tscn").instantiate()

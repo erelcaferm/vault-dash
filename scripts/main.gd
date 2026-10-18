@@ -5,7 +5,7 @@ extends Node2D
 const TowerScript := preload("res://scripts/tower.gd")
 const Rooms := preload("res://scripts/rooms.gd")
 
-const TILE := 32
+const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
 const SWIPE_MIN_DIST := 24.0     # pixels before a drag counts as a swipe
 const LAVA_START_SPEED := 0.5    # tiles per second
@@ -82,7 +82,7 @@ func _ready() -> void:
 
 func reset() -> void:
 	tower = TowerScript.new()
-	tower.build(Rooms.ROOMS, test_seed if test_seed >= 0 else randi())
+	tower.build(Rooms.START, Rooms.LAYOUTS, test_seed if test_seed >= 0 else randi())
 	tower.room_limit = test_room_limit
 	cell = tower.start
 	move_dir = Vector2i.ZERO
@@ -162,6 +162,9 @@ func _advance() -> void:
 	elif t == TowerScript.SPIKES:
 		_die("Spiked on floor %d")
 		return
+	elif t == TowerScript.FAKE or t == TowerScript.FAKE_COIN:
+		_die("Fell through a fake floor\non floor %d")
+		return
 	elif t == TowerScript.GOAL:
 		_win()
 		return
@@ -200,6 +203,8 @@ func _update_floor() -> void:
 	if f > run_floor:
 		run_floor = f
 		_update_hud()
+		if tower.is_trap(f - 1):
+			_toast("Floor %d\nWatch your step..." % f)
 	var biome := _biome_index(cell.y)
 	if biome != last_biome:
 		last_biome = biome
@@ -443,15 +448,16 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 		TowerScript.WALL:
 			draw_rect(r, biome.wall)
 			draw_rect(Rect2(r.position, Vector2(TILE, 4)), biome.edge)
-		TowerScript.COIN:
+		TowerScript.COIN, TowerScript.FAKE_COIN:
 			var bob := sin(anim_time * 4.0 + c.y * 0.7) * 2.0
 			draw_circle(mid + Vector2(0, bob), 6.0, COIN_COLOR)
 			draw_circle(mid + Vector2(-1.5, bob - 1.5), 2.5, COIN_COLOR.lightened(0.6))
 		TowerScript.SPIKES:
+			var w := (TILE - 4) / 3.0
 			for i in 3:
-				var bx := r.position.x + 2 + i * 9.3
+				var bx := r.position.x + 2 + i * w
 				draw_colored_polygon(PackedVector2Array([
-					Vector2(bx, r.end.y - 4), Vector2(bx + 4.7, r.position.y + 8), Vector2(bx + 9.3, r.end.y - 4),
+					Vector2(bx, r.end.y - 3), Vector2(bx + w * 0.5, r.position.y + TILE * 0.25), Vector2(bx + w, r.end.y - 3),
 				]), SPIKE_COLOR)
 		TowerScript.CRACKED:
 			draw_rect(r, CRACK_COLOR)

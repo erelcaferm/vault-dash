@@ -11,6 +11,10 @@ var parents := {}       # key -> [prev_key, dir]
 var won_from := {}      # key -> dir that wins from it
 var dead_ends: Array = []
 var solution: Array = []
+## When true, never slide down into a lower room. Much faster on tall towers,
+## because cracked walls in rooms you have left stop mattering, but then it
+## only proves the top is reachable: stuck checks need the full search.
+var upward_only := false
 
 
 func _init(t) -> void:
@@ -30,9 +34,11 @@ func run() -> void:
 	states[start_key] = {"cell": tower.start, "broken": {}}
 	parents[start_key] = null
 	var queue: Array = [start_key]
+	var head := 0
 	var goal_key := ""
-	while not queue.is_empty():
-		var k: String = queue.pop_front()
+	while head < queue.size():
+		var k: String = queue[head]
+		head += 1
 		var s: Dictionary = states[k]
 		edges[k] = []
 		for dir: Vector2i in DIRS:
@@ -45,8 +51,16 @@ func run() -> void:
 					goal_key = k
 				continue
 			var broken: Dictionary = s.broken
+			if upward_only:
+				var room: int = tower.room_of(r.end.y)
+				if room < tower.room_of(s.cell.y):
+					continue
+				broken = {}
+				for b in s.broken:
+					if tower.room_of(b.y) >= room:
+						broken[b] = true
 			if r.broke != null:
-				broken = s.broken.duplicate()
+				broken = broken.duplicate()
 				broken[r.broke] = true
 			var nk := _key(r.end, broken)
 			if nk == k:

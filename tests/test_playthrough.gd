@@ -1,6 +1,7 @@
 extends SceneTree
-## Plays the real game scene up a fixed tower along the solver's route and
-## checks it reaches the top, then stands still and checks the lava wins.
+## Plays the real game scene along the solver's route up a fixed 32-floor
+## tower (so it crosses trap floor 30) and checks it reaches the top. Then it
+## stands still and checks the lava wins.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 
 const TowerScript := preload("res://scripts/tower.gd")
@@ -13,14 +14,15 @@ var phase := "escape"
 var frames := 0
 
 const SEED := 42
-const HEIGHT := 30
+const HEIGHT := 32
 
 
 func _initialize() -> void:
 	var tower = TowerScript.new()
-	tower.build(Rooms.ROOMS, SEED)
+	tower.build(Rooms.START, Rooms.LAYOUTS, SEED)
 	tower.room_limit = HEIGHT
 	var solver = Solver.new(tower)
+	solver.upward_only = true
 	solver.run()
 	route = solver.solution.duplicate()
 	game = load("res://scenes/main.tscn").instantiate()
