@@ -2,13 +2,16 @@ extends Node
 ## Sound effects, made from code at startup so the game needs no audio files.
 ## Swap any of them for a real recording later by loading it into `sounds`.
 ## Also plays the background music loop (sounds/music.wav, written by
-## tools/make_music.gd), which has its own on/off switch.
+## tools/make_music.gd), which has its own on/off switch. Both have a
+## volume slider in Settings, from 0 to 1.
 
 const RATE := 22050
 
 var enabled := true
 var music_enabled := true
 var music: AudioStreamPlayer
+var volume := 1.0                    # sound effects
+var music_volume := 1.0
 const MUSIC_DB := -11.0
 const MUSIC_QUIET_DB := -20.0        # while paused or in a menu screen
 var sounds := {}
@@ -73,11 +76,28 @@ func update_music() -> void:
 ## higher), to build tension. `quiet` turns it down behind menus.
 func set_music_mood(speed: float, quiet: bool) -> void:
 	music.pitch_scale = move_toward(music.pitch_scale, speed, 0.01)
-	music.volume_db = move_toward(music.volume_db, MUSIC_QUIET_DB if quiet else MUSIC_DB, 0.5)
+	var target := (MUSIC_QUIET_DB if quiet else MUSIC_DB) + _db(music_volume)
+	music.volume_db = move_toward(music.volume_db, target, 0.5)
+
+
+func set_volume(v: float) -> void:
+	volume = clampf(v, 0.0, 1.0)
+	for p: AudioStreamPlayer in _players:
+		p.volume_db = _db(volume)
+
+
+func set_music_volume(v: float) -> void:
+	music_volume = clampf(v, 0.0, 1.0)
+	music.volume_db = MUSIC_DB + _db(music_volume)
+
+
+## Slider position to decibels. Squared, so the slider feels even to the ear.
+static func _db(v: float) -> float:
+	return maxf(linear_to_db(v * v), -60.0) if v > 0.0 else -80.0
 
 
 func play(id: String, pitch := 1.0) -> void:
-	if not enabled or not sounds.has(id):
+	if not enabled or volume <= 0.0 or not sounds.has(id):
 		return
 	var p: AudioStreamPlayer = _players[_next]
 	_next = (_next + 1) % _players.size()

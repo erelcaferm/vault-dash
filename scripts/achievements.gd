@@ -40,7 +40,7 @@ const LIST := [
 	{"id": "regular", "name": "Regular", "desc": "Play 25 runs", "stat": "runs", "goal": 25, "coins": 100},
 	# Daily Climb
 	{"id": "daily_climber", "name": "Daily Climber", "desc": "Play a Daily Climb", "stat": "daily_days", "goal": 1, "coins": 25},
-	{"id": "daily_goal", "name": "Goal Getter", "desc": "Hit the daily goal 10 times", "stat": "daily_goals", "goal": 10, "item": ["trail", "gold_dust"]},
+	{"id": "daily_goal", "name": "Goal Getter", "desc": "Reach the top of the Daily Climb 10 times", "stat": "daily_goals", "goal": 10, "item": ["trail", "gold_dust"]},
 	{"id": "week_streak", "name": "On a Roll", "desc": "Play the Daily Climb 7 days in a row", "stat": "daily_streak", "goal": 7, "item": ["hero", "sunrise"]},
 	{"id": "devoted", "name": "Devoted", "desc": "Play the Daily Climb on 30 days", "stat": "daily_days", "goal": 30, "coins": 300},
 	# Missions

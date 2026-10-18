@@ -7,8 +7,8 @@ SETTINGS,SETTINGS,AJUSTES,PARAMÈTRES,EINSTELLUNGEN,AYARLAR,НАСТРОЙКИ,�
 LANGUAGE,LANGUAGE,IDIOMA,LANGUE,SPRACHE,DİL,ЯЗЫК,语言,語言
 Sound: %s,Sound: %s,Sonido: %s,Son : %s,Ton: %s,Ses: %s,Звук: %s,声音：%s,聲音：%s
 Vibration: %s,Vibration: %s,Vibración: %s,Vibration : %s,Vibration: %s,Titreşim: %s,Вибрация: %s,振动：%s,震動：%s
-On,On,Sí,Activé,An,Açık,Вкл,开,開
-Off,Off,No,Désactivé,Aus,Kapalı,Выкл,关,關
+On,On,Sí,Oui,An,Açık,Вкл,开,開
+Off,Off,No,Non,Aus,Kapalı,Выкл,关,關
 Back,Back,Volver,Retour,Zurück,Geri,Назад,返回,返回
 Done,Done,Hecho,Fait,Erledigt,Tamam,Готово,已完成,已完成
 Floor %d,Floor %d,Piso %d,Étage %d,Etage %d,Kat %d,Этаж %d,第%d层,第%d層
@@ -35,12 +35,8 @@ Ice Caves,Ice Caves,Cuevas de Hielo,Grottes de Glace,Eishöhlen,Buz Mağaraları
 Jungle Temple,Jungle Temple,Templo de la Selva,Temple de la Jungle,Dschungeltempel,Orman Tapınağı,Храм в джунглях,丛林神殿,叢林神殿
 DAILY CLIMB,DAILY CLIMB,ESCALADA DIARIA,ASCENSION DU JOUR,TAGESAUFSTIEG,GÜNLÜK TIRMANIŞ,ЕЖЕДНЕВНЫЙ ПОДЪЁМ,每日攀登,每日攀登
 Same tower for everyone today.,Same tower for everyone today.,La misma torre para todos hoy.,La même tour pour tout le monde aujourd'hui.,Heute für alle derselbe Turm.,Bugün herkes için aynı kule.,Сегодня у всех одна и та же башня.,今天所有人挑战同一座塔。,今天所有人挑戰同一座塔。
-Floor %d pays %d coins,Floor %d pays %d coins,El piso %d da %d monedas,L'étage %d rapporte %d pièces,Etage %d bringt %d Münzen,%d. kat %d altın verir,Этаж %d даёт %d монет,到达第%d层奖励%d金币,到達第%d層獎勵%d金幣
-Goal done! +%d coins,Goal done! +%d coins,¡Objetivo cumplido! +%d monedas,Objectif atteint ! +%d pièces,Ziel erreicht! +%d Münzen,Hedef tamam! +%d altın,Цель выполнена! +%d монет,目标达成！+%d金币,目標達成！+%d金幣
 Today's best: floor %d,Today's best: floor %d,Mejor de hoy: piso %d,Meilleur du jour : étage %d,Heutiger Rekord: Etage %d,Bugünün rekoru: %d. kat,Лучшее сегодня: этаж %d,今日最佳：第%d层,今日最佳：第%d層
 Streak: %d days,Streak: %d days,Racha: %d días,Série : %d jours,Serie: %d Tage,Seri: %d gün,Серия: %d дн.,连续：%d天,連續：%d天
-DAILY GOAL!,DAILY GOAL!,¡OBJETIVO DIARIO!,OBJECTIF DU JOUR !,TAGESZIEL!,GÜNLÜK HEDEF!,ЦЕЛЬ ДНЯ!,每日目标！,每日目標！
-Floor %d reached,Floor %d reached,Piso %d alcanzado,Étage %d atteint,Etage %d erreicht,%d. kata ulaşıldı,Достигнут этаж %d,已到达第%d层,已到達第%d層
 {month} {day},{month} {day},{day} {month},{day} {month},{day}. {month},{day} {month},{day} {month},{month}{day}日,{month}{day}日
 Jan,Jan,ene,janv.,Jan.,Oca,янв.,1月,1月
 Feb,Feb,feb,févr.,Feb.,Şub,февр.,2月,2月
@@ -214,7 +210,6 @@ Revive after dying,Revive after dying,Revive tras morir,Réanime-toi après une 
 Grab 25 power-ups,Grab 25 power-ups,Coge 25 potenciadores,Attrape 25 bonus,Schnapp dir 25 Power-ups,25 güçlendirici topla,Подбери 25 бонусов,拾取25个道具,拾取25個道具
 Play 25 runs,Play 25 runs,Juega 25 partidas,Joue 25 parties,Spiele 25 Läufe,25 oyun oyna,Сыграй 25 забегов,进行25局游戏,進行25局遊戲
 Play a Daily Climb,Play a Daily Climb,Juega una Escalada diaria,Joue une Ascension du jour,Spiele einen Tagesaufstieg,Bir Günlük Tırmanış oyna,Сыграй ежедневный подъём,参加一次每日攀登,參加一次每日攀登
-Hit the daily goal 10 times,Hit the daily goal 10 times,Cumple el objetivo diario 10 veces,Atteins l'objectif du jour 10 fois,Erreiche das Tagesziel 10 Mal,Günlük hedefe 10 kez ulaş,Выполни цель дня 10 раз,达成每日目标10次,達成每日目標10次
 Play the Daily Climb 7 days in a row,Play the Daily Climb 7 days in a row,Juega la Escalada diaria 7 días seguidos,Joue l'Ascension du jour 7 jours d'affilée,Spiele den Tagesaufstieg 7 Tage in Folge,Günlük Tırmanışı 7 gün üst üste oyna,Играй в ежедневный подъём 7 дней подряд,连续7天参加每日攀登,連續7天參加每日攀登
 Play the Daily Climb on 30 days,Play the Daily Climb on 30 days,Juega la Escalada diaria en 30 días,Joue l'Ascension du jour pendant 30 jours,Spiele den Tagesaufstieg an 30 Tagen,Günlük Tırmanışı 30 gün oyna,Сыграй в ежедневный подъём в течение 30 дней,累计30天参加每日攀登,累計30天參加每日攀登
 Finish 10 missions,Finish 10 missions,Completa 10 misiones,Termine 10 missions,Schließe 10 Missionen ab,10 görev tamamla,Выполни 10 заданий,完成10个任务,完成10個任務
@@ -305,3 +300,14 @@ Earn 18 level stars,Earn 18 level stars,Consigue 18 estrellas de nivel,Gagne 18 
 Perfectionist,Perfectionist,Perfeccionista,Perfectionniste,Perfektionist,Mükemmeliyetçi,Перфекционист,完美主义者,完美主義者
 Earn all 36 level stars,Earn all 36 level stars,Consigue las 36 estrellas de nivel,Gagne les 36 étoiles de niveau,Verdiene alle 36 Levelsterne,36 bölüm yıldızının hepsini kazan,Получи все 36 звёзд за уровни,获得全部36颗关卡星星,獲得全部36顆關卡星星
 Starlight,Starlight,Luz estelar,Lumière d'étoile,Sternenlicht,Yıldız Işığı,Звёздный свет,星光,星光
+Reach the top of the Daily Climb 10 times,Reach the top of the Daily Climb 10 times,Llega a la cima de la Escalada diaria 10 veces,Atteins le sommet de l'Ascension du jour 10 fois,Erreiche 10-mal die Spitze des Tagesaufstiegs,Günlük Tırmanış'ın zirvesine 10 kez ulaş,Доберись до вершины Ежедневного подъёма 10 раз,登顶每日攀登 10 次,登頂每日攀登 10 次
+Reach floor %d as fast as you can.,Reach floor %d as fast as you can.,Llega al piso %d lo más rápido posible.,Atteins l'étage %d le plus vite possible.,Erreiche so schnell wie möglich Etage %d.,%d. kata olabildiğince hızlı ulaş.,Доберись до этажа %d как можно быстрее.,尽快到达第 %d 层。,盡快到達第 %d 層。
+The top pays %d coins,The top pays %d coins,La cima paga %d monedas,Le sommet rapporte %d pièces,Die Spitze bringt %d Münzen,Zirve %d altın verir,Вершина даёт %d монет,登顶奖励 %d 金币,登頂獎勵 %d 金幣
+Today's best time: %s,Today's best time: %s,Mejor tiempo de hoy: %s,Meilleur temps du jour : %s,Heutige Bestzeit: %s,Bugünün en iyi süresi: %s,Лучшее время сегодня: %s,今日最佳时间：%s,今日最佳時間：%s
+Chests saved: %d,Chests saved: %d,Cofres guardados: %d,Coffres gardés : %d,Gesparte Truhen: %d,Saklanan sandık: %d,Сундуков в запасе: %d,已存宝箱：%d,已存寶箱：%d
+TOP REACHED!,TOP REACHED!,¡CIMA ALCANZADA!,SOMMET ATTEINT !,SPITZE ERREICHT!,ZİRVEYE ULAŞTIN!,ВЕРШИНА!,登顶！,登頂！
+Time: %s,Time: %s,Tiempo: %s,Temps : %s,Zeit: %s,Süre: %s,Время: %s,时间：%s,時間：%s
+Daily reward: +%d coins,Daily reward: +%d coins,Premio diario: +%d monedas,Récompense du jour : +%d pièces,Tagesbelohnung: +%d Münzen,Günlük ödül: +%d altın,Награда дня: +%d монет,每日奖励：+%d 金币,每日獎勵：+%d 金幣
+Swipe to climb again,Swipe to climb again,Desliza para volver a subir,Glisse pour grimper encore,"Wische, um nochmal zu klettern",Tekrar tırmanmak için kaydır,"Проведи, чтобы подняться снова",滑动再爬一次,滑動再爬一次
+Chest saved!,Chest saved!,¡Cofre guardado!,Coffre gardé !,Truhe gespart!,Sandık saklandı!,Сундук в запасе!,宝箱已存！,寶箱已存！
+CHEST %d OF %d,CHEST %d OF %d,COFRE %d DE %d,COFFRE %d SUR %d,TRUHE %d VON %d,SANDIK %d / %d,СУНДУК %d ИЗ %d,宝箱 %d / %d,寶箱 %d / %d

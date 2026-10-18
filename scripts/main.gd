@@ -55,10 +55,13 @@ const TRAP_METER_FULL := 5.0
 const BONUS_CHEST_AHEAD := 5
 const BONUS_CHEST_PUSH := 10
 const CARRYOVER_CHEST_FLOOR := 8
-## Daily Climb: one tower per day, the same for every player. Reaching
-## DAILY_GOAL in it pays DAILY_REWARD coins, once per day.
-const DAILY_GOAL := 15
+## Daily Climb: one tower per day, the same for every player, DAILY_TOP
+## floors high. Reaching the top pays DAILY_REWARD coins, once per day, and
+## the fastest time to the top is today's best.
+const DAILY_TOP := 20
 const DAILY_REWARD := 100
+## Seconds between the end of a run and its saved chests opening.
+const CHEST_OPEN_DELAY := 0.9
 ## One revive per run, paid in coins: the base cost plus a bit per floor.
 ## You go back to where your last slide started, with the lava pushed back.
 const REVIVE_BASE_COST := 50
@@ -138,6 +141,10 @@ var trap_meter := 0.0            # saved; see TRAP_METER_FULL
 var bonus_chest_owed := false    # saved; a bonus chest you haven't opened yet
 var meter_rng := RandomNumberGenerator.new()
 var chest_return_state := State.PLAYING
+var pending_chests := 0          # saved; chests picked up this run, opened when it ends
+var chest_batch := 0             # how many saved chests are opening, for "CHEST 2 OF 3"
+var chest_batch_done := 0
+var end_message := ""            # the death or win message, shown again after the chests
 var stats := {}                  # saved counters that achievements watch
 var unlocked: Array = []         # saved ids of unlocked achievements
 var achievements_screen: Control
@@ -156,6 +163,8 @@ var daily_button: Button
 var daily_date := ""             # saved; the day daily_best and daily_claimed are for
 var daily_best := 0
 var daily_claimed := false
+var daily_time := 0.0            # saved; today's fastest climb to the top, 0 if none yet
+var daily_time_at_start := 0.0
 var daily_last_played := ""      # saved; the last day a Daily Climb was started
 var daily_streak := 0            # saved; days in a row with a Daily Climb
 var revived := false            # whether this run's revive is used
@@ -224,6 +233,9 @@ func _ready() -> void:
 	for b in find_children("*", "BaseButton", true, false):
 		_add_click(b)
 	reset()
+	# Chests saved in a run that never ended, like when the app was closed.
+	if pending_chests > 0:
+		_open_next_chest(State.READY)
 
 
 func reset() -> void:
@@ -249,12 +261,15 @@ func reset() -> void:
 	_roll_powerups(3)
 	_update_effects()
 	tower.room_limit = test_room_limit
+	if daily_mode and test_room_limit < 0 and not is_level():
+		tower.room_limit = DAILY_TOP
 	cell = tower.start
 	slide_start = cell
 	revived = false
 	lava_grace = 0.0
 	best_at_start = best_floor
 	daily_best_at_start = daily_best
+	daily_time_at_start = daily_time
 	recording = PackedVector2Array()
 	new_best_shown = false
 	move_dir = Vector2i.ZERO
@@ -286,9 +301,13 @@ func reset() -> void:
 	marker_floor = daily_best if daily_mode else best_floor
 	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
 	if daily_mode:
-		var goal := tr("Goal done! +%d coins") % DAILY_REWARD if daily_claimed else tr("Floor %d pays %d coins") % [DAILY_GOAL, DAILY_REWARD]
+		var goal := tr("Reach floor %d as fast as you can.") % DAILY_TOP
+		if not daily_claimed:
+			goal += "\n" + tr("The top pays %d coins") % DAILY_REWARD
 		var progress := ""
-		if daily_best > 0:
+		if daily_time > 0.0:
+			progress += "\n" + tr("Today's best time: %s") % time_text(daily_time)
+		elif daily_best > 0:
 			progress += "\n" + tr("Today's best: floor %d") % daily_best
 		if daily_streak > 0:
 			progress += "\n" + tr("Streak: %d days") % daily_streak
@@ -327,6 +346,10 @@ func _process(delta: float) -> void:
 		if daily_mode:
 			while recording.size() * GHOST_STEP <= elapsed:
 				recording.append(_player_center())
+			chest_label.text = time_text(elapsed)
+	if (state == State.DEAD or state == State.WON) and pending_chests > 0 and state_time >= CHEST_OPEN_DELAY \
+			and not chest_screen.visible:
+		_open_next_chest(state)
 	shake = maxf(shake - delta, 0.0)
 	squash = maxf(squash - delta, 0.0)
 	toast_time = maxf(toast_time - delta, 0.0)
@@ -399,9 +422,7 @@ func _advance() -> void:
 		if bonus_chests.has(k):
 			bonus_chest_owed = false
 			add_stat("bonus_chests")
-			_save()
-		_stop()
-		_open_chest()
+		_save_chest()
 
 
 ## Pays the combo bonus for the slide that just ended, if it earned one.
@@ -618,13 +639,7 @@ func _update_floor() -> void:
 			new_best_shown = true
 			_celebrate("NEW BEST!")
 		if daily_mode:
-			daily_best = maxi(daily_best, f)
-			if f >= DAILY_GOAL and not daily_claimed:
-				daily_claimed = true
-				total_coins += DAILY_REWARD
-				add_stat("daily_goals")
-				banner_queue.append("%s\n%s\n%s" % [tr("DAILY GOAL!"), tr("Floor %d reached") % DAILY_GOAL, tr("+%d coins") % DAILY_REWARD])
-				_save()
+			daily_best = mini(maxi(daily_best, f), DAILY_TOP)
 		if f >= 20 and elapsed <= 60.0 and stat("fast_20") == 0:
 			add_stat("fast_20")
 		_update_hud()
@@ -652,12 +667,14 @@ func _die(reason: String, cause: String) -> void:
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	shake = 0.35
-	if daily_mode and run_floor > daily_best_at_start:
+	# A climb that reached the top always beats one that didn't.
+	if daily_mode and daily_time == 0.0 and run_floor > daily_best_at_start:
 		daily_ghost = recording.duplicate()
 	_bank_run()
 	var best := tr("Today's best: floor %d") % daily_best if daily_mode else tr("Best: floor %d") % best_floor
-	_show_message("%s\n\n%s   %s\n\n%s" % [tr(reason) % run_floor, tr("+%d coins") % run_coins, best, tr("Swipe to try again")])
-	_update_revive_button()
+	if daily_mode and daily_time > 0.0:
+		best = tr("Today's best time: %s") % time_text(daily_time)
+	_end_run("%s\n\n%s   %s\n\n%s" % [tr(reason) % run_floor, tr("+%d coins") % run_coins, best, tr("Swipe to try again")])
 
 
 ## A big toast with a sound and a shower of gold, for moments worth noticing.
@@ -677,7 +694,10 @@ func pause() -> void:
 	state = State.PAUSED
 	pause_button.visible = false
 	var where := _clock(time_left) if is_level() else tr("Floor %d") % run_floor
-	_show_message("%s\n\n%s   ● %d\n\n%s" % [tr("PAUSED"), where, run_coins, tr("Tap to carry on")])
+	where += "   ● %d" % run_coins
+	if pending_chests > 0:
+		where += "\n" + tr("Chests saved: %d") % pending_chests
+	_show_message("%s\n\n%s\n\n%s" % [tr("PAUSED"), where, tr("Tap to carry on")])
 	# Only the settings show while paused; the shop and trophies wait for the menu.
 	menu_bar.visible = false
 
@@ -726,7 +746,7 @@ func revive() -> bool:
 
 
 func _update_revive_button() -> void:
-	revive_button.visible = state == State.DEAD and not revived
+	revive_button.visible = state == State.DEAD and not revived and pending_chests == 0
 	revive_button.text = tr("REVIVE") + "   ● %d" % revive_cost()
 	revive_button.disabled = total_coins < revive_cost()
 
@@ -739,10 +759,58 @@ func _win() -> void:
 	state = State.WON
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
+	if daily_mode:
+		_daily_won()
+		return
 	if best_time == 0.0 or elapsed < best_time:
 		best_time = elapsed
 	_bank_run()
-	_show_message("YOU ESCAPED!\n\n%.1f seconds   +%d coins\nBest time: %.1f s\n\nSwipe to climb again" % [elapsed, run_coins, best_time])
+	_end_run("YOU ESCAPED!\n\n%.1f seconds   +%d coins\nBest time: %.1f s\n\nSwipe to climb again" % [elapsed, run_coins, best_time])
+
+
+## Reaching the top of the Daily Climb: the time counts, and the first finish
+## of the day pays the daily reward.
+func _daily_won() -> void:
+	sfx.play("level_clear")
+	vibrate(60)
+	var lines: Array = [tr("TOP REACHED!"), "", tr("Time: %s") % time_text(elapsed) + "   " + tr("+%d coins") % run_coins]
+	if daily_time == 0.0 or elapsed < daily_time:
+		if daily_time > 0.0:
+			lines.append(tr("New best time!"))
+		daily_time = elapsed
+		daily_ghost = recording.duplicate()
+	else:
+		lines.append(tr("Today's best time: %s") % time_text(daily_time))
+	if not daily_claimed:
+		daily_claimed = true
+		total_coins += DAILY_REWARD
+		add_stat("daily_goals")
+		lines.append(tr("Daily reward: +%d coins") % DAILY_REWARD)
+	daily_best = DAILY_TOP
+	_bank_run()
+	lines.append("")
+	lines.append(tr("Swipe to climb again"))
+	_end_run("\n".join(lines))
+
+
+## Seconds with tenths, like "47.3 s", or "1:05.2" past a minute.
+static func time_text(seconds: float) -> String:
+	var tenths := roundi(seconds * 10.0)
+	if tenths < 600:
+		return "%.1f s" % (tenths / 10.0)
+	return "%d:%04.1f" % [tenths / 600, (tenths % 600) / 10.0]
+
+
+## Shows the death or win message, after opening any chests saved this run.
+func _end_run(text: String) -> void:
+	end_message = text
+	_show_message(text)
+	_update_revive_button()
+	if pending_chests > 0:
+		# The menus wait until the saved chests are open.
+		menu_bar.visible = false
+		gear_button.visible = false
+		missions_panel.visible = false
 
 
 func _bank_run() -> void:
@@ -826,7 +894,9 @@ func _on_swipe(d: Vector2i) -> void:
 		State.PLAYING:
 			try_move(d)
 		State.DEAD, State.WON:
-			if state_time >= RESTART_DELAY:
+			if pending_chests > 0:
+				_open_next_chest(state)
+			elif state_time >= RESTART_DELAY:
 				reset()
 		State.PAUSED:
 			resume()
@@ -836,7 +906,9 @@ func _on_tap() -> void:
 	if state == State.PAUSED:
 		resume()
 		return
-	if (state == State.DEAD or state == State.WON) and state_time >= RESTART_DELAY:
+	if (state == State.DEAD or state == State.WON) and pending_chests > 0:
+		_open_next_chest(state)
+	elif (state == State.DEAD or state == State.WON) and state_time >= RESTART_DELAY:
 		reset()
 
 
@@ -1094,6 +1166,9 @@ func _update_hud() -> void:
 		if k + 1 >= run_floor and k + 1 < next and not chests_taken.has(k):
 			next = k + 1
 	chest_label.text = tr("Chest at floor %d") % next
+	if daily_mode:
+		floor_label.text = tr("Floor %d") % run_floor + "/%d" % DAILY_TOP
+		chest_label.text = time_text(elapsed)
 
 
 func _show_message(text: String) -> void:
@@ -1454,6 +1529,7 @@ func _refresh_daily() -> void:
 		daily_date = today()
 		daily_best = 0
 		daily_claimed = false
+		daily_time = 0.0
 		daily_ghost = PackedVector2Array()
 
 
@@ -1502,14 +1578,40 @@ func add_trap_meter(floor_number: int, amount: float) -> int:
 	return target
 
 
-func _open_chest() -> void:
-	chest_return_state = state
+## Picking up a chest saves it for the end of the run, so the climb keeps going.
+func _save_chest() -> void:
+	pending_chests += 1
+	sfx.play("reward")
+	vibrate(40)
+	_toast(tr("Chest saved!") + ("  ×%d" % pending_chests if pending_chests > 1 else ""))
+	_save()
+	_update_hud()
+
+
+## Opens one saved chest; the rest follow one after another.
+func _open_next_chest(return_state: State) -> void:
+	if pending_chests <= 0 or chest_screen.visible:
+		return
+	if state != State.CHEST:
+		chest_batch = pending_chests
+		chest_batch_done = 0
+	chest_batch_done += 1
+	pending_chests -= 1
+	_save()
+	var title := tr("TREASURE CHEST")
+	if chest_batch > 1:
+		title = tr("CHEST %d OF %d") % [chest_batch_done, chest_batch]
+	_open_chest(return_state, title)
+
+
+func _open_chest(return_state: State = state, title := "TREASURE CHEST") -> void:
+	chest_return_state = return_state
 	state = State.CHEST
 	move_dir = Vector2i.ZERO
 	queued_dir = Vector2i.ZERO
 	_hide_message()
 	var reward := Chest.roll(chest_rng, owns)
-	chest_screen.open(reward, chest_rng)
+	chest_screen.open(reward, chest_rng, tr(title))
 
 
 func _on_chest_finished(reward: Dictionary) -> void:
@@ -1517,13 +1619,21 @@ func _on_chest_finished(reward: Dictionary) -> void:
 	add_stat("chests_opened")
 	if reward.rarity.id == "legendary":
 		add_stat("legendaries")
+	_toast("+ " + Chest.describe(reward))
+	if pending_chests > 0:
+		_open_next_chest(chest_return_state)
+		return
 	if chest_return_state == State.READY:
 		reset()
+	elif chest_return_state == State.DEAD or chest_return_state == State.WON:
+		state = chest_return_state
+		state_time = RESTART_DELAY
+		_show_message(end_message)
+		_update_revive_button()
 	else:
 		state = State.PLAYING
 		pause_button.visible = true
 		_update_hud()
-	_toast("+ " + Chest.describe(reward))
 
 
 ## Chest coins go straight to the bank, so they're safe even if you die.
@@ -1606,11 +1716,15 @@ func _load_save() -> void:
 		unlocked = cfg.get_value("achievements", "unlocked", [])
 		sfx.enabled = cfg.get_value("settings", "sound", true)
 		sfx.music_enabled = cfg.get_value("settings", "music", true)
+		sfx.set_volume(cfg.get_value("settings", "sound_volume", 1.0))
+		sfx.set_music_volume(cfg.get_value("settings", "music_volume", 1.0))
 		vibration_on = cfg.get_value("settings", "vibration", true)
 		language = cfg.get_value("settings", "language", "")
 		daily_date = cfg.get_value("daily", "date", "")
 		daily_best = cfg.get_value("daily", "best", 0)
 		daily_claimed = cfg.get_value("daily", "claimed", false)
+		daily_time = cfg.get_value("daily", "time", 0.0)
+		pending_chests = cfg.get_value("secret", "pending_chests", 0)
 		daily_last_played = cfg.get_value("daily", "last_played", "")
 		daily_streak = cfg.get_value("daily", "streak", 0)
 		daily_ghost = cfg.get_value("daily", "ghost", PackedVector2Array())
@@ -1650,11 +1764,15 @@ func _save() -> void:
 	cfg.set_value("achievements", "unlocked", unlocked)
 	cfg.set_value("settings", "sound", sfx.enabled)
 	cfg.set_value("settings", "music", sfx.music_enabled)
+	cfg.set_value("settings", "sound_volume", sfx.volume)
+	cfg.set_value("settings", "music_volume", sfx.music_volume)
 	cfg.set_value("settings", "vibration", vibration_on)
 	cfg.set_value("settings", "language", language)
 	cfg.set_value("daily", "date", daily_date)
 	cfg.set_value("daily", "best", daily_best)
 	cfg.set_value("daily", "claimed", daily_claimed)
+	cfg.set_value("daily", "time", daily_time)
+	cfg.set_value("secret", "pending_chests", pending_chests)
 	cfg.set_value("daily", "last_played", daily_last_played)
 	cfg.set_value("daily", "streak", daily_streak)
 	cfg.set_value("daily", "ghost", daily_ghost)

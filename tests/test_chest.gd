@@ -87,11 +87,55 @@ func _initialize() -> void:
 	await process_frame
 	_expect(again.bonus_chest_owed and again.has_chest(7), "owed chest survives closing the game")
 	_expect(is_equal_approx(again.trap_meter, meter), "meter survives closing the game")
+
+	# Chests picked up in a run wait for the end, then open one at a time.
+	again.reset()
+	again.chest_rng.seed = 5
+	again.state = again.State.PLAYING
+	again._save_chest()
+	again._save_chest()
+	_expect(again.pending_chests == 2 and again.state == again.State.PLAYING and not again.chest_screen.visible,
+			"picking up chests saves them and the run carries on")
+	var opened: int = again.stat("chests_opened")
+	again._die("Test on floor %d", "lava")
+	_expect(again.state == again.State.DEAD and not again.chest_screen.visible, "the death shows first")
+	again._process(again.CHEST_OPEN_DELAY + 0.1)
+	_expect(again.chest_screen.visible and again.pending_chests == 1, "then the first saved chest opens")
+	_expect(again.chest_screen._title.text == "CHEST 1 OF 2", "the chest says which one it is")
+	again._process(0.1)
+	_expect(again.pending_chests == 1, "only one chest opens at a time")
+	_tap(again.chest_screen)
+	_expect(again.chest_screen.visible and again.pending_chests == 0 and again.chest_screen._title.text == "CHEST 2 OF 2",
+			"the next chest opens straight after")
+	_tap(again.chest_screen)
+	_expect(not again.chest_screen.visible and again.state == again.State.DEAD and again.message_label.visible,
+			"after the last chest the death message comes back")
+	_expect(again.stat("chests_opened") == opened + 2, "both chests were opened")
+	_expect(again.revive_button.visible, "the revive is still offered")
+	# Chests saved when the game closes mid-run open next time.
+	again.pending_chests = 1
+	again._save()
+	again.queue_free()
+	var third = load("res://scenes/main.tscn").instantiate()
+	third.save_path = SAVE
+	root.add_child(third)
+	await process_frame
+	_expect(third.chest_screen.visible and third.pending_chests == 0, "chests saved before closing open on the next launch")
+	third.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 
 	if failures == 0:
 		print("PASS: chest odds, rewards, placement and granting")
 	quit(1 if failures > 0 else 0)
+
+
+## Skips the spin, then collects.
+func _tap(screen) -> void:
+	var tap := InputEventMouseButton.new()
+	tap.pressed = true
+	tap.button_index = MOUSE_BUTTON_LEFT
+	screen._gui_input(tap)
+	screen._gui_input(tap)
 
 
 func _expect(ok: bool, what: String) -> void:

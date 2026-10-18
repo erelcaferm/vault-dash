@@ -1,7 +1,8 @@
 extends SceneTree
 ## Plays the real game scene along the solver's route up a fixed 102-floor
 ## tower and checks it reaches the top. On the way it crosses three trap
-## floors and must open every chest it passes. Then it stands still and
+## floors and must pick up every chest it passes, which open one by one
+## once the run is over. Then it stands still and
 ## checks the lava wins.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 
@@ -37,33 +38,35 @@ func _initialize() -> void:
 
 func _process(_delta: float) -> bool:
 	frames += 1
+	if game.state == game.State.CHEST:
+		if phase != "chests":
+			printerr("FAIL: a chest opened mid-run instead of waiting for the end")
+			quit(1)
+			return false
+		if game.chest_screen.visible and frames % 30 == 0:
+			var tap := InputEventMouseButton.new()
+			tap.pressed = true
+			tap.button_index = MOUSE_BUTTON_LEFT
+			game.chest_screen._gui_input(tap)   # first tap skips the spin
+			game.chest_screen._gui_input(tap)   # second tap collects
+			chests += 1
+		return false
 	if phase == "escape":
-		if game.state == game.State.CHEST:
-			if game.chest_screen.visible and frames % 30 == 0:
-				var tap := InputEventMouseButton.new()
-				tap.pressed = true
-				tap.button_index = MOUSE_BUTTON_LEFT
-				game.chest_screen._gui_input(tap)   # first tap skips the spin
-				game.chest_screen._gui_input(tap)   # second tap collects
-				chests += 1
-		elif game.state == game.State.WON:
-			# Every chest on the way, regular or bonus, must have been opened.
+		if game.state == game.State.WON:
+			# Every chest on the way, regular or bonus, must have been picked up
+			# and saved for the end of the run.
 			for k in HEIGHT:
 				if game.has_chest(k) and not game.chests_taken.has(k):
-					printerr("FAIL: the chest on floor %d was never opened" % (k + 1))
+					printerr("FAIL: the chest on floor %d was never picked up" % (k + 1))
 					quit(1)
 					return false
-			if chests != game.chests_taken.size() or chests < floori(float(HEIGHT) / TowerScript.CHEST_EVERY):
-				printerr("FAIL: opened %d chests, expected %d" % [chests, game.chests_taken.size()])
+			if game.pending_chests != game.chests_taken.size() or game.pending_chests < floori(float(HEIGHT) / TowerScript.CHEST_EVERY):
+				printerr("FAIL: saved %d chests, expected %d" % [game.pending_chests, game.chests_taken.size()])
 				quit(1)
 				return false
-			print("PASS: climbed %d floors in %.1f s of game time with %d coins, opening %d chests" % [
-				HEIGHT, game.elapsed, game.run_coins, chests])
-			game.state_time = 1.0
-			game.test_room_limit = -1
-			game._on_tap()
-			game._on_swipe(Vector2i.LEFT)
-			phase = "lava"
+			print("PASS: climbed %d floors in %.1f s of game time with %d coins, saving %d chests" % [
+				HEIGHT, game.elapsed, game.run_coins, game.pending_chests])
+			phase = "chests"
 			frames = 0
 		elif game.state == game.State.DEAD:
 			printerr("FAIL: died on floor %d following the solver's route" % game.run_floor)
@@ -72,6 +75,22 @@ func _process(_delta: float) -> bool:
 			game._on_swipe(route.pop_front())
 		elif frames > 60 * 400:
 			printerr("FAIL: did not reach the top in time")
+			quit(1)
+	elif phase == "chests":
+		if game.state == game.State.WON and game.pending_chests == 0 and not game.chest_screen.visible:
+			if chests != game.chests_taken.size() or not game.message_label.visible:
+				printerr("FAIL: opened %d chests one by one, expected %d, then the win message" % [chests, game.chests_taken.size()])
+				quit(1)
+				return false
+			print("PASS: opened the %d saved chests one after another at the end" % chests)
+			game.state_time = 1.0
+			game.test_room_limit = -1
+			game._on_tap()
+			game._on_swipe(Vector2i.LEFT)
+			phase = "lava"
+			frames = 0
+		elif frames > 60 * 60:
+			printerr("FAIL: the saved chests never finished opening")
 			quit(1)
 	elif phase == "lava":
 		if game.state == game.State.DEAD:

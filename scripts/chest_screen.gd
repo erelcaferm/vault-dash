@@ -79,8 +79,10 @@ func setup() -> void:
 
 
 ## Shows the chest and spins to `reward`. `rng` fills the strip with decoys.
-func open(reward: Dictionary, rng: RandomNumberGenerator) -> void:
+## `title` is shown above it, like "CHEST 2 OF 3".
+func open(reward: Dictionary, rng: RandomNumberGenerator, title := "TREASURE CHEST") -> void:
 	_reward = reward
+	_title.text = title
 	_revealed = false
 	_last_card = -1
 	visible = true

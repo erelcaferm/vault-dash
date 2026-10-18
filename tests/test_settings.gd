@@ -24,6 +24,15 @@ func _initialize() -> void:
 	_expect(game.sfx.music_enabled and game.sfx.music.playing, "music plays by default")
 	game.settings_screen._music.pressed.emit()
 	_expect(not game.sfx.music_enabled and not game.sfx.music.playing, "the music toggle stops the music")
+	var screen = game.settings_screen
+	screen._sound.pressed.emit()
+	screen._sound_volume.value = 40
+	_expect(is_equal_approx(game.sfx.volume, 0.4) and game.sfx._players[0].volume_db < -5.0, "the sound slider turns sounds down")
+	_expect(screen._sound_percent.text == "40%", "the slider shows its level")
+	screen._music_volume.value = 0
+	_expect(game.sfx.music_volume == 0.0 and game.sfx.music.volume_db <= -60.0, "the music slider can mute the music")
+	screen._music_volume.value = 70
+	_expect(not screen._music_volume.editable, "the music slider is greyed out while music is off")
 	game.settings_screen._language_buttons["es"].pressed.emit()
 	_expect(TranslationServer.get_locale() == "es", "picking Español switches to Spanish")
 	_expect(tr("SHOP") == "TIENDA", "Spanish text is loaded")
@@ -40,9 +49,14 @@ func _initialize() -> void:
 	_expect(cfg.get_value("settings", "language", "") == "es", "the language is saved")
 	_expect(cfg.get_value("settings", "sound", true) == game.sfx.enabled, "the sound setting is saved")
 	_expect(cfg.get_value("settings", "music", true) == false, "the music setting is saved")
+	_expect(is_equal_approx(cfg.get_value("settings", "sound_volume", 1.0), 0.4), "the sound volume is saved")
+	_expect(is_equal_approx(cfg.get_value("settings", "music_volume", 1.0), 0.7), "the music volume is saved")
 
 	game._on_swipe(Vector2i.UP)
 	_expect(not game.gear_button.visible, "the gear hides during a run")
+	game.pause()
+	_expect(game.gear_button.visible, "the gear (and the volume) is there while paused")
+	game.resume()
 
 	for id in ["click", "buy", "error", "open", "countdown", "time_up", "level_clear", "start", "paint", "erase"]:
 		_expect(game.sfx.sounds.has(id) and game.sfx.sounds[id].data.size() > 0, "the %s sound is made" % id)
@@ -56,7 +70,7 @@ func _initialize() -> void:
 	_expect(TranslationServer.get_locale() == game.device_locale(), "auto follows the phone's language")
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
-	print("PASS: gear, settings toggles and languages" if failures == 0 else "FAIL: %d settings checks" % failures)
+	print("PASS: gear, settings toggles, volume and languages" if failures == 0 else "FAIL: %d settings checks" % failures)
 	quit(1 if failures else 0)
 
 
