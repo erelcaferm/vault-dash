@@ -46,6 +46,13 @@ func _initialize() -> void:
 		_expect(tower.room_of(c.y) == 1 and (t == TowerScript.EMPTY or t == TowerScript.COIN),
 				"layout %d: chest lands on open floor (got '%s')" % [i, t])
 
+	# Every cosmetic id is unique across all kinds: owned and new lists share them.
+	var ids := {}
+	for kind in ["hero", "hat", "walls", "trail", "lava"]:
+		for item in Skins.list(kind):
+			_expect(not ids.has(item.id), "cosmetic id '%s' is used once" % item.id)
+			ids[item.id] = true
+
 	# Granting rewards.
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	var game = load("res://scenes/main.tscn").instantiate()
@@ -59,7 +66,16 @@ func _initialize() -> void:
 	_expect(not game.owns(neon), "neon starts locked")
 	_expect(not game.buy("hero", neon), "chest-only items can't be bought")
 	game.grant({"rarity": Chest.RARITIES[3], "kind": "hero", "coins": 0, "item": neon})
-	_expect(game.owns(neon) and game.equipped_hero == "neon", "item rewards are unlocked and equipped")
+	_expect(game.owns(neon) and game.equipped_hero != "neon", "item rewards are unlocked but not equipped")
+	_expect(game.new_items.has("neon"), "won items are flagged new")
+	game.shop.open()
+	_expect(game.shop.tab == "hero", "the shop opens on the tab with new items")
+	game.shop._show_tab("hat")
+	_expect(not game.new_items.has("neon"), "leaving the tab marks its items seen")
+	game.shop.closed.emit()
+	game.grant({"rarity": Chest.RARITIES[3], "kind": "hero", "coins": 0, "item": Skins.find(Skins.HERO, "rainbow")})
+	game.equip("hero", "rainbow")
+	_expect(game.new_items.is_empty() and game.equipped_hero == "rainbow", "equipping clears the NEW flag")
 
 	# The hidden trap meter.
 	game.trap_meter = 0.0

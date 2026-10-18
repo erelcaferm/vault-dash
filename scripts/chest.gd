@@ -11,8 +11,8 @@ const RARITIES := [
 	{"id": "epic", "name": "Epic", "weight": 15, "color": Color("d32ce6")},
 	{"id": "legendary", "name": "Legendary", "weight": 5, "color": Color("ffd700")},
 ]
-const COMMON_COINS := [50, 100]
-const RARE_COINS := [150, 250]
+const COMMON_COINS := [30, 60]
+const RARE_COINS := [80, 150]
 ## Paid instead when every item of that rarity is already owned.
 const EPIC_FALLBACK_COINS := 400
 const LEGENDARY_FALLBACK_COINS := 1000

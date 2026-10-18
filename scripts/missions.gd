@@ -48,7 +48,7 @@ static func make(rng: RandomNumberGenerator, missions_done: int, exclude: Array,
 	var start := 0
 	if t.has("stat"):
 		start = stat_value.call(t.stat)
-	return {"id": t.id, "goal": goal, "reward": snappedi(50 + 15 * level, 5), "progress": 0, "start": start}
+	return {"id": t.id, "goal": goal, "reward": snappedi(30 + 10 * level, 5), "progress": 0, "start": start}
 
 
 static func describe(m: Dictionary) -> String:

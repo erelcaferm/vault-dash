@@ -19,19 +19,19 @@ func _draw() -> void:
 	var s := minf(size.x, size.y) * 0.7
 	var c := size * 0.5
 	if kind == "hero":
-		Skins.draw_hero(self, c, Vector2(s, s) * 0.85, Skins.hero_color(item, _time * Skins.RAINBOW_IDLE_SPEED),
-				Vector2.ZERO, 1.0, Skins.hero_glow(item))
+		Skins.draw_hero_item(self, item, c + Vector2(0, s * 0.08), Vector2(s, s) * 0.7, Skins.hero_color(item, _time * Skins.RAINBOW_IDLE_SPEED),
+				Vector2.ZERO, _time)
 	elif kind == "trail":
 		var hs := Vector2(s, s) * 0.5
 		var p := c + Vector2(s * 0.35, 0)
 		var color := Skins.hero_color(hero, _time * Skins.RAINBOW_SLIDE_SPEED) if not hero.is_empty() else Color.WHITE
 		Skins.draw_trail(self, item, p, Vector2.RIGHT, hs, color, _time)
-		Skins.draw_hero(self, p, hs, color, Vector2(2, 0))
+		Skins.draw_hero_item(self, hero, p, hs, color, Vector2(2, 0), _time, Vector2.RIGHT)
 	elif kind == "hat":
 		var hs := Vector2(s, s) * 0.55
 		var p := c + Vector2(0, s * 0.18)
 		var color := Skins.hero_color(hero, _time * Skins.RAINBOW_IDLE_SPEED) if not hero.is_empty() else Color.WHITE
-		Skins.draw_hero(self, p, hs, color)
+		Skins.draw_hero_item(self, hero, p, hs, color, Vector2.ZERO, _time)
 		Skins.draw_hat(self, item, p, hs, _time)
 	elif kind == "lava":
 		var r := Rect2(c - Vector2(s, s) * 0.5, Vector2(s, s))

@@ -8,6 +8,8 @@ const Skins := preload("res://scripts/skins.gd")
 const ShopScript := preload("res://scripts/shop.gd")
 const Chest := preload("res://scripts/chest.gd")
 const ChestScreen := preload("res://scripts/chest_screen.gd")
+const PillStyle := preload("res://scripts/pill_style.gd")
+const Ads := preload("res://scripts/ads.gd")
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
@@ -132,6 +134,7 @@ var total_coins := 0
 var best_floor := 0
 var best_time := 0.0
 var owned: Array = []            # ids of shop items bought (free ones aren't listed)
+var new_items: Array = []        # won items the player hasn't looked at in the shop yet
 var equipped_hero := "white"
 var equipped_wall := "rubble"
 var equipped_trail := "afterimage"
@@ -194,6 +197,13 @@ var revived := false            # whether this run's revive is used
 var slide_start := Vector2i.ZERO # where the current or last slide began
 var lava_grace := 0.0
 var revive_button: Button
+var ads := Ads.new()
+var ad_bar: HBoxContainer          # the watch-an-ad buttons on the death screen
+var ad_revive_button: Button
+var ad_double_button: Button
+var doubled := false               # this run's coins were already doubled by an ad
+var ad_coins_day := ""             # the day ad_coins_today counts
+var ad_coins_today := 0            # shop coin ads watched that day
 var pause_button: Button
 var best_at_start := 0           # best floor before this run, for the "New best!" moment
 var new_best_shown := false
@@ -293,6 +303,7 @@ func reset() -> void:
 	cell = tower.start
 	slide_start = cell
 	revived = false
+	doubled = false
 	lava_grace = 0.0
 	best_at_start = best_floor
 	daily_best_at_start = daily_best
@@ -359,6 +370,7 @@ func _process(delta: float) -> void:
 	var moving := move_dir != Vector2i.ZERO
 	rainbow_phase += delta * (Skins.RAINBOW_SLIDE_SPEED if moving else Skins.RAINBOW_IDLE_SPEED)
 	state_time += delta
+	_update_shop_glow()
 	if state == State.PLAYING:
 		elapsed += delta
 		_update_slide(delta)
@@ -707,6 +719,7 @@ func _die(reason: String, cause: String) -> void:
 	if daily_mode and daily_time == 0.0 and run_floor > daily_best_at_start:
 		daily_ghost = recording.duplicate()
 	_bank_run()
+	ads.after_run()
 	var best := tr("Today's best: floor %d") % daily_best if daily_mode else tr("Best: floor %d") % best_floor
 	if daily_mode and daily_time > 0.0:
 		best = tr("Today's best time: %s") % time_text(daily_time)
@@ -762,6 +775,63 @@ func revive() -> bool:
 	if state != State.DEAD or revived or total_coins < revive_cost():
 		return false
 	total_coins -= revive_cost()
+	_revive_now()
+	return true
+
+
+## A free revive for watching an ad, instead of paying coins.
+func ad_revive() -> bool:
+	if state != State.DEAD or revived or not ads.can_show_rewarded():
+		return false
+	ads.show_rewarded("revive", _revive_now)
+	return true
+
+
+## Watch an ad to bank this run's coins a second time.
+func ad_double_coins() -> bool:
+	if doubled or run_coins <= 0 or (state != State.DEAD and state != State.WON) or not ads.can_show_rewarded():
+		return false
+	ads.show_rewarded("double_coins", _double_coins_now)
+	return true
+
+
+func _double_coins_now() -> void:
+	doubled = true
+	total_coins += run_coins
+	sfx.play("buy")
+	_toast(tr("+%d coins") % run_coins)
+	_save()
+	_update_hud()
+	_update_revive_button()
+
+
+## Shop coins for watching an ad, a few times a day.
+func ad_coins_left() -> int:
+	if not ads.can_show_rewarded():
+		return 0
+	if ad_coins_day != today():
+		return Ads.SHOP_PER_DAY
+	return maxi(Ads.SHOP_PER_DAY - ad_coins_today, 0)
+
+
+func ad_shop_coins() -> bool:
+	if ad_coins_left() <= 0:
+		return false
+	ads.show_rewarded("shop_coins", _shop_coins_now)
+	return true
+
+
+func _shop_coins_now() -> void:
+	if ad_coins_day != today():
+		ad_coins_day = today()
+		ad_coins_today = 0
+	ad_coins_today += 1
+	total_coins += Ads.SHOP_COINS
+	sfx.play("buy")
+	_save()
+
+
+func _revive_now() -> void:
 	revived = true
 	run_coins = 0
 	add_stat("revives")
@@ -778,13 +848,18 @@ func revive() -> bool:
 	_toast("Second chance!")
 	_save()
 	_update_hud()
-	return true
 
 
 func _update_revive_button() -> void:
 	revive_button.visible = state == State.DEAD and not revived and pending_chests == 0
 	revive_button.text = tr("REVIVE") + "   ● %d" % revive_cost()
 	revive_button.disabled = total_coins < revive_cost()
+	var ending := (state == State.DEAD or state == State.WON) and pending_chests == 0 and not is_level()
+	ad_revive_button.visible = revive_button.visible and ads.can_show_rewarded()
+	ad_double_button.visible = ending and not doubled and run_coins > 0 and ads.can_show_rewarded()
+	ad_revive_button.text = tr("FREE REVIVE") + " (" + tr("AD") + ")"
+	ad_double_button.text = tr("2x COINS") + " (" + tr("AD") + ")"
+	ad_bar.visible = ad_revive_button.visible or ad_double_button.visible
 
 
 ## Reached in levels, or when a test gives the tower an exit.
@@ -1148,12 +1223,12 @@ func _build_hud() -> void:
 	menu_bar.offset_bottom = -20
 	menu_bar.add_theme_constant_override("separation", 6)
 	hud.add_child(menu_bar)
-	shop_button = _menu_button("SHOP", _open_shop)
-	_menu_button("LEVELS", _open_levels)
+	shop_button = _menu_button("SHOP", _open_shop, Color("d98a12"))
+	_menu_button("LEVELS", _open_levels, Color("2f8fd8"))
 	daily_button = _menu_button("DAILY", func():
 		daily_mode = not daily_mode
-		reset())
-	_menu_button("TROPHIES", _open_achievements)
+		reset(), Color("d8462f"))
+	_menu_button("TROPHIES", _open_achievements, Color("8a4fd0"))
 
 	pause_button = Button.new()
 	pause_button.text = "II"
@@ -1177,12 +1252,12 @@ func _build_hud() -> void:
 	level_bar.add_theme_constant_override("separation", 6)
 	level_bar.visible = false
 	hud.add_child(level_bar)
-	level_back_button = _bar_button(level_bar, "LEVELS", _leave_level)
+	level_back_button = _bar_button(level_bar, "LEVELS", _leave_level, Color("2f8fd8"))
 	_bar_button(level_bar, "RETRY", func():
 		if state == State.PAUSED:
 			state = State.DEAD
-		reset())
-	level_next_button = _bar_button(level_bar, "NEXT", func(): start_campaign_level(level_index + 1))
+		reset(), Color("d98a12"))
+	level_next_button = _bar_button(level_bar, "NEXT", func(): start_campaign_level(level_index + 1), Color("3aa856"))
 
 	revive_button = Button.new()
 	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -1203,6 +1278,22 @@ func _build_hud() -> void:
 	revive_button.pressed.connect(revive)
 	revive_button.visible = false
 	hud.add_child(revive_button)
+
+	ad_bar = HBoxContainer.new()
+	ad_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	ad_bar.offset_left = -150
+	ad_bar.offset_right = 150
+	ad_bar.offset_top = -200
+	ad_bar.offset_bottom = -154
+	ad_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	ad_bar.add_theme_constant_override("separation", 8)
+	ad_bar.visible = false
+	hud.add_child(ad_bar)
+	ad_revive_button = _bar_button(ad_bar, "FREE REVIVE", ad_revive, Color("3aa856"))
+	ad_double_button = _bar_button(ad_bar, "2x COINS", ad_double_coins, Color("3aa856"))
+	for b in [ad_revive_button, ad_double_button]:
+		b.add_theme_font_size_override("font_size", 14)
+		b.clip_text = false
 
 	gear_button = Button.new()
 	gear_button.flat = true
@@ -1356,6 +1447,7 @@ func _show_message(text: String) -> void:
 	pause_button.visible = false
 	missions_panel.visible = state != State.PAUSED and not is_level()
 	revive_button.visible = false
+	ad_bar.visible = false
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
@@ -1381,15 +1473,27 @@ func _hide_message() -> void:
 	level_bar.visible = false
 	gear_button.visible = false
 	revive_button.visible = false
+	ad_bar.visible = false
 
 
-func _menu_button(text: String, action: Callable) -> Button:
-	return _bar_button(menu_bar, text, action)
+func _menu_button(text: String, action: Callable, color: Color) -> Button:
+	return _bar_button(menu_bar, text, action, color)
 
 
-func _bar_button(bar: HBoxContainer, text: String, action: Callable) -> Button:
+## The bottom-bar buttons are two-half pills (see pill_style.gd).
+func _bar_button(bar: HBoxContainer, text: String, action: Callable, color: Color) -> Button:
 	var b := Button.new()
 	b.text = text
+	var face := PillStyle.new(color)
+	b.add_theme_stylebox_override("normal", face)
+	b.add_theme_stylebox_override("hover", face)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_stylebox_override("pressed", PillStyle.new(color, true))
+	b.add_theme_stylebox_override("disabled", PillStyle.new(color.darkened(0.4)))
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(key, Color.WHITE)
+	b.add_theme_color_override("font_outline_color", color.darkened(0.65))
+	b.add_theme_constant_override("outline_size", 5)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.size_flags_stretch_ratio = 1.0
 	b.add_theme_font_size_override("font_size", 16)
@@ -1407,7 +1511,7 @@ func _fit_bar(bar: HBoxContainer) -> void:
 		var label := Label.new()
 		label.text = b.text
 		label.add_theme_font_size_override("font_size", 16)
-		fit_font(label, (344.0 - 6.0 * (count - 1)) / count - 12.0, 10)
+		fit_font(label, (344.0 - 6.0 * (count - 1)) / count - 26.0, 10)
 		b.add_theme_font_size_override("font_size", label.get_theme_font_size("font_size"))
 		label.free()
 
@@ -1415,15 +1519,15 @@ func _fit_bar(bar: HBoxContainer) -> void:
 ## A gear drawn in code, so it looks the same whatever the font.
 func _draw_gear() -> void:
 	var c := gear_button.size * 0.5
-	var r := 11.0
+	var r := 8.0
 	var color := Color(1, 1, 1, 0.9)
 	for i in 8:
 		var a := TAU * i / 8.0
 		var d := Vector2.from_angle(a)
 		var side := Vector2(-d.y, d.x)
 		gear_button.draw_colored_polygon(PackedVector2Array([
-			c + d * r * 0.8 + side * 3.2, c + d * (r + 4.0) + side * 2.4,
-			c + d * (r + 4.0) - side * 2.4, c + d * r * 0.8 - side * 3.2,
+			c + d * r * 0.8 + side * 2.4, c + d * (r + 3.0) + side * 1.8,
+			c + d * (r + 3.0) - side * 1.8, c + d * r * 0.8 - side * 2.4,
 		]), color)
 	gear_button.draw_circle(c, r, color)
 	gear_button.draw_circle(c, r * 0.42, Color(0.08, 0.08, 0.12))
@@ -1688,6 +1792,7 @@ func _unlock(a: Dictionary) -> void:
 		var item := Skins.find(Skins.list(kind), a.item[1])
 		if not owned.has(item.id):
 			owned.append(item.id)
+			mark_new(item.id)
 		reward = tr("New {kind}: {item}").format({"kind": tr(Skins.kind_name(kind)), "item": tr(item.name)})
 	banner_queue.append("%s\n%s\n%s" % [tr("TROPHY UNLOCKED"), tr(a.name), reward])
 	_save()
@@ -1814,6 +1919,8 @@ func _open_chest(return_state: State = state, title := "TREASURE CHEST") -> void
 
 func _on_chest_finished(reward: Dictionary) -> void:
 	grant(reward)
+	if chest_screen.equip_now:
+		equip(reward.kind, reward.item.id)
 	add_stat("chests_opened")
 	if reward.rarity.id == "legendary":
 		add_stat("legendaries")
@@ -1834,18 +1941,41 @@ func _on_chest_finished(reward: Dictionary) -> void:
 		_update_hud()
 
 
+## Won items are never equipped for you: they're flagged NEW and the shop
+## button glows until you've seen them, so you choose whether to wear them.
+func mark_new(id: String) -> void:
+	if not new_items.has(id):
+		new_items.append(id)
+
+
+func seen(id: String) -> void:
+	new_items.erase(id)
+
+
 ## Chest coins go straight to the bank, so they're safe even if you die.
 func grant(reward: Dictionary) -> void:
 	if reward.kind == "coins":
 		total_coins += reward.coins
 	elif not owned.has(reward.item.id):
 		owned.append(reward.item.id)
-		equip(reward.kind, reward.item.id)
+		mark_new(reward.item.id)
 		check_achievements()
 	_save()
 
 
 # --- Shop ------------------------------------------------------------------
+
+## The shop button pulses gold while there are new items in it.
+func _update_shop_glow() -> void:
+	var glow := 0.0
+	if not new_items.is_empty() and menu_bar.visible:
+		glow = 0.55 + 0.45 * sin(anim_time * 4.0)
+	for key in ["normal", "hover"]:
+		var face: PillStyle = shop_button.get_theme_stylebox(key)
+		if face.glow != glow:
+			face.glow = glow
+			shop_button.queue_redraw()
+
 
 func _open_shop() -> void:
 	shop.open()
@@ -1873,6 +2003,7 @@ func buy(kind: String, item: Dictionary) -> bool:
 
 
 func equip(kind: String, id: String) -> void:
+	seen(id)
 	match kind:
 		"hero":
 			equipped_hero = id
@@ -1909,6 +2040,10 @@ func _load_save() -> void:
 		best_floor = cfg.get_value("progress", "best_floor", 0)
 		best_time = cfg.get_value("progress", "best_time", 0.0)
 		owned = cfg.get_value("shop", "owned", [])
+		new_items = cfg.get_value("shop", "new", [])
+		ads.no_forced_ads = cfg.get_value("shop", "no_forced_ads", false)
+		ad_coins_day = cfg.get_value("ads", "day", "")
+		ad_coins_today = cfg.get_value("ads", "today", 0)
 		trap_meter = cfg.get_value("secret", "meter", 0.0)
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
 		unlocked = cfg.get_value("achievements", "unlocked", [])
@@ -1949,6 +2084,10 @@ func _save() -> void:
 	cfg.set_value("progress", "best_floor", best_floor)
 	cfg.set_value("progress", "best_time", best_time)
 	cfg.set_value("shop", "owned", owned)
+	cfg.set_value("shop", "new", new_items)
+	cfg.set_value("shop", "no_forced_ads", ads.no_forced_ads)
+	cfg.set_value("ads", "day", ad_coins_day)
+	cfg.set_value("ads", "today", ad_coins_today)
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("shop", "trail", equipped_trail)
@@ -2093,7 +2232,7 @@ func _draw_player() -> void:
 		Skins.draw_trail(self, Skins.find(Skins.TRAILS, equipped_trail), p, Vector2(move_dir), size, color, anim_time)
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
-	Skins.draw_hero(self, p, size, color, look, 1.0, Skins.hero_glow(_hero_skin()))
+	Skins.draw_hero_item(self, _hero_skin(), p, size, color, look, anim_time, Vector2(move_dir))
 	Skins.draw_hat(self, Skins.find(Skins.HATS, equipped_hat), p, size, anim_time)
 	if shield:
 		draw_arc(p, TILE * 0.72, 0, TAU, 28, Color(POWERUP_COLORS.shield, 0.6 + 0.3 * sin(anim_time * 6.0)), 2.5)
@@ -2365,7 +2504,7 @@ func _grant_level_reward(reward: Dictionary) -> void:
 		total_coins += reward.coins
 	elif not owned.has(reward.item[1]):
 		owned.append(reward.item[1])
-		equip(reward.item[0], reward.item[1])
+		mark_new(reward.item[1])
 	check_achievements()
 
 

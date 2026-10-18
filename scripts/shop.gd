@@ -7,6 +7,7 @@ signal closed
 const Skins := preload("res://scripts/skins.gd")
 const Preview := preload("res://scripts/skin_preview.gd")
 const Achievements := preload("res://scripts/achievements.gd")
+const PillStyle := preload("res://scripts/pill_style.gd")
 
 const GOLD := Color("ffd23f")
 const DIM := Color(1, 1, 1, 0.5)
@@ -18,6 +19,7 @@ var _coins_label: Label
 var _scroll: ScrollContainer
 var _grid: GridContainer
 var _tab_buttons := {}
+var _ad_button: Button
 
 
 func setup(main_game) -> void:
@@ -57,8 +59,33 @@ func setup(main_game) -> void:
 		b.custom_minimum_size.y = 44
 		b.add_theme_font_size_override("font_size", 14)
 		b.pressed.connect(_show_tab.bind(t[0]))
+		var dot := Panel.new()       # shown while the tab has NEW items
+		var dot_style := StyleBoxFlat.new()
+		dot_style.bg_color = Color("ff4d4d")
+		dot_style.set_corner_radius_all(5)
+		dot.add_theme_stylebox_override("panel", dot_style)
+		dot.mouse_filter = MOUSE_FILTER_IGNORE
+		dot.set_anchors_preset(PRESET_TOP_RIGHT)
+		dot.offset_left = -12
+		dot.offset_right = -2
+		dot.offset_top = 2
+		dot.offset_bottom = 12
+		b.add_child(dot)
 		tabs.add_child(b)
 		_tab_buttons[t[0]] = b
+
+	_ad_button = Button.new()
+	_ad_button.custom_minimum_size.y = 40
+	_ad_button.add_theme_font_size_override("font_size", 15)
+	for key in ["normal", "hover", "pressed", "disabled"]:
+		_ad_button.add_theme_stylebox_override(key, PillStyle.new(Color("3aa856") if key != "disabled" else Color("3a4a3e"), key == "pressed"))
+	_ad_button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_ad_button.add_theme_color_override("font_outline_color", Color("10361a"))
+	_ad_button.add_theme_constant_override("outline_size", 4)
+	_ad_button.pressed.connect(func():
+		if game.ad_shop_coins():
+			_refresh())
+	column.add_child(_ad_button)
 
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = SIZE_EXPAND_FILL
@@ -75,7 +102,9 @@ func setup(main_game) -> void:
 	back.text = "Back"
 	back.custom_minimum_size.y = 52
 	back.add_theme_font_size_override("font_size", 22)
-	back.pressed.connect(func(): closed.emit())
+	back.pressed.connect(func():
+		_mark_tab_seen()
+		closed.emit())
 	column.add_child(back)
 	visible = false
 
@@ -83,25 +112,37 @@ func setup(main_game) -> void:
 func open() -> void:
 	pending_buy = ""
 	visible = true
+	# Start on a tab with something new in it.
+	for t in _tab_buttons:
+		if _has_new(t):
+			tab = t
+			break
 	_show_tab(tab)
 
 
 func _show_tab(t: String) -> void:
 	if t != tab:
+		_mark_tab_seen()
 		_scroll.scroll_vertical = 0
 	tab = t
 	pending_buy = ""
-	for k in _tab_buttons:
-		_tab_buttons[k].set_pressed_no_signal(k == t)
 	_refresh()
 
 
 func _refresh() -> void:
 	_coins_label.text = "● %d" % game.total_coins
+	var left: int = game.ad_coins_left()
+	_ad_button.visible = game.ads.can_show_rewarded()
+	_ad_button.disabled = left <= 0
+	_ad_button.text = tr("Watch an ad: +%d coins (%d left today)") % [game.Ads.SHOP_COINS, left] if left > 0 else tr("No more ads today")
 	var keep := _scroll.scroll_vertical
 	for c in _grid.get_children():
 		_grid.remove_child(c)
 		c.queue_free()
+	for k in _tab_buttons:
+		var b: Button = _tab_buttons[k]
+		b.set_pressed_no_signal(k == tab)
+		b.get_child(0).visible = _has_new(k) and k != tab
 	var items: Array = Skins.list(tab)
 	for item in items:
 		_grid.add_child(_card(item))
@@ -160,6 +201,16 @@ func _card(item: Dictionary) -> Button:
 		status = _label("● %d" % item.price, 15, DIM)
 	game.fit_font(status, 100, 10)
 	box.add_child(status)
+	if game.new_items.has(item.id):
+		var badge := _label("NEW", 12, Color.WHITE)
+		var badge_style := StyleBoxFlat.new()
+		badge_style.bg_color = Color("e8382f")
+		badge_style.set_corner_radius_all(4)
+		badge_style.content_margin_left = 5
+		badge_style.content_margin_right = 5
+		badge.add_theme_stylebox_override("normal", badge_style)
+		badge.position = Vector2(4, 4)
+		b.add_child(badge)
 	b.pressed.connect(_on_card.bind(item))
 	return b
 
@@ -179,6 +230,20 @@ func _on_card(item: Dictionary) -> void:
 		pending_buy = ""
 		game.sfx.play("error")
 	_refresh()
+
+
+func _has_new(t: String) -> bool:
+	for item in Skins.list(t):
+		if game.new_items.has(item.id):
+			return true
+	return false
+
+
+## Leaving a tab counts as having seen its new items.
+func _mark_tab_seen() -> void:
+	for item in Skins.list(tab):
+		game.seen(item.id)
+	game._save()
 
 
 func _label(text: String, size: int, color := Color.WHITE) -> Label:

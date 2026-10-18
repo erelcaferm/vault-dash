@@ -68,7 +68,7 @@ func _initialize() -> void:
 	# Level 3 gives a skin.
 	game.levels_cleared.append(1)
 	await _play_campaign(game, 2)
-	_expect(game.owned.has("pathfinder") and game.equipped_hero == "pathfinder", "level 3 gives the Pathfinder hero")
+	_expect(game.owned.has("pathfinder") and game.new_items.has("pathfinder") and game.equipped_hero != "pathfinder", "level 3 gives the Pathfinder hero, flagged new, not worn")
 
 	# No lava in levels, only the clock.
 	game.start_campaign_level(1)

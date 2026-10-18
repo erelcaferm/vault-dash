@@ -8,17 +8,17 @@ extends RefCounted
 const HERO := [
 	{"id": "white", "name": "White", "price": 0, "color": Color("f4f1de")},
 	{"id": "black", "name": "Black", "price": 0, "color": Color("17171c")},
-	{"id": "red", "name": "Red", "price": 100, "color": Color("e63946")},
-	{"id": "orange", "name": "Orange", "price": 100, "color": Color("f4a261")},
-	{"id": "lemon", "name": "Lemon", "price": 100, "color": Color("f6e05e")},
-	{"id": "mint", "name": "Mint", "price": 150, "color": Color("74e0b0")},
-	{"id": "green", "name": "Green", "price": 150, "color": Color("40a352")},
-	{"id": "sky", "name": "Sky", "price": 200, "color": Color("4cc9f0")},
-	{"id": "blue", "name": "Blue", "price": 200, "color": Color("4361ee")},
-	{"id": "purple", "name": "Purple", "price": 250, "color": Color("9d4edd")},
-	{"id": "pink", "name": "Pink", "price": 250, "color": Color("ff70a6")},
-	{"id": "gold", "name": "Gold", "price": 600, "color": Color("ffc300")},
-	{"id": "rainbow", "name": "Rainbow", "price": 1500, "rainbow": true},
+	{"id": "red", "name": "Red", "price": 300, "color": Color("e63946")},
+	{"id": "orange", "name": "Orange", "price": 300, "color": Color("f4a261")},
+	{"id": "lemon", "name": "Lemon", "price": 300, "color": Color("f6e05e")},
+	{"id": "mint", "name": "Mint", "price": 450, "color": Color("74e0b0")},
+	{"id": "green", "name": "Green", "price": 450, "color": Color("40a352")},
+	{"id": "sky", "name": "Sky", "price": 600, "color": Color("4cc9f0")},
+	{"id": "blue", "name": "Blue", "price": 600, "color": Color("4361ee")},
+	{"id": "purple", "name": "Purple", "price": 750, "color": Color("9d4edd")},
+	{"id": "pink", "name": "Pink", "price": 750, "color": Color("ff70a6")},
+	{"id": "gold", "name": "Gold", "price": 2500, "color": Color("ffc300")},
+	{"id": "rainbow", "name": "Rainbow", "price": 6000, "rainbow": true},
 	{"id": "neon", "name": "Neon", "price": -1, "chest_only": true, "color": Color("39ff14"), "glow": Color(0.22, 1.0, 0.08, 0.35)},
 	{"id": "ember", "name": "Ember", "price": -1, "chest_only": true, "color": Color("ff7b1c"), "glow": Color(1.0, 0.35, 0.0, 0.4)},
 	{"id": "void", "name": "Void", "price": -1, "chest_only": true, "color": Color("2b0a3d"), "glow": Color(0.7, 0.3, 0.95, 0.45)},
@@ -30,23 +30,31 @@ const HERO := [
 	{"id": "starlight", "name": "Starlight", "price": -1, "achievement": "perfectionist", "color": Color("fff3a8"), "glow": Color(1.0, 0.95, 0.5, 0.5)},
 	{"id": "pathfinder", "name": "Pathfinder", "price": -1, "level": 3, "color": Color("2ec4b6"), "glow": Color(0.2, 0.9, 0.8, 0.35)},
 	{"id": "brick", "name": "Brick", "price": -1, "achievement": "wrecking_ball", "color": Color("b5523b")},
+	# Creatures: the same square hero, with animated ears, tails and faces.
+	{"id": "frog", "name": "Frog", "price": 3000, "shape": "frog", "color": Color("5cb85c")},
+	{"id": "bunny", "name": "Bunny", "price": 3500, "shape": "bunny", "color": Color("ece4dc")},
+	{"id": "cat", "name": "Ginger Cat", "price": 4000, "shape": "cat", "color": Color("f08c3a")},
+	{"id": "robot", "name": "Robot", "price": 4500, "shape": "robot", "color": Color("9aa5b1")},
+	{"id": "tiger", "name": "Tiger", "price": 5500, "shape": "cat", "stripes": true, "color": Color("ff9a1f")},
+	{"id": "midnight", "name": "Midnight Cat", "price": -1, "chest_only": true, "shape": "cat", "color": Color("1b1b24"),
+		"eyes": Color("7dff6b"), "glow": Color(0.5, 1.0, 0.4, 0.25)},
 ]
 
 ## Cracked-wall skins. `style` picks the pattern drawn on top of the block.
 const WALLS := [
 	{"id": "rubble", "name": "Rubble", "price": 0, "style": "crack",
 		"base": Color("8a6a4a"), "top": Color("b08a64"), "detail": Color("45352a")},
-	{"id": "mud", "name": "Mud", "price": 150, "style": "mud",
+	{"id": "mud", "name": "Mud", "price": 400, "style": "mud",
 		"base": Color("5c4033"), "top": Color("7a5640"), "detail": Color("3b2a20")},
-	{"id": "snow", "name": "Snow", "price": 150, "style": "snow",
+	{"id": "snow", "name": "Snow", "price": 400, "style": "snow",
 		"base": Color("dfeaf5"), "top": Color("ffffff"), "detail": Color("9fbcd8")},
-	{"id": "wood", "name": "Wood", "price": 200, "style": "planks",
+	{"id": "wood", "name": "Wood", "price": 600, "style": "planks",
 		"base": Color("a0703c"), "top": Color("c08a50"), "detail": Color("6b4423")},
-	{"id": "glass", "name": "Glass", "price": 300, "style": "glass",
+	{"id": "glass", "name": "Glass", "price": 900, "style": "glass",
 		"base": Color(0.62, 0.86, 1.0, 0.45), "top": Color(1, 1, 1, 0.75), "detail": Color(1, 1, 1, 0.85)},
-	{"id": "crystal", "name": "Crystal", "price": 400, "style": "crystal",
+	{"id": "crystal", "name": "Crystal", "price": 1200, "style": "crystal",
 		"base": Color("7b2cbf"), "top": Color("c77dff"), "detail": Color("e0aaff")},
-	{"id": "gold_bars", "name": "Gold Bars", "price": 800, "style": "bars",
+	{"id": "gold_bars", "name": "Gold Bars", "price": 3000, "style": "bars",
 		"base": Color("d4a017"), "top": Color("ffd75e"), "detail": Color("9c7400")},
 	{"id": "obsidian", "name": "Obsidian", "price": -1, "chest_only": true, "style": "crystal",
 		"base": Color("14111f"), "top": Color("2e2547"), "detail": Color("8c5bd6")},
@@ -58,63 +66,85 @@ const WALLS := [
 		"base": Color(0.45, 0.75, 1.0, 0.7), "top": Color(0.9, 0.97, 1.0, 0.9), "detail": Color(1, 1, 1, 0.9)},
 	{"id": "marble", "name": "Marble", "price": -1, "achievement": "tower_legend", "style": "marble",
 		"base": Color("ece8e1"), "top": Color("ffffff"), "detail": Color("9a948c")},
-	{"id": "moss", "name": "Moss", "price": 200, "style": "moss",
+	{"id": "moss", "name": "Moss", "price": 600, "style": "moss",
 		"base": Color("6b6f5e"), "top": Color("6fbf4a"), "detail": Color("4d8a33")},
-	{"id": "brick", "name": "Brick", "price": 250, "style": "bricks",
+	{"id": "brick_wall", "name": "Brick", "price": 750, "style": "bricks",
 		"base": Color("a5452f"), "top": Color("c25a3f"), "detail": Color("e8d6c4")},
-	{"id": "neon", "name": "Neon", "price": 450, "style": "neon",
+	{"id": "neon_wall", "name": "Neon", "price": 1500, "style": "neon",
 		"base": Color("120c24"), "top": Color("2a1f4d"), "detail": Color("39f0ff")},
 	{"id": "candy", "name": "Candy", "price": -1, "level": 15, "style": "candy",
 		"base": Color("fff0f5"), "top": Color("ffffff"), "detail": Color("ff4f8b")},
-	{"id": "starlight", "name": "Starlight", "price": -1, "level": 24, "style": "neon",
+	{"id": "starlight_wall", "name": "Starlight", "price": -1, "level": 24, "style": "neon",
 		"base": Color("0d0a1f"), "top": Color("231a45"), "detail": Color("d6a8ff")},
 	{"id": "gilded", "name": "Gilded", "price": -1, "achievement": "gold_rush", "style": "neon",
 		"base": Color("2b1d05"), "top": Color("4a3410"), "detail": Color("ffd23f")},
+	{"id": "cobble", "name": "Cobblestone", "price": 500, "style": "cobble",
+		"base": Color("6e6a64"), "top": Color("8c877f"), "detail": Color("4a4743")},
+	{"id": "cookie", "name": "Cookie", "price": 900, "style": "cookie",
+		"base": Color("c8894a"), "top": Color("dca064"), "detail": Color("4a2a16")},
+	{"id": "toy_blocks", "name": "Toy Blocks", "price": 1200, "style": "studs",
+		"base": Color("e63946"), "top": Color("ff5a66"), "detail": Color("b02232")},
+	{"id": "circuit", "name": "Circuit", "price": 1600, "style": "circuit",
+		"base": Color("0f3d2a"), "top": Color("17573c"), "detail": Color("d4af37")},
 ]
 
 ## Trails left behind the hero while sliding. `style` picks how it's drawn.
 const TRAILS := [
 	{"id": "afterimage", "name": "Afterimage", "price": 0, "style": "afterimage"},
-	{"id": "pixels", "name": "Pixels", "price": 200, "style": "pixels"},
-	{"id": "bubbles", "name": "Bubbles", "price": 250, "style": "bubbles", "color": Color("8fd8ff")},
-	{"id": "sparkle", "name": "Sparkle", "price": 350, "style": "sparkle", "color": Color("fff3a8")},
-	{"id": "fire", "name": "Fire", "price": 500, "style": "fire"},
+	{"id": "pixels", "name": "Pixels", "price": 600, "style": "pixels"},
+	{"id": "bubbles", "name": "Bubbles", "price": 750, "style": "bubbles", "color": Color("8fd8ff")},
+	{"id": "sparkle", "name": "Sparkle", "price": 1000, "style": "sparkle", "color": Color("fff3a8")},
+	{"id": "fire", "name": "Fire", "price": 1500, "style": "fire"},
 	{"id": "comet", "name": "Comet", "price": -1, "chest_only": true, "style": "comet"},
 	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
 	{"id": "breadcrumbs", "name": "Breadcrumbs", "price": -1, "level": 9, "style": "bubbles", "color": Color("d9a066")},
-	{"id": "smoke", "name": "Smoke", "price": 200, "style": "smoke", "color": Color("c8c8d0")},
-	{"id": "hearts", "name": "Hearts", "price": 300, "style": "hearts", "color": Color("ff4f8b")},
-	{"id": "lightning", "name": "Lightning", "price": 450, "style": "zap", "color": Color("9be7ff")},
+	{"id": "smoke", "name": "Smoke", "price": 600, "style": "smoke", "color": Color("c8c8d0")},
+	{"id": "hearts", "name": "Hearts", "price": 900, "style": "hearts", "color": Color("ff4f8b")},
+	{"id": "lightning", "name": "Lightning", "price": 1400, "style": "zap", "color": Color("9be7ff")},
 	{"id": "notes", "name": "Music Notes", "price": -1, "level": 18, "style": "notes", "color": Color("ffffff")},
 	{"id": "confetti", "name": "Confetti", "price": -1, "level": 21, "style": "confetti"},
+	{"id": "leaves", "name": "Autumn Leaves", "price": 900, "style": "leaves"},
+	{"id": "snowflakes", "name": "Snowflakes", "price": 1000, "style": "snowflakes", "color": Color("e8f6ff")},
+	{"id": "paws", "name": "Paw Prints", "price": 1200, "style": "paws", "color": Color("ffd0e0")},
+	{"id": "ribbon", "name": "Rainbow Ribbon", "price": -1, "chest_only": true, "style": "ribbon"},
 ]
 
 ## Hats worn on top of the hero. `style` picks how it's drawn.
 const HATS := [
 	{"id": "no_hat", "name": "No hat", "price": 0, "style": "none"},
-	{"id": "cap", "name": "Cap", "price": 150, "style": "cap", "color": Color("e63946")},
-	{"id": "beanie", "name": "Beanie", "price": 200, "style": "beanie", "color": Color("4361ee")},
-	{"id": "party", "name": "Party Hat", "price": 250, "style": "party", "color": Color("ff70a6")},
-	{"id": "headphones", "name": "Headphones", "price": 300, "style": "headphones", "color": Color("2b2d42")},
-	{"id": "top_hat", "name": "Top Hat", "price": 450, "style": "top_hat", "color": Color("17171c")},
-	{"id": "wizard", "name": "Wizard", "price": 600, "style": "wizard", "color": Color("5a189a")},
+	{"id": "cap", "name": "Cap", "price": 400, "style": "cap", "color": Color("e63946")},
+	{"id": "beanie", "name": "Beanie", "price": 600, "style": "beanie", "color": Color("4361ee")},
+	{"id": "party", "name": "Party Hat", "price": 750, "style": "party", "color": Color("ff70a6")},
+	{"id": "headphones", "name": "Headphones", "price": 900, "style": "headphones", "color": Color("2b2d42")},
+	{"id": "top_hat", "name": "Top Hat", "price": 1400, "style": "top_hat", "color": Color("17171c")},
+	{"id": "wizard", "name": "Wizard", "price": 2000, "style": "wizard", "color": Color("5a189a")},
 	{"id": "crown", "name": "Crown", "price": -1, "chest_only": true, "style": "crown", "color": Color("ffc300")},
 	{"id": "horns", "name": "Horns", "price": -1, "achievement": "pincushion", "style": "horns", "color": Color("c1121f")},
 	{"id": "halo", "name": "Halo", "price": -1, "achievement": "mission_master", "style": "halo", "color": Color("fff3a8")},
 	{"id": "explorer", "name": "Explorer", "price": -1, "level": 6, "style": "explorer", "color": Color("d4a373")},
 	{"id": "laurel", "name": "Laurel", "price": -1, "level": 12, "style": "laurel", "color": Color("6a994e")},
+	{"id": "bow", "name": "Bow", "price": 500, "style": "bow", "color": Color("ff4f8b")},
+	{"id": "flower", "name": "Flower", "price": 700, "style": "flower", "color": Color("ffd23f")},
+	{"id": "chef", "name": "Chef Hat", "price": 1000, "style": "chef", "color": Color("ffffff")},
+	{"id": "viking", "name": "Viking", "price": 1500, "style": "viking", "color": Color("8d99ae")},
+	{"id": "pirate", "name": "Pirate", "price": 1800, "style": "pirate", "color": Color("1d1d24")},
+	{"id": "propeller", "name": "Propeller", "price": 2200, "style": "propeller", "color": Color("4361ee")},
 ]
 
 ## What rises from below. `color` fills it, `glow` lines the surface, and
 ## `bubbles` adds popping bubbles of that colour.
 const LAVA := [
 	{"id": "classic", "name": "Lava", "price": 0, "color": Color("ff5a1f"), "glow": Color("ffb347")},
-	{"id": "acid", "name": "Acid", "price": 250, "color": Color("3fbf3f"), "glow": Color("b6ff6b"), "bubbles": Color("d9ff9e")},
-	{"id": "chocolate", "name": "Chocolate", "price": 300, "color": Color("5b3420"), "glow": Color("8a5634")},
-	{"id": "bubblegum", "name": "Bubblegum", "price": 350, "color": Color("ff70a6"), "glow": Color("ffc2da"), "bubbles": Color("ffe0ec")},
-	{"id": "plasma", "name": "Plasma", "price": 500, "color": Color("5a189a"), "glow": Color("e0aaff"), "bubbles": Color("c77dff")},
+	{"id": "acid", "name": "Acid", "price": 750, "color": Color("3fbf3f"), "glow": Color("b6ff6b"), "bubbles": Color("d9ff9e")},
+	{"id": "chocolate", "name": "Chocolate", "price": 900, "color": Color("5b3420"), "glow": Color("8a5634")},
+	{"id": "bubblegum", "name": "Bubblegum", "price": 1000, "color": Color("ff70a6"), "glow": Color("ffc2da"), "bubbles": Color("ffe0ec")},
+	{"id": "plasma", "name": "Plasma", "price": 1600, "color": Color("5a189a"), "glow": Color("e0aaff"), "bubbles": Color("c77dff")},
 	{"id": "molten_gold", "name": "Molten Gold", "price": -1, "chest_only": true, "color": Color("d4a017"), "glow": Color("fff1a8"), "bubbles": Color("ffe066")},
 	{"id": "ash", "name": "Ash", "price": -1, "achievement": "hot_feet", "color": Color("3a3a40"), "glow": Color("ff7b1c"), "bubbles": Color("ff9e4a")},
+	{"id": "ocean", "name": "Ocean", "price": 1200, "color": Color("1f6fb2"), "glow": Color("bfe9ff"), "bubbles": Color("e8f8ff")},
+	{"id": "honey", "name": "Honey", "price": 1100, "color": Color("e09f1f"), "glow": Color("ffd46b")},
+	{"id": "ink", "name": "Ink", "price": 1400, "color": Color("14121c"), "glow": Color("7b5cff"), "bubbles": Color("a28bff")},
+	{"id": "aurora", "name": "Aurora", "price": -1, "chest_only": true, "color": Color("0f2a3d"), "glow": Color("6bffcf"), "bubbles": Color("c38bff")},
 ]
 
 ## How fast the rainbow hero cycles through every colour, in full cycles per
@@ -188,6 +218,149 @@ static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color:
 	canvas.draw_circle(center + Vector2(5, -3) * s + look, 2.6 * s, eye)
 
 
+## Draws the equipped hero: a plain square, or a creature built on the same
+## square (so it reads the same in play) with ears, a tail and a face that
+## blink, twitch and swish. `dir` is the way it's sliding (zero when still).
+static func draw_hero_item(canvas: CanvasItem, item: Dictionary, center: Vector2, size: Vector2, color: Color,
+		look := Vector2.ZERO, time := 0.0, dir := Vector2.ZERO) -> void:
+	var shape: String = item.get("shape", "")
+	if shape == "":
+		draw_hero(canvas, center, size, color, look, 1.0, hero_glow(item))
+		return
+	var w := size.x
+	var h := size.y
+	var r := Rect2(center - size * 0.5, size)
+	var top := r.position.y
+	var x := center.x
+	var u := minf(w, h)
+	var glow := hero_glow(item)
+	var dark := color.get_luminance() < 0.3
+	var line := Color.WHITE if dark else Color("1d2030")
+	# Blink for a tenth of a second every few seconds.
+	var blink := fposmod(time, 3.4) < 0.12
+	var eye_l := center + Vector2(-w * 0.2, -h * 0.1) + look
+	var eye_r := center + Vector2(w * 0.2, -h * 0.1) + look
+
+	# Behind the body: glow and tails.
+	if glow.a > 0.0:
+		canvas.draw_rect(r.grow(u * 0.25), Color(glow, glow.a * 0.4))
+	match shape:
+		"cat":
+			# The tail swishes when still and streams out behind when sliding.
+			var base := r.end - Vector2(w * 0.1, h * 0.15)
+			var away := Vector2(0.9, -0.5).normalized() if dir == Vector2.ZERO else -dir
+			var points := PackedVector2Array()
+			for i in 7:
+				var t := i / 6.0
+				var swish := sin(time * 3.0 - t * 2.5) * 0.6 * t
+				points.append(base + away.rotated(swish - t * 0.9 * (1.0 if dir == Vector2.ZERO else 0.2)) * u * 0.75 * t)
+			canvas.draw_polyline(points, color.darkened(0.15), u * 0.16)
+			if dark:
+				canvas.draw_polyline(points, Color(1, 1, 1, 0.35), 1.0)
+		"bunny":
+			canvas.draw_circle(Vector2(r.position.x + w * 0.12, r.end.y - h * 0.15), u * 0.17, color.lightened(0.3))
+
+	canvas.draw_rect(r, color)
+	if dark:
+		canvas.draw_rect(r, Color(1, 1, 1, 0.55), false, 1.5)
+
+	match shape:
+		"cat":
+			var twitch := 0.0
+			if fposmod(time, 5.0) < 0.25:
+				twitch = sin(fposmod(time, 5.0) * 50.0) * u * 0.05
+			for side in [-1.0, 1.0]:
+				var outer := Vector2(x + side * w * 0.5, top + 1)
+				var tip := Vector2(x + side * w * 0.38, top - u * 0.36 + (twitch if side > 0 else 0.0))
+				var inner := Vector2(x + side * w * 0.08, top + 1)
+				canvas.draw_colored_polygon(PackedVector2Array([outer, tip, inner]), color)
+				canvas.draw_colored_polygon(PackedVector2Array([
+					outer.lerp(inner, 0.25) + Vector2(0, -1), tip.lerp(Vector2(x, top), 0.25), outer.lerp(inner, 0.75) + Vector2(0, -1)]),
+					Color("ff9fb8") if not dark else Color("5a3a4a"))
+			if item.get("stripes", false):
+				var stripe := color.darkened(0.55)
+				for i in 3:
+					var sx := x + (i - 1) * w * 0.18
+					canvas.draw_line(Vector2(sx, top), Vector2(sx, top + h * 0.18), stripe, u * 0.07)
+				for side in [-1.0, 1.0]:
+					for i in 2:
+						var sy := center.y + h * (0.08 + i * 0.2)
+						canvas.draw_line(Vector2(x + side * w * 0.5, sy), Vector2(x + side * w * 0.3, sy + h * 0.04), stripe, u * 0.06)
+			_face_eyes(canvas, eye_l, eye_r, u, item.get("eyes", line), blink, true)
+			var nose := center + Vector2(0, h * 0.08) + look * 0.5
+			canvas.draw_colored_polygon(PackedVector2Array([nose + Vector2(-u * 0.06, -u * 0.03), nose + Vector2(u * 0.06, -u * 0.03), nose + Vector2(0, u * 0.04)]), Color("ff7f9f"))
+			canvas.draw_arc(nose + Vector2(-u * 0.05, u * 0.05), u * 0.05, 0.0, PI, 6, line, 1.0)
+			canvas.draw_arc(nose + Vector2(u * 0.05, u * 0.05), u * 0.05, 0.0, PI, 6, line, 1.0)
+			for side in [-1.0, 1.0]:
+				for i in 2:
+					var from := nose + Vector2(side * u * 0.14, i * u * 0.06)
+					canvas.draw_line(from, from + Vector2(side * u * 0.42, (i - 0.5) * u * 0.1), Color(line, 0.6), 1.0)
+		"bunny":
+			var flop := sin(time * 2.0) * 0.08
+			for side in [-1.0, 1.0]:
+				var root := Vector2(x + side * w * 0.2, top + 2)
+				var ear := PackedVector2Array()
+				var tilt: float = side * (0.12 + (flop if side > 0 else 0.0))
+				for i in 13:
+					var a := TAU * i / 12.0
+					ear.append(root + Vector2(cos(a) * u * 0.12, -u * 0.32 + sin(a) * u * 0.34).rotated(tilt))
+				canvas.draw_colored_polygon(ear, color)
+				var inner := PackedVector2Array()
+				for i in 13:
+					var a := TAU * i / 12.0
+					inner.append(root + Vector2(cos(a) * u * 0.05, -u * 0.32 + sin(a) * u * 0.24).rotated(tilt))
+				canvas.draw_colored_polygon(inner, Color("ffb3c6"))
+			_face_eyes(canvas, eye_l, eye_r, u, line, blink, false)
+			var sniff := 1.0 + (0.25 * sin(time * 30.0) if fposmod(time, 2.6) < 0.5 else 0.0)
+			var nose := center + Vector2(0, h * 0.08) + look * 0.5
+			canvas.draw_circle(nose, u * 0.055 * sniff, Color("ff7f9f"))
+			canvas.draw_rect(Rect2(nose + Vector2(-u * 0.06, u * 0.07), Vector2(u * 0.12, u * 0.1)), Color.WHITE)
+			canvas.draw_line(nose + Vector2(0, u * 0.07), nose + Vector2(0, u * 0.17), Color(0.6, 0.6, 0.6), 1.0)
+		"frog":
+			# Bulging eyes on top, a wide smile and a throat that puffs.
+			for e in [Vector2(x - w * 0.25, top), Vector2(x + w * 0.25, top)]:
+				canvas.draw_circle(e, u * 0.2, color)
+				canvas.draw_circle(e, u * 0.14, Color.WHITE)
+				if blink:
+					canvas.draw_circle(e, u * 0.15, color.darkened(0.1))
+				else:
+					canvas.draw_circle(e + look * 0.6, u * 0.07, Color("1d2030"))
+			var puff := maxf(0.0, sin(time * 2.2)) ** 6
+			canvas.draw_circle(center + Vector2(0, h * 0.34), u * (0.08 + 0.14 * puff), color.lightened(0.35))
+			canvas.draw_arc(center + Vector2(0, -h * 0.02), u * 0.3, 0.35, PI - 0.35, 12, color.darkened(0.5), 1.5)
+			canvas.draw_circle(center + Vector2(-w * 0.32, h * 0.12), u * 0.07, Color(1.0, 0.5, 0.5, 0.45))
+			canvas.draw_circle(center + Vector2(w * 0.32, h * 0.12), u * 0.07, Color(1.0, 0.5, 0.5, 0.45))
+		"robot":
+			# An antenna with a blinking light, bolts and a visor that scans.
+			var tip := Vector2(x, top - u * 0.32)
+			canvas.draw_line(Vector2(x, top), tip, color.darkened(0.4), 2.0)
+			var on := fposmod(time, 1.0) < 0.5
+			canvas.draw_circle(tip, u * 0.08, Color("ff3b3b") if on else Color("6b1a1a"))
+			if on:
+				canvas.draw_circle(tip, u * 0.14, Color(1, 0.2, 0.2, 0.3))
+			var visor := Rect2(r.position + Vector2(w * 0.12, h * 0.2), Vector2(w * 0.76, h * 0.3))
+			canvas.draw_rect(visor, Color("1d2030"))
+			var scan := (sin(time * 2.5) * 0.5 + 0.5) * (visor.size.x - u * 0.2) + look.x * 0.5
+			canvas.draw_rect(Rect2(visor.position + Vector2(scan, visor.size.y * 0.25), Vector2(u * 0.2, visor.size.y * 0.5)), Color("39f0ff"))
+			if blink:
+				canvas.draw_rect(visor, Color(0.12, 0.13, 0.19))
+			canvas.draw_rect(Rect2(r.position + Vector2(w * 0.25, h * 0.68), Vector2(w * 0.5, h * 0.08)), color.darkened(0.35))
+			for c in [r.position + Vector2(w * 0.1, h * 0.1), Vector2(r.end.x - w * 0.1, top + h * 0.1),
+					Vector2(r.position.x + w * 0.1, r.end.y - h * 0.1), r.end - Vector2(w * 0.1, h * 0.1)]:
+				canvas.draw_circle(c, u * 0.04, color.darkened(0.3))
+
+
+static func _face_eyes(canvas: CanvasItem, l: Vector2, r: Vector2, u: float, color: Color, blink: bool, slit: bool) -> void:
+	for e in [l, r]:
+		if blink:
+			canvas.draw_line(e - Vector2(u * 0.09, 0), e + Vector2(u * 0.09, 0), color, 1.5)
+		else:
+			canvas.draw_circle(e, u * 0.1, color)
+			if slit:
+				canvas.draw_line(e - Vector2(0, u * 0.07), e + Vector2(0, u * 0.07), Color(0, 0, 0, 0.6), 1.5)
+			canvas.draw_circle(e + Vector2(-u * 0.03, -u * 0.04), u * 0.03, Color(1, 1, 1, 0.8))
+
+
 ## Draws a hat on a hero drawn at `center` with `size`.
 static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size: Vector2, time := 0.0) -> void:
 	if item.style == "none":
@@ -257,6 +430,41 @@ static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size
 			var bob := sin(time * 3.0) * w * 0.04
 			canvas.draw_arc(Vector2(x, top - w * 0.3 + bob), w * 0.36, 0, TAU, 24, Color(c, 0.35), w * 0.16)
 			canvas.draw_arc(Vector2(x, top - w * 0.3 + bob), w * 0.36, 0, TAU, 24, c, w * 0.07)
+		"bow":
+			var knot := Vector2(x + w * 0.28, top + w * 0.02)
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([knot, knot + Vector2(side * w * 0.3, -w * 0.18), knot + Vector2(side * w * 0.3, w * 0.16)]), c)
+			canvas.draw_circle(knot, w * 0.08, c.darkened(0.2))
+		"flower":
+			var mid := Vector2(x - w * 0.22, top - w * 0.08)
+			var sway := sin(time * 2.0) * 0.2
+			for i in 5:
+				canvas.draw_circle(mid + Vector2.from_angle(TAU * i / 5.0 + sway) * w * 0.13, w * 0.1, Color.WHITE)
+			canvas.draw_circle(mid, w * 0.09, c)
+		"chef":
+			canvas.draw_rect(Rect2(x - w * 0.36, top - w * 0.3, w * 0.72, w * 0.3), c)
+			for i in 3:
+				canvas.draw_circle(Vector2(x + (i - 1) * w * 0.24, top - w * 0.42), w * 0.2, c)
+			canvas.draw_line(Vector2(x - w * 0.36, top - w * 0.08), Vector2(x + w * 0.36, top - w * 0.08), Color(0.8, 0.8, 0.85), 1.0)
+		"viking":
+			canvas.draw_arc(Vector2(x, top + w * 0.05), w * 0.45, PI, TAU, 16, c, w * 0.12)
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.45, top + w * 0.05), Vector2(x - w * 0.45, top - w * 0.1), Vector2(x, top - w * 0.42), Vector2(x + w * 0.45, top - w * 0.1), Vector2(x + w * 0.45, top + w * 0.05)]), c)
+			canvas.draw_rect(Rect2(x - w * 0.5, top - w * 0.04, w, w * 0.1), Color("b08a4a"))
+			for side in [-1.0, 1.0]:
+				var root := Vector2(x + side * w * 0.42, top - w * 0.12)
+				canvas.draw_colored_polygon(PackedVector2Array([root + Vector2(0, -w * 0.08), root + Vector2(side * w * 0.3, -w * 0.42), root + Vector2(side * w * 0.12, w * 0.06)]), Color("f4f1de"))
+		"pirate":
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.62, top + 1), Vector2(x - w * 0.3, top - w * 0.42), Vector2(x, top - w * 0.3), Vector2(x + w * 0.3, top - w * 0.42), Vector2(x + w * 0.62, top + 1)]), c)
+			canvas.draw_line(Vector2(x - w * 0.55, top - w * 0.03), Vector2(x + w * 0.55, top - w * 0.03), Color("ffd23f"), 1.5)
+			canvas.draw_circle(Vector2(x, top - w * 0.2), w * 0.07, Color.WHITE)
+			canvas.draw_line(Vector2(x - w * 0.09, top - w * 0.08), Vector2(x + w * 0.09, top - w * 0.12), Color.WHITE, 1.5)
+		"propeller":
+			canvas.draw_arc(Vector2(x, top + w * 0.05), w * 0.42, PI, TAU, 16, c, w * 0.18)
+			canvas.draw_rect(Rect2(x - w * 0.48, top - w * 0.04, w * 0.96, w * 0.08), Color("ffd23f"))
+			canvas.draw_line(Vector2(x, top - w * 0.38), Vector2(x, top - w * 0.52), Color(0.3, 0.3, 0.35), 2.0)
+			var spin := cos(time * 18.0)
+			canvas.draw_line(Vector2(x - w * 0.42 * spin, top - w * 0.55), Vector2(x + w * 0.42 * spin, top - w * 0.55), Color("e63946"), w * 0.1)
+			canvas.draw_circle(Vector2(x, top - w * 0.55), w * 0.05, Color(0.3, 0.3, 0.35))
 
 
 ## Draws a slide trail behind a hero at `center` moving along `dir`.
@@ -341,6 +549,45 @@ static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, di
 				var hue := fmod(i * 0.13, 1.0)
 				var s := base * 0.13
 				canvas.draw_rect(Rect2(center - dir * back + spread - Vector2(s, s * 0.5), Vector2(s * 2.0, s)), Color.from_hsv(hue, 0.7, 1.0, 0.9 - i * 0.08))
+		"leaves":
+			var colors := [Color("e76f2a"), Color("d93f2b"), Color("f2b134"), Color("a8552c")]
+			for i in 6:
+				var back := tile * (0.4 + i * 0.3)
+				var drift := side * sin(time * 7.0 + i * 2.3) * base * 0.4
+				var spin := time * 6.0 + i
+				var p := center - dir * back + drift
+				var a := Vector2.from_angle(spin) * base * (0.2 - i * 0.02)
+				var b := Vector2.from_angle(spin + PI * 0.5) * base * (0.1 - i * 0.01)
+				canvas.draw_colored_polygon(PackedVector2Array([p - a, p + b, p + a, p - b]), Color(colors[i % 4], 0.95 - i * 0.13))
+		"snowflakes":
+			var c: Color = item.color
+			for i in 6:
+				var back := tile * (0.4 + i * 0.3)
+				var drift := side * sin(time * 5.0 + i * 1.9) * base * 0.4
+				var p := center - dir * back + drift
+				var r := base * (0.18 - i * 0.02)
+				for k in 3:
+					var a := Vector2.from_angle(time * 2.0 + i + k * PI / 3.0) * r
+					canvas.draw_line(p - a, p + a, Color(c, 0.95 - i * 0.14), 1.5)
+		"paws":
+			# Little paw prints left on the floor, alternating sides.
+			var c: Color = item.color
+			var step := tile * 0.45
+			for i in 5:
+				var p := center - dir * (tile * 0.5 + i * step) + side * base * (0.18 if i % 2 == 0 else -0.18)
+				var col := Color(c, 0.9 - i * 0.17)
+				var s := base * 0.09
+				canvas.draw_circle(p, s * 1.3, col)
+				for k in 3:
+					canvas.draw_circle(p - dir * s * 1.8 + side * s * (k - 1) * 1.2, s * 0.6, col)
+		"ribbon":
+			for band in 3:
+				var points := PackedVector2Array()
+				for i in 10:
+					var back := tile * (0.3 + i * 0.2)
+					points.append(center - dir * back + side * (sin(time * 10.0 - i * 0.7) * base * 0.3 + (band - 1) * base * 0.14))
+				var hue := fposmod(time * 0.5 + band * 0.12, 1.0)
+				canvas.draw_polyline(points, Color.from_hsv(hue, 0.65, 1.0, 0.8), base * 0.14)
 
 
 ## Draws lava (or whatever the skin is) with its wavy surface at `top`,
@@ -478,6 +725,32 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			for x0 in [0.05, 0.35, 0.65]:
 				canvas.draw_line(p + Vector2(w * x0, h * 0.04), p + Vector2(w * (x0 + 0.28), h * 0.96), detail, w * 0.12)
 			canvas.draw_line(mid + Vector2(-w * 0.2, -h * 0.1), mid + Vector2(w * 0.15, h * 0.15), Color(0, 0, 0, 0.3), 1.5)
+		"cobble":
+			for i in 5:
+				var o := Vector2([0.28, 0.72, 0.5, 0.22, 0.78][i] * w, [0.35, 0.33, 0.62, 0.8, 0.8][i] * h)
+				var rad: float = w * [0.17, 0.16, 0.15, 0.14, 0.13][i]
+				canvas.draw_circle(p + o, rad, top if i % 2 == 0 else base.lightened(0.08))
+				canvas.draw_arc(p + o, rad, 0, TAU, 12, detail, 1.2)
+		"cookie":
+			canvas.draw_rect(r.grow(-1), Color(detail, 0.25), false, 1.5)
+			for i in 6:
+				var o := Vector2([0.25, 0.7, 0.45, 0.2, 0.62, 0.82][i] * w, [0.35, 0.3, 0.55, 0.75, 0.82][mini(i, 4)] * h)
+				canvas.draw_circle(p + o, w * 0.07, detail)
+			canvas.draw_line(mid + Vector2(-w * 0.1, -h * 0.25), mid + Vector2(w * 0.05, h * 0.1), Color(0, 0, 0, 0.3), 1.5)
+		"studs":
+			for i in 2:
+				var o := p + Vector2(w * (0.28 + i * 0.44), h * 0.13)
+				canvas.draw_rect(Rect2(o - Vector2(w * 0.13, h * 0.12), Vector2(w * 0.26, h * 0.12)), top)
+				canvas.draw_rect(Rect2(o - Vector2(w * 0.13, h * 0.12), Vector2(w * 0.26, h * 0.04)), top.lightened(0.25))
+			canvas.draw_line(p + Vector2(w * 0.5, h * 0.3), p + Vector2(w * 0.5, h * 0.95), Color(detail, 0.7), 1.0)
+			canvas.draw_line(mid + Vector2(-w * 0.2, h * 0.05), mid + Vector2(w * 0.1, h * 0.3), Color(0, 0, 0, 0.35), 1.5)
+		"circuit":
+			canvas.draw_polyline(PackedVector2Array([p + Vector2(0, h * 0.4), p + Vector2(w * 0.35, h * 0.4), p + Vector2(w * 0.5, h * 0.6), p + Vector2(w, h * 0.6)]), detail, 1.5)
+			canvas.draw_polyline(PackedVector2Array([p + Vector2(w * 0.3, h), p + Vector2(w * 0.3, h * 0.78), p + Vector2(w * 0.7, h * 0.78)]), detail, 1.5)
+			canvas.draw_rect(Rect2(p + Vector2(w * 0.6, h * 0.25), Vector2(w * 0.22, h * 0.16)), Color("1d2030"))
+			canvas.draw_circle(p + Vector2(w * 0.7, h * 0.78), w * 0.05, detail)
+			var led := 0.4 + 0.6 * float(fposmod(time + p.x * 0.01, 1.2) < 0.6)
+			canvas.draw_circle(p + Vector2(w * 0.22, h * 0.22), w * 0.06, Color(0.3, 1.0, 0.4, led))
 		"bars":
 			for i in 2:
 				var bar := Rect2(p + Vector2(w * 0.1, h * (0.2 + i * 0.4)), Vector2(w * 0.8, h * 0.32))

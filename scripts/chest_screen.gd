@@ -1,6 +1,7 @@
 extends Control
 ## The chest opening: a strip of prizes spins past a marker, slows down and
 ## lands on the reward. Tap while it spins to skip; tap again to carry on.
+## Won items aren't worn automatically: an EQUIP button offers to put it on.
 
 signal finished(reward: Dictionary)
 signal ticked                    # a card passed the marker
@@ -8,6 +9,7 @@ signal revealed(reward: Dictionary)
 
 const Chest := preload("res://scripts/chest.gd")
 const Preview := preload("res://scripts/skin_preview.gd")
+const PillStyle := preload("res://scripts/pill_style.gd")
 
 const CARD_W := 96.0
 const CARD_H := 124.0
@@ -23,6 +25,8 @@ var _marker: ColorRect
 var _title: Label
 var _result: Label
 var _hint: Label
+var _equip: Button
+var equip_now := false           # the player chose EQUIP for this reward
 var _tween: Tween
 var _final_x := 0.0
 var _revealed := false
@@ -71,10 +75,30 @@ func setup() -> void:
 	_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(_result)
 	_hint = _label("Tap to skip", 18, Color(1, 1, 1, 0.6))
-	_hint.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
-	_hint.offset_top = -120
-	_hint.offset_bottom = -80
+	_hint.set_anchors_and_offsets_preset(PRESET_CENTER)
+	_hint.offset_left = -170
+	_hint.offset_right = 170
+	_hint.offset_top = CARD_H * 0.5 + 196
+	_hint.offset_bottom = CARD_H * 0.5 + 226
 	add_child(_hint)
+	_equip = Button.new()
+	_equip.text = "EQUIP"
+	_equip.set_anchors_preset(PRESET_CENTER)
+	_equip.offset_left = -80
+	_equip.offset_right = 80
+	_equip.offset_top = CARD_H * 0.5 + 128
+	_equip.offset_bottom = CARD_H * 0.5 + 180
+	_equip.add_theme_font_size_override("font_size", 22)
+	for key in ["normal", "hover", "pressed"]:
+		_equip.add_theme_stylebox_override(key, PillStyle.new(Color("3aa856"), key == "pressed"))
+	_equip.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_equip.add_theme_color_override("font_outline_color", Color("10361a"))
+	_equip.add_theme_constant_override("outline_size", 5)
+	_equip.pressed.connect(func():
+		equip_now = true
+		visible = false
+		finished.emit(_reward))
+	add_child(_equip)
 	visible = false
 
 
@@ -84,6 +108,8 @@ func open(reward: Dictionary, rng: RandomNumberGenerator, title := "TREASURE CHE
 	_reward = reward
 	_title.text = title
 	_revealed = false
+	equip_now = false
+	_equip.visible = false
 	_last_card = -1
 	visible = true
 	_result.text = ""
@@ -149,6 +175,7 @@ func _reveal() -> void:
 	_result.text = "%s\n%s" % [tr(rarity.name).to_upper(), Chest.describe(_reward)]
 	_result.add_theme_color_override("font_color", rarity.color)
 	_hint.text = "Tap to continue"
+	_equip.visible = _reward.kind != "coins"
 	revealed.emit(_reward)
 	var winner: Control = _strip.get_child(WINNER)
 	winner.pivot_offset = winner.size * 0.5

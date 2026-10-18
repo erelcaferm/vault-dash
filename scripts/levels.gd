@@ -9,7 +9,7 @@ extends RefCounted
 
 const LEVELS := [
 	{
-		"name": "First Slide", "time": 40, "moves": 7, "reward": {"coins": 50},
+		"name": "First Slide", "time": 40, "moves": 7, "reward": {"coins": 25},
 		"rows": [
 			"#############",
 			"#.#.#c.G..###",
@@ -32,7 +32,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Zigzag", "time": 45, "moves": 9, "reward": {"coins": 75},
+		"name": "Zigzag", "time": 45, "moves": 9, "reward": {"coins": 40},
 		"rows": [
 			"#############",
 			"#####.....###",
@@ -78,7 +78,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Spike Alley", "time": 50, "moves": 11, "reward": {"coins": 100},
+		"name": "Spike Alley", "time": 50, "moves": 11, "reward": {"coins": 50},
 		"rows": [
 			"#############",
 			"##....G....##",
@@ -101,7 +101,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Mixed Bag", "time": 55, "moves": 11, "reward": {"coins": 125},
+		"name": "Mixed Bag", "time": 55, "moves": 11, "reward": {"coins": 60},
 		"rows": [
 			"#############",
 			"#..##.G##...#",
@@ -147,7 +147,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Gauntlet", "time": 60, "moves": 14, "reward": {"coins": 150},
+		"name": "Gauntlet", "time": 60, "moves": 14, "reward": {"coins": 75},
 		"rows": [
 			"#############",
 			"#..c..xc..c.#",
@@ -170,7 +170,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Long Way Round", "time": 60, "moves": 16, "reward": {"coins": 175},
+		"name": "Long Way Round", "time": 60, "moves": 16, "reward": {"coins": 90},
 		"rows": [
 			"#############",
 			"##.G.c.....##",
@@ -216,7 +216,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Needle", "time": 65, "moves": 16, "reward": {"coins": 200},
+		"name": "Needle", "time": 65, "moves": 16, "reward": {"coins": 100},
 		"rows": [
 			"#############",
 			"##.#...c..cG#",
@@ -239,7 +239,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "The Vault", "time": 70, "moves": 17, "reward": {"coins": 250},
+		"name": "The Vault", "time": 70, "moves": 17, "reward": {"coins": 125},
 		"rows": [
 			"#############",
 			"#...#..Gcx..#",
@@ -285,7 +285,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Narrow Pass", "time": 65, "moves": 14, "reward": {"coins": 275},
+		"name": "Narrow Pass", "time": 65, "moves": 14, "reward": {"coins": 140},
 		"rows": [
 			"#########",
 			"#.##.G..#",
@@ -306,7 +306,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Spike Garden", "time": 75, "moves": 17, "reward": {"coins": 300},
+		"name": "Spike Garden", "time": 75, "moves": 17, "reward": {"coins": 150},
 		"rows": [
 			"#############",
 			"#x..c.#^#..##",
@@ -350,7 +350,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Glass Floor", "time": 80, "moves": 19, "reward": {"coins": 325},
+		"name": "Glass Floor", "time": 80, "moves": 19, "reward": {"coins": 160},
 		"rows": [
 			"##############",
 			"#######......#",
@@ -375,7 +375,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Crossroads", "time": 80, "moves": 19, "reward": {"coins": 350},
+		"name": "Crossroads", "time": 80, "moves": 19, "reward": {"coins": 175},
 		"rows": [
 			"#############",
 			"#c....f##.###",
@@ -427,7 +427,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Fakeout", "time": 80, "moves": 19, "reward": {"coins": 375},
+		"name": "Fakeout", "time": 80, "moves": 19, "reward": {"coins": 190},
 		"rows": [
 			"#############",
 			"#.^##..#.c..#",
@@ -450,7 +450,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Crackdown", "time": 80, "moves": 20, "reward": {"coins": 400},
+		"name": "Crackdown", "time": 80, "moves": 20, "reward": {"coins": 200},
 		"rows": [
 			"#############",
 			"#..xc..c..c.#",
@@ -500,7 +500,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Pressure", "time": 85, "moves": 22, "reward": {"coins": 450},
+		"name": "Pressure", "time": 85, "moves": 22, "reward": {"coins": 225},
 		"rows": [
 			"#############",
 			"#.c..c..cx..#",
@@ -523,7 +523,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Deep Vault", "time": 85, "moves": 22, "reward": {"coins": 500},
+		"name": "Deep Vault", "time": 85, "moves": 22, "reward": {"coins": 250},
 		"rows": [
 			"################",
 			"#.cG.##....##..#",
@@ -552,7 +552,7 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Final Ascent", "time": 90, "moves": 24, "reward": {"item": ["walls", "starlight"]},
+		"name": "Final Ascent", "time": 90, "moves": 24, "reward": {"item": ["walls", "starlight_wall"]},
 		"rows": [
 			"################",
 			"#.#.G.c........#",

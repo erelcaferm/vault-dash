@@ -45,11 +45,18 @@ The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Te
 
 The **SHOP** button appears on the title and game-over screens, and everything in it is bought with banked coins. To buy an item, tap it once, then again to confirm. Tap an item you already own to equip it.
 
-- **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
-- **Hats:** worn on top of any colour. No hat is free. Cap, Beanie, Party Hat, Headphones, Top Hat and Wizard cost 150–600. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
-- **Cracked-wall skins:** Rubble is free. Mud, Snow, Moss, Wood, Brick, Glass, Crystal, Neon and Gold Bars cost 150–800. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy.
-- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy. Smoke, Hearts and Lightning cost 200–450, and Music Notes and Confetti come from levels 18 and 21.
-- **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum and Plasma cost 250–500. Molten Gold only drops from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
+Items you win (from chests, trophies or levels) are never equipped for you. They're marked **NEW** in the shop, their tab gets a red dot, and the SHOP button pulses gold until you've looked. Leaving a tab (or equipping the item) clears its NEW marks. A chest that drops an item also shows an **EQUIP** button, so you can put it on straight away or tap anywhere to keep what you're wearing.
+
+Prices are set so the shop is a long-term goal: buying everything costs about 79,000 coins, while a good 100-floor run earns a few hundred.
+
+- **Hero colours:** White and Black are free. Ten colours cost 300–750 coins, Gold 2500 and Rainbow 6000. Rainbow cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
+- **Creatures:** the same square hero with animated parts drawn in code (`draw_hero_item` in `skins.gd`). Frog (3000) blinks its bulging eyes and puffs its throat. Bunny (3500) flops its ears and twitches its nose. Ginger Cat (4000) and Tiger (5500, striped) blink, twitch an ear now and then and swish their tail, which streams out behind while sliding. Robot (4500) has a blinking antenna and a scanning visor. Midnight Cat, a black cat with green eyes, only drops from chests.
+- **Hats:** worn on top of any hero. No hat is free. Cap, Bow, Beanie, Flower, Party Hat, Headphones, Chef Hat, Top Hat, Viking, Pirate, Wizard and Propeller (it spins) cost 400–2200. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
+- **Cracked-wall skins:** Rubble is free. Mud, Snow, Cobblestone, Moss, Wood, Brick, Cookie, Glass, Crystal, Toy Blocks, Neon, Circuit (with a blinking light) and Gold Bars cost 400–3000. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy.
+- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Smoke, Bubbles, Hearts, Autumn Leaves, Snowflakes, Sparkle, Paw Prints, Lightning and Fire cost 600–1500. Comet and Rainbow Ribbon only drop from chests as Legendaries, Gold Dust comes from the Goal Getter trophy, and Music Notes and Confetti come from levels 18 and 21.
+- **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum, Honey, Ocean, Ink and Plasma cost 750–1600. Molten Gold and Aurora only drop from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
+
+Every item id must be unique across all kinds, because owned and new items share one list (`test_chest.gd` checks this).
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
 
@@ -59,14 +66,14 @@ A treasure chest waits on floors 30, 60, 90 and so on (always trap floors too), 
 
 | Rarity | Chance | Reward |
 |---|---|---|
-| Common | 55% | 50–100 coins |
-| Rare | 25% | 150–250 coins |
+| Common | 55% | 30–60 coins |
+| Rare | 25% | 80–150 coins |
 | Epic | 15% | a random shop item you don't own yet (400 coins if you own them all) |
-| Legendary | 5% | a chest-only item: Neon, Ember or Void hero, or Obsidian or Magma walls (1000 coins if you own them all) |
+| Legendary | 5% | a chest-only item, such as the Neon, Ember, Void or Midnight Cat hero, the Crown, Obsidian or Magma walls, the Comet or Rainbow Ribbon trail, or Molten Gold or Aurora lava (1000 coins if you own them all) |
 
 **Bonus chests:** a hidden meter fills by a random 0.5–1 each time you reach a trap floor. When it reaches 5, a bonus chest appears 5 floors ahead. If that floor already has a chest, the bonus moves 10 floors further. If you die before reaching it, it waits on floor 8 of your next run. The meter carries over between runs. All of these numbers are at the top of `scripts/main.gd`.
 
-Chest coins go straight to your bank, so you keep them even if you die. New items are equipped automatically. Chest-only items show in the shop as "Chest only" and can't be bought.
+Chest coins go straight to your bank, so you keep them even if you die. New items are not equipped automatically (see the shop). Chest-only items show in the shop as "Chest only" and can't be bought.
 
 In a debug build (running from the editor), press **F2** to open a chest without climbing 30 floors.
 
@@ -121,7 +128,16 @@ The **II** button at the top pauses a run (Esc or P on a keyboard), and the game
 
 ## Revive
 
-When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
+When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`.
+
+## Ads
+
+`scripts/ads.gd` holds the ad rules, with no ad network yet: every rewarded ad pays out straight away, so the buttons can be tried now. When an ad SDK is added, only `show_rewarded()` and `_show_interstitial()` need to change.
+
+- **On the death screen:** **FREE REVIVE (AD)** is the same once-per-run revive as the coin one, for free. **2x COINS (AD)** pays the run's coins a second time, once per run (it also shows after a Daily Climb finish).
+- **In the shop:** "Watch an ad: +50 coins", 3 times a day (`SHOP_COINS`, `SHOP_PER_DAY`).
+- **Forced ads:** `after_run()` counts deaths and would show an interstitial every 4 runs (`INTERSTITIAL_EVERY`). It shows nothing yet, and it stops for good after `purchase_completed()` (any real-money purchase), saved as `no_forced_ads`.
+- **Steam:** export with the custom feature tag `steam` and every ad button disappears.
 
 ## Levels and the level editor
 
@@ -196,6 +212,7 @@ godot --headless --path . --script res://tests/test_daily.gd
 godot --headless --path . --script res://tests/test_daily_skill.gd   # slow: about a minute
 godot --headless --path . --script res://tests/test_scroll.gd
 godot --headless --path . --script res://tests/test_revive.gd
+godot --headless --path . --script res://tests/test_ads.gd
 godot --headless --path . --script res://tests/test_pause.gd
 godot --headless --path . --script res://tests/test_missions.gd
 godot --headless --path . --script res://tests/test_powerups.gd
