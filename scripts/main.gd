@@ -20,6 +20,7 @@ const LAVA_START_SPEED := 0.5    # tiles per second
 const LAVA_ACCEL := 0.012        # extra tiles per second, gained each second
 const LAVA_MAX_SPEED := 2.6
 const LAVA_MAX_GAP := 11.0       # the lava never falls further behind than this
+const DANGER_GAP := 5.0          # the screen edges glow red when the lava is this close (tiles)
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
 ## The hidden trap meter: every trap floor you reach adds a random amount
@@ -144,6 +145,9 @@ var missions: Array = []         # saved; the active missions, see missions.gd
 var mission_rng := RandomNumberGenerator.new()
 var missions_panel: PanelContainer
 var missions_rows: VBoxContainer
+var danger := 0.0                # 0-1, how close the lava is, for the red glow
+var heartbeat_time := 0.0
+var danger_overlay: Control
 var marker_floor := 0            # the best to beat, drawn as a line on the tower
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
@@ -233,6 +237,7 @@ func _process(delta: float) -> void:
 	toast_time = maxf(toast_time - delta, 0.0)
 	toast_label.modulate.a = clampf(toast_time / 0.4, 0.0, 1.0)
 	_update_banner(delta)
+	_update_danger(delta)
 	for b in bursts:
 		b.t += delta
 	bursts = bursts.filter(func(b): return b.t < 0.35)
@@ -332,6 +337,35 @@ func _update_lava(delta: float) -> void:
 	lava_y = minf(lava_y, player_y + LAVA_MAX_GAP * TILE)
 	if lava_y <= player_y:
 		_die("Melted on floor %d", "lava")
+
+
+## Red glow and a heartbeat as the lava closes in.
+func _update_danger(delta: float) -> void:
+	var target := 0.0
+	if state == State.PLAYING:
+		var gap := (lava_y - _player_center().y) / TILE
+		target = clampf(1.0 - (gap - 1.0) / (DANGER_GAP - 1.0), 0.0, 1.0)
+	danger = move_toward(danger, target, delta * 3.0)
+	danger_overlay.queue_redraw()
+	heartbeat_time -= delta
+	if danger > 0.4 and heartbeat_time <= 0.0:
+		heartbeat_time = lerpf(0.75, 0.4, danger)
+		sfx.play("heartbeat")
+
+
+func _draw_danger() -> void:
+	if danger <= 0.0:
+		return
+	var view := danger_overlay.size
+	var pulse := 0.75 + 0.25 * sin(anim_time * lerpf(6.0, 12.0, danger))
+	var bands := 12
+	var w := 5.0
+	for i in bands:
+		var a := danger * pulse * 0.7 * pow(1.0 - float(i) / bands, 1.5)
+		var c := Color(1.0, 0.12, 0.04, a)
+		danger_overlay.draw_rect(Rect2(i * w, 0, w, view.y), c)
+		danger_overlay.draw_rect(Rect2(view.x - (i + 1) * w, 0, w, view.y), c)
+		danger_overlay.draw_rect(Rect2(0, i * w, view.x, w), Color(c, a * 0.7))
 
 
 func _update_floor() -> void:
@@ -614,6 +648,13 @@ func _build_hud() -> void:
 	message_label.offset_right = -24
 	message_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	danger_overlay = Control.new()
+	danger_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	danger_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	danger_overlay.draw.connect(_draw_danger)
+	hud.add_child(danger_overlay)
+	hud.move_child(danger_overlay, 0)
+
 	missions_panel = PanelContainer.new()
 	var missions_style := StyleBoxFlat.new()
 	missions_style.bg_color = Color(0.05, 0.05, 0.09, 0.85)

@@ -98,6 +98,7 @@ The **II** button at the top pauses a run (Esc or P on a keyboard), and the game
 ## Helpers on the tower
 
 - A dashed gold line marks the door you need to pass to beat your best floor (today's best in the Daily Climb), so you can see it coming.
+- When the lava gets within 5 tiles, the screen edges pulse red and a heartbeat plays, faster the closer it gets (`DANGER_GAP` in `scripts/main.gd`).
 - In a player's first 3 runs, standing still for over a second on floors 1 and 2 shows pulsing arrows for each way you can slide. Tune `HINT_RUNS` and `HINT_DELAY` in `scripts/main.gd`.
 
 ## Revive

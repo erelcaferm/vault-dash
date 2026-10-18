@@ -28,6 +28,10 @@ func _ready() -> void:
 		"tick": _make(0.025, func(t, _n): return sin(TAU * 2200.0 * t) * 0.35 * _fade(t, 0.025)),
 		"reward": _arpeggio([523.25, 659.25, 783.99, 1046.5], 0.09),
 		"trophy": _arpeggio([783.99, 987.77, 1174.66, 1567.98], 0.07),
+		"heartbeat": _make(0.32, func(t, _n):
+			var beat: float = t if t < 0.12 else t - 0.17
+			var env: float = maxf(0.0, 1.0 - beat / 0.1) if beat >= 0.0 else 0.0
+			return sin(TAU * 55.0 * t) * 0.7 * env),
 		"trap": _make(0.4, func(t, _n): return sin(TAU * (220.0 + 30.0 * sin(TAU * 6.0 * t)) * t) * 0.3 * _fade(t, 0.4)),
 	}
 
