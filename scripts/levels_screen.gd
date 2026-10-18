@@ -50,6 +50,9 @@ func setup(main_game) -> void:
 	_star_total = _label("", 18, GOLD)
 	header.add_child(_star_total)
 	column.add_child(_label("Reach the exit before the time runs out.", 13, DIM))
+	var build := _button(column, "+ BUILD YOUR OWN LEVEL", func(): game.level_editor.open(LevelCode.blank(), -1), 48)
+	build.add_theme_color_override("font_color", GOLD)
+	build.add_theme_color_override("font_hover_color", GOLD)
 	_grid = GridContainer.new()
 	_grid.columns = 4
 	_grid.add_theme_constant_override("h_separation", 6)
@@ -62,7 +65,6 @@ func setup(main_game) -> void:
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 6)
 	column.add_child(actions)
-	_button(actions, "CREATE", func(): game.level_editor.open(LevelCode.blank(), -1), 44)
 	_button(actions, "ADD CODE", func(): _show_code_panel(false, ""), 44)
 
 	var scroll := ScrollContainer.new()
@@ -95,7 +97,7 @@ func _refresh() -> void:
 	for c in _list.get_children():
 		c.queue_free()
 	if game.custom_levels.is_empty():
-		var hint := _label("Make a level, or add one from a friend's code.", 14, DIM)
+		var hint := _label("Levels you build or add from a friend's code show here.", 14, DIM)
 		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_list.add_child(hint)
 	for i in game.custom_levels.size():

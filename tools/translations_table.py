@@ -239,8 +239,6 @@ T = {
     "LEVELS": ("NIVELES", "NIVEAUX", "LEVEL", "BÖLÜMLER", "УРОВНИ", "关卡", "關卡"),
     "Reach the exit before the time runs out.": ("Llega a la salida antes de que se acabe el tiempo.", "Atteins la sortie avant la fin du temps.", "Erreiche den Ausgang, bevor die Zeit abläuft.", "Süre bitmeden çıkışa ulaş.", "Доберись до выхода, пока не вышло время.", "在时间耗尽前到达出口。", "在時間耗盡前抵達出口。"),
     "YOUR LEVELS": ("TUS NIVELES", "TES NIVEAUX", "DEINE LEVEL", "BÖLÜMLERİN", "ТВОИ УРОВНИ", "你的关卡", "你的關卡"),
-    "Make a level, or add one from a friend's code.": ("Crea un nivel o añade uno con el código de un amigo.", "Crée un niveau ou ajoute celui d'un ami avec son code.", "Bau ein Level oder füge eins per Code von Freunden hinzu.", "Bir bölüm yap ya da bir arkadaşının kodunu ekle.", "Создай уровень или добавь чужой по коду.", "制作关卡，或用好友的代码添加关卡。", "製作關卡，或用好友的代碼加入關卡。"),
-    "CREATE": ("CREAR", "CRÉER", "ERSTELLEN", "OLUŞTUR", "СОЗДАТЬ", "创建", "建立"),
     "ADD CODE": ("AÑADIR CÓDIGO", "AJOUTER UN CODE", "CODE EINGEBEN", "KOD EKLE", "ДОБАВИТЬ КОД", "添加代码", "加入代碼"),
     "PLAY": ("JUGAR", "JOUER", "SPIELEN", "OYNA", "ИГРАТЬ", "开始", "開始"),
     "EDIT": ("EDITAR", "MODIFIER", "BEARBEITEN", "DÜZENLE", "ИЗМЕНИТЬ", "编辑", "編輯"),
@@ -332,4 +330,6 @@ T = {
     'Swipe to climb again': ('Desliza para volver a subir', 'Glisse pour grimper encore', 'Wische, um nochmal zu klettern', 'Tekrar tırmanmak için kaydır', 'Проведи, чтобы подняться снова', '滑动再爬一次', '滑動再爬一次'),
     'Chest saved!': ('¡Cofre guardado!', 'Coffre gardé !', 'Truhe gespart!', 'Sandık saklandı!', 'Сундук в запасе!', '宝箱已存！', '寶箱已存！'),
     'CHEST %d OF %d': ('COFRE %d DE %d', 'COFFRE %d SUR %d', 'TRUHE %d VON %d', 'SANDIK %d / %d', 'СУНДУК %d ИЗ %d', '宝箱 %d / %d', '寶箱 %d / %d'),
+    "+ BUILD YOUR OWN LEVEL": ("+ CREA TU PROPIO NIVEL", "+ CRÉE TON NIVEAU", "+ BAU DEIN EIGENES LEVEL", "+ KENDİ BÖLÜMÜNÜ YAP", "+ СОЗДАЙ СВОЙ УРОВЕНЬ", "+ 制作你的关卡", "+ 製作你的關卡"),
+    "Levels you build or add from a friend's code show here.": ("Aquí salen los niveles que crees o añadas con un código.", "Tes niveaux et ceux ajoutés par code apparaissent ici.", "Deine Level und Level per Code erscheinen hier.", "Yaptığın ve kodla eklediğin bölümler burada görünür.", "Здесь появятся твои уровни и добавленные по коду.", "你制作或用代码添加的关卡会显示在这里。", "你製作或用代碼加入的關卡會顯示在這裡。"),
 }

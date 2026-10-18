@@ -83,6 +83,7 @@ const BIOMES := [
 	{"name": "Jungle Temple", "bg": Color("132519"), "wall": Color("3d6638"), "edge": Color("8fc275")},
 ]
 const COIN_COLOR := Color("ffd23f")
+const FAKE_EDGE := Color("e0a96d")   # the flickering rim and cracks of fake floor
 const SPIKE_COLOR := Color("e84855")
 
 var tower: TowerScript
@@ -1832,6 +1833,8 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 			draw_rect(r, biome.wall)
 			draw_rect(Rect2(r.position, Vector2(TILE, 4)), biome.edge)
 		TowerScript.COIN, TowerScript.FAKE_COIN:
+			if t == TowerScript.FAKE_COIN:
+				_draw_fake_floor(r, c)
 			var bob := sin(anim_time * 4.0 + c.y * 0.7) * 2.0
 			draw_circle(mid + Vector2(0, bob), 6.0, COIN_COLOR)
 			draw_circle(mid + Vector2(-1.5, bob - 1.5), 2.5, COIN_COLOR.lightened(0.6))
@@ -1845,16 +1848,25 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 		TowerScript.CRACKED:
 			Skins.draw_cracked(self, r, _wall_skin(), anim_time)
 		TowerScript.FAKE:
-			# In levels fake floor is always a trap, so it's shown, faintly.
-			if is_level():
-				draw_rect(r.grow(-3), Color(0, 0, 0, 0.28))
-				draw_line(r.position + Vector2(7, 9), r.get_center() + Vector2(2, 1), Color(0, 0, 0, 0.4), 1.5)
-				draw_line(r.get_center() + Vector2(2, 1), r.end - Vector2(8, 6), Color(0, 0, 0, 0.4), 1.5)
+			_draw_fake_floor(r, c)
 		TowerScript.GOAL:
 			var pulse := 0.5 + 0.5 * sin(anim_time * 5.0)
 			draw_circle(mid, 12.0 + pulse * 4.0, Color(COIN_COLOR, 0.35))
 			draw_circle(mid, 9.0, COIN_COLOR)
 			draw_circle(mid, 4.0, Color.WHITE)
+
+
+## Fake floor that will give way: a darker, cracked patch whose edge
+## flickers, so a careful player can always spot it before stepping on it.
+## (On normal floors fake tiles read as plain floor, so only real traps show.)
+func _draw_fake_floor(r: Rect2, c: Vector2i) -> void:
+	var flicker := 0.5 + 0.5 * sin(anim_time * 3.0 + c.x * 1.3 + c.y * 0.9)
+	draw_rect(r.grow(-2), Color(0, 0, 0, 0.38))
+	draw_rect(r.grow(-2), Color(FAKE_EDGE, 0.25 + 0.35 * flicker), false, 1.5)
+	var crack := Color(FAKE_EDGE, 0.55)
+	var p := r.position
+	draw_polyline(PackedVector2Array([p + Vector2(6, 8), p + Vector2(13, 14), p + Vector2(11, 20), p + Vector2(18, 26)]), crack, 1.5)
+	draw_polyline(PackedVector2Array([p + Vector2(13, 14), p + Vector2(22, 11), p + Vector2(27, 15)]), crack, 1.5)
 
 
 func _draw_player() -> void:
