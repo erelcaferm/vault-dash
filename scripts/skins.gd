@@ -25,6 +25,7 @@ const HERO := [
 	{"id": "royal", "name": "Royal", "price": -1, "achievement": "centurion", "color": Color("5a189a"), "glow": Color(1.0, 0.82, 0.25, 0.45)},
 	{"id": "speedster", "name": "Speedster", "price": -1, "achievement": "speedrunner", "color": Color("ffe94d"), "glow": Color(1.0, 0.6, 0.0, 0.35)},
 	{"id": "ghost", "name": "Ghost", "price": -1, "achievement": "never_give_up", "color": Color(0.85, 0.9, 1.0, 0.55)},
+	{"id": "sunrise", "name": "Sunrise", "price": -1, "achievement": "week_streak", "color": Color("ff8f5e"), "glow": Color(1.0, 0.75, 0.3, 0.4)},
 	{"id": "brick", "name": "Brick", "price": -1, "achievement": "wrecking_ball", "color": Color("b5523b")},
 ]
 

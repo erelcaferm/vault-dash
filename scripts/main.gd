@@ -32,6 +32,10 @@ const TRAP_METER_FULL := 5.0
 const BONUS_CHEST_AHEAD := 5
 const BONUS_CHEST_PUSH := 10
 const CARRYOVER_CHEST_FLOOR := 8
+## Daily Climb: one tower per day, the same for every player. Reaching
+## DAILY_GOAL in it pays DAILY_REWARD coins, once per day.
+const DAILY_GOAL := 15
+const DAILY_REWARD := 100
 
 enum State { READY, PLAYING, DEAD, WON, CHEST }
 
@@ -113,6 +117,15 @@ var vibration_on := true         # saved, like sfx.enabled
 var settings_bar: HBoxContainer
 var sound_button: Button
 var vibration_button: Button
+var daily_mode := false
+var daily_button: Button
+var daily_date := ""             # saved; the day daily_best and daily_claimed are for
+var daily_best := 0
+var daily_claimed := false
+var daily_last_played := ""      # saved; the last day a Daily Climb was started
+var daily_streak := 0            # saved; days in a row with a Daily Climb
+## For tests: pretends today is this date ("YYYY-MM-DD").
+var test_today := ""
 
 
 func _ready() -> void:
@@ -130,7 +143,13 @@ func _ready() -> void:
 
 func reset() -> void:
 	tower = TowerScript.new()
-	tower.build(Rooms.START, Rooms.LAYOUTS, test_seed if test_seed >= 0 else randi())
+	_refresh_daily()
+	var seed_value := randi()
+	if test_seed >= 0:
+		seed_value = test_seed
+	elif daily_mode:
+		seed_value = daily_seed(daily_date)
+	tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
 	tower.room_limit = test_room_limit
 	cell = tower.start
 	move_dir = Vector2i.ZERO
@@ -151,6 +170,16 @@ func reset() -> void:
 	camera.position = _camera_target()
 	camera.reset_smoothing()
 	_update_hud()
+	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
+	if daily_mode:
+		var goal := "Goal done! +%d coins" % DAILY_REWARD if daily_claimed else "Floor %d pays %d coins" % [DAILY_GOAL, DAILY_REWARD]
+		var progress := ""
+		if daily_best > 0:
+			progress += "\nToday's best: floor %d" % daily_best
+		if daily_streak > 0:
+			progress += "\nStreak: %d day%s" % [daily_streak, "" if daily_streak == 1 else "s"]
+		_show_message("DAILY CLIMB\n%s\n\nSame tower for everyone\ntoday.\n%s\n%s" % [_pretty_date(daily_date), goal, progress])
+		return
 	var best := ""
 	if best_floor > 0:
 		best = "\n\nBest floor: %d\nCoins banked: %d" % [best_floor, total_coins]
@@ -282,6 +311,14 @@ func _update_floor() -> void:
 		if f > best_floor:
 			best_floor = f
 			check_achievements()
+		if daily_mode:
+			daily_best = maxi(daily_best, f)
+			if f >= DAILY_GOAL and not daily_claimed:
+				daily_claimed = true
+				total_coins += DAILY_REWARD
+				add_stat("daily_goals")
+				banner_queue.append("DAILY GOAL!\nFloor %d reached\n+%d coins" % [DAILY_GOAL, DAILY_REWARD])
+				_save()
 		if f >= 20 and elapsed <= 60.0 and stat("fast_20") == 0:
 			add_stat("fast_20")
 		_update_hud()
@@ -304,7 +341,8 @@ func _die(reason: String, cause: String) -> void:
 	move_dir = Vector2i.ZERO
 	shake = 0.35
 	_bank_run()
-	_show_message("%s\n\n+%d coins\nBest: floor %d\n\nSwipe to try again" % [reason % run_floor, run_coins, best_floor])
+	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
+	_show_message("%s\n\n+%d coins\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, best])
 
 
 ## Only reachable when a test gives the tower an exit.
@@ -379,6 +417,8 @@ func _on_swipe(d: Vector2i) -> void:
 		State.READY:
 			state = State.PLAYING
 			add_stat("runs")
+			if daily_mode:
+				_start_daily_run()
 			_hide_message()
 			try_move(d)
 		State.PLAYING:
@@ -454,13 +494,16 @@ func _build_hud() -> void:
 
 	menu_bar = HBoxContainer.new()
 	menu_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	menu_bar.offset_left = -150
-	menu_bar.offset_right = 150
+	menu_bar.offset_left = -165
+	menu_bar.offset_right = 165
 	menu_bar.offset_top = -110
 	menu_bar.offset_bottom = -56
 	menu_bar.add_theme_constant_override("separation", 10)
 	hud.add_child(menu_bar)
 	shop_button = _menu_button("SHOP", _open_shop)
+	daily_button = _menu_button("DAILY", func():
+		daily_mode = not daily_mode
+		reset())
 	_menu_button("TROPHIES", _open_achievements)
 
 	settings_bar = HBoxContainer.new()
@@ -565,7 +608,7 @@ func _menu_button(text: String, action: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 20)
+	b.add_theme_font_size_override("font_size", 17)
 	b.pressed.connect(action)
 	menu_bar.add_child(b)
 	return b
@@ -599,6 +642,8 @@ func stat(id: String) -> int:
 	match id:
 		"best_floor":
 			return best_floor
+		"daily_streak":
+			return daily_streak
 		"heroes_owned":
 			var n := 0
 			for item in Skins.HERO:
@@ -649,6 +694,46 @@ func _update_banner(delta: float) -> void:
 
 func _open_achievements() -> void:
 	achievements_screen.open()
+
+
+# --- Daily Climb -----------------------------------------------------------
+
+func today() -> String:
+	return test_today if test_today != "" else Time.get_date_string_from_system()
+
+
+## The tower seed for a date. String.hash is the same on every device, so
+## every player climbs the same tower that day.
+static func daily_seed(date: String) -> int:
+	return ("vault-dash-daily-" + date).hash() & 0x7fffffff
+
+
+## Starts a fresh daily best when the day has changed.
+func _refresh_daily() -> void:
+	if daily_date != today():
+		daily_date = today()
+		daily_best = 0
+		daily_claimed = false
+
+
+## Counts the day towards the daily stats and the streak, once per day.
+func _start_daily_run() -> void:
+	_refresh_daily()
+	if daily_last_played == daily_date:
+		return
+	var yesterday := Time.get_date_string_from_unix_time(Time.get_unix_time_from_datetime_string(daily_date) - 86400)
+	daily_streak = daily_streak + 1 if daily_last_played == yesterday else 1
+	daily_last_played = daily_date
+	add_stat("daily_days")
+	_save()
+
+
+static func _pretty_date(date: String) -> String:
+	const MONTHS := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+	var parts := date.split("-")
+	if parts.size() != 3:
+		return date
+	return "%s %d" % [MONTHS[int(parts[1]) - 1], int(parts[2])]
 
 
 # --- Chests ----------------------------------------------------------------
@@ -771,6 +856,11 @@ func _load_save() -> void:
 		unlocked = cfg.get_value("achievements", "unlocked", [])
 		sfx.enabled = cfg.get_value("settings", "sound", true)
 		vibration_on = cfg.get_value("settings", "vibration", true)
+		daily_date = cfg.get_value("daily", "date", "")
+		daily_best = cfg.get_value("daily", "best", 0)
+		daily_claimed = cfg.get_value("daily", "claimed", false)
+		daily_last_played = cfg.get_value("daily", "last_played", "")
+		daily_streak = cfg.get_value("daily", "streak", 0)
 		if cfg.has_section("stats"):
 			for key in cfg.get_section_keys("stats"):
 				stats[key] = cfg.get_value("stats", key)
@@ -791,6 +881,11 @@ func _save() -> void:
 	cfg.set_value("achievements", "unlocked", unlocked)
 	cfg.set_value("settings", "sound", sfx.enabled)
 	cfg.set_value("settings", "vibration", vibration_on)
+	cfg.set_value("daily", "date", daily_date)
+	cfg.set_value("daily", "best", daily_best)
+	cfg.set_value("daily", "claimed", daily_claimed)
+	cfg.set_value("daily", "last_played", daily_last_played)
+	cfg.set_value("daily", "streak", daily_streak)
 	for key in stats:
 		cfg.set_value("stats", key, stats[key])
 	cfg.save(save_path)

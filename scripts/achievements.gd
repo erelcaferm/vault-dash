@@ -35,6 +35,11 @@ const LIST := [
 	{"id": "wrecking_ball", "name": "Wrecking Ball", "desc": "Break 100 cracked walls", "stat": "walls_broken", "goal": 100, "item": ["hero", "brick"]},
 	{"id": "trap_dodger", "name": "Trap Dodger", "desc": "Reach 25 trap floors", "stat": "trap_floors", "goal": 25, "item": ["walls", "frozen"]},
 	{"id": "regular", "name": "Regular", "desc": "Play 25 runs", "stat": "runs", "goal": 25, "coins": 100},
+	# Daily Climb
+	{"id": "daily_climber", "name": "Daily Climber", "desc": "Play a Daily Climb", "stat": "daily_days", "goal": 1, "coins": 25},
+	{"id": "daily_goal", "name": "Goal Getter", "desc": "Hit the daily goal 10 times", "stat": "daily_goals", "goal": 10, "coins": 150},
+	{"id": "week_streak", "name": "On a Roll", "desc": "Play the Daily Climb 7 days in a row", "stat": "daily_streak", "goal": 7, "item": ["hero", "sunrise"]},
+	{"id": "devoted", "name": "Devoted", "desc": "Play the Daily Climb on 30 days", "stat": "daily_days", "goal": 30, "coins": 300},
 	# Collecting
 	{"id": "fashionista", "name": "Fashionista", "desc": "Own 5 hero colours", "stat": "heroes_owned", "goal": 5, "coins": 100},
 ]
