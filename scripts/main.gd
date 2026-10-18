@@ -6,6 +6,8 @@ const TowerScript := preload("res://scripts/tower.gd")
 const Rooms := preload("res://scripts/rooms.gd")
 const Skins := preload("res://scripts/skins.gd")
 const ShopScript := preload("res://scripts/shop.gd")
+const Chest := preload("res://scripts/chest.gd")
+const ChestScreen := preload("res://scripts/chest_screen.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -17,7 +19,7 @@ const LAVA_MAX_GAP := 11.0       # the lava never falls further behind than this
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
 
-enum State { READY, PLAYING, DEAD, WON }
+enum State { READY, PLAYING, DEAD, WON, CHEST }
 
 # One biome per five rooms. Swapping these colours is the seed of the
 # environment cosmetics.
@@ -75,6 +77,11 @@ var toast_label: Label
 var toast_time := 0.0
 var shop: Control
 var shop_button: Button
+var chest_label: Label
+var chest_screen: Control
+var chest_rng := RandomNumberGenerator.new()
+var chests_taken := {}           # rooms whose chest was opened this run
+var chest_return_state := State.PLAYING
 
 
 func _ready() -> void:
@@ -103,6 +110,7 @@ func reset() -> void:
 	run_floor = 1
 	last_biome = 0
 	bursts.clear()
+	chests_taken.clear()
 	state = State.READY
 	camera.position = _camera_target()
 	camera.reset_smoothing()
@@ -185,6 +193,11 @@ func _advance() -> void:
 	elif ahead == TowerScript.CRACKED:
 		_break_wall(cell + move_dir)
 		_stop()
+	var k := tower.room_of(cell.y)
+	if tower.is_chest_floor(k) and not chests_taken.has(k) and cell == tower.chest_cell(k):
+		chests_taken[k] = true
+		_stop()
+		_open_chest()
 
 
 func _stop() -> void:
@@ -251,7 +264,7 @@ func _bank_run() -> void:
 # --- Input -----------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if shop.visible:
+	if shop.visible or chest_screen.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -285,6 +298,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_swipe(Vector2i.RIGHT)
 			KEY_SPACE, KEY_ENTER:
 				_on_tap()
+			KEY_F2:
+				# Developer shortcut for trying the chest without climbing 100 floors.
+				if OS.is_debug_build() and (state == State.READY or state == State.PLAYING):
+					_open_chest()
 
 
 func _dir_from(d: Vector2) -> Vector2i:
@@ -349,6 +366,11 @@ func _build_hud() -> void:
 	floor_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	floor_label.offset_right = -14
 	floor_label.offset_top = 10
+	chest_label = _make_label(hud, 15, HORIZONTAL_ALIGNMENT_RIGHT)
+	chest_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	chest_label.offset_right = -14
+	chest_label.offset_top = 40
+	chest_label.add_theme_color_override("font_color", Color("ffd23f"))
 	message_backdrop = ColorRect.new()
 	message_backdrop.color = Color(0, 0, 0, 0.55)
 	message_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -381,6 +403,12 @@ func _build_hud() -> void:
 	shop.setup(self)
 	shop.closed.connect(_close_shop)
 
+	chest_screen = ChestScreen.new()
+	hud.add_child(chest_screen)
+	chest_screen.setup()
+	chest_screen.finished.connect(_on_chest_finished)
+	chest_rng.randomize()
+
 
 func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 	var label := Label.new()
@@ -396,6 +424,11 @@ func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 func _update_hud() -> void:
 	coins_label.text = "● %d" % run_coins
 	floor_label.text = "Floor %d" % run_floor
+	var every := TowerScript.CHEST_EVERY
+	var next := ceili(float(run_floor) / every) * every
+	if chests_taken.has(next - 1):
+		next += every
+	chest_label.text = "Chest at floor %d" % next
 
 
 func _show_message(text: String) -> void:
@@ -409,6 +442,38 @@ func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
 	shop_button.visible = false
+
+
+# --- Chests ----------------------------------------------------------------
+
+func _open_chest() -> void:
+	chest_return_state = state
+	state = State.CHEST
+	move_dir = Vector2i.ZERO
+	queued_dir = Vector2i.ZERO
+	_hide_message()
+	var reward := Chest.roll(chest_rng, owns)
+	chest_screen.open(reward, chest_rng)
+
+
+func _on_chest_finished(reward: Dictionary) -> void:
+	grant(reward)
+	if chest_return_state == State.READY:
+		reset()
+	else:
+		state = State.PLAYING
+		_update_hud()
+	_toast("+ " + Chest.describe(reward))
+
+
+## Chest coins go straight to the bank, so they're safe even if you die.
+func grant(reward: Dictionary) -> void:
+	if reward.kind == "coins":
+		total_coins += reward.coins
+	elif not owned.has(reward.item.id):
+		owned.append(reward.item.id)
+		equip(reward.kind, reward.item.id)
+	_save()
 
 
 # --- Shop ------------------------------------------------------------------
@@ -428,7 +493,7 @@ func owns(item: Dictionary) -> bool:
 
 
 func buy(kind: String, item: Dictionary) -> bool:
-	if owns(item) or total_coins < item.price:
+	if owns(item) or item.get("chest_only", false) or total_coins < item.price:
 		return false
 	total_coins -= item.price
 	owned.append(item.id)
@@ -510,6 +575,7 @@ func _draw() -> void:
 		for x in tower.width:
 			_draw_tile(Vector2i(x, y), biome)
 
+	_draw_chests(y0, y1)
 	_draw_player()
 	for b in bursts:
 		var k: float = b.t / 0.35
@@ -562,7 +628,23 @@ func _draw_player() -> void:
 			Skins.draw_hero(self, ghost, size, color, Vector2.ZERO, 0.12 * (4 - i))
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
-	Skins.draw_hero(self, p, size, color, look)
+	Skins.draw_hero(self, p, size, color, look, 1.0, Skins.hero_glow(_hero_skin()))
+
+
+func _draw_chests(y0: int, y1: int) -> void:
+	for k in range(maxi(tower.room_of(y1), 0), tower.room_of(y0) + 1):
+		if not tower.is_chest_floor(k) or chests_taken.has(k):
+			continue
+		var mid := _tile_center(tower.chest_cell(k)) + Vector2(0, sin(anim_time * 3.0) * 2.0)
+		var w := TILE * 0.9
+		var h := TILE * 0.7
+		var glow := 0.5 + 0.5 * sin(anim_time * 4.0)
+		draw_circle(mid, TILE * (0.8 + glow * 0.15), Color(1, 0.85, 0.25, 0.18))
+		var body := Rect2(mid - Vector2(w, h) * 0.5 + Vector2(0, h * 0.1), Vector2(w, h * 0.8))
+		draw_rect(body, Color("7a4a22"))
+		draw_rect(Rect2(body.position - Vector2(1, h * 0.25), Vector2(w + 2, h * 0.35)), Color("9c5f2c"))
+		draw_rect(Rect2(body.position.x, body.position.y - h * 0.25, w, h * 1.05), Color("ffd23f"), false, 2.0)
+		draw_rect(Rect2(mid.x - 2.5, mid.y - h * 0.15, 5, 7), Color("ffd23f"))
 
 
 func _draw_lava(view: Vector2) -> void:

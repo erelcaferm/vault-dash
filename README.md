@@ -24,6 +24,8 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Game loop, input, lava, drawing, HUD, save, purchases | `scripts/main.gd` |
 | Shop items, prices and how they're drawn | `scripts/skins.gd` |
 | Shop screen | `scripts/shop.gd`, `scripts/skin_preview.gd` |
+| Chest rewards and odds | `scripts/chest.gd` |
+| Chest opening animation | `scripts/chest_screen.gd` |
 
 Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor.
 
@@ -45,6 +47,21 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 - **Cracked-wall skins:** Rubble is free. Mud, Snow, Wood, Glass, Crystal and Gold Bars cost 150–800.
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
+
+## Chests
+
+A treasure chest waits on floors 100, 200, 300 and so on, right where you land when you enter the room. Touching it pauses the run, including the lava, and opens a case: a strip of prizes spins past a marker, slows down and lands on your reward. Tap during the spin to skip it, and tap again to carry on climbing. The HUD shows which floor the next chest is on.
+
+| Rarity | Chance | Reward |
+|---|---|---|
+| Common | 55% | 50–100 coins |
+| Rare | 25% | 150–250 coins |
+| Epic | 15% | a random shop item you don't own yet (400 coins if you own them all) |
+| Legendary | 5% | a chest-only item: Neon, Ember or Void hero, or Obsidian or Magma walls (1000 coins if you own them all) |
+
+Chest coins go straight to your bank, so you keep them even if you die. New items are equipped automatically. Chest-only items show in the shop as "Chest only" and can't be bought.
+
+In a debug build (running from the editor), press **F2** to open a chest without climbing 100 floors.
 
 ## Changing the rooms
 
@@ -68,8 +85,9 @@ godot --headless --path . --import          # first time only
 godot --headless --path . --script res://tests/test_rooms.gd
 godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 godot --headless --path . --script res://tests/test_shop.gd
+godot --headless --path . --script res://tests/test_chest.gd
 ```
 
 The tests use their own save file, so they never touch your coins.
 
-`test_shop.gd` checks buying, equipping and saving. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 32-floor tower, crossing trap floor 30, along the solver's route. It then stands still and checks that the lava kills an idle player.
+`test_shop.gd` checks buying, equipping and saving. `test_chest.gd` checks the chest odds, that you never get an item you already own, that every layout has open floor where the chest goes, and that rewards are granted. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 102-floor tower, crossing three trap floors, following the solver's route, and opens the chest on floor 100 on the way. It then stands still and checks that the lava kills an idle player.

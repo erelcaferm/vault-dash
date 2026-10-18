@@ -25,6 +25,8 @@ const FAKE_COIN := "F"
 
 ## Every this-many floors is a trap floor, where fake floor gives way.
 const TRAP_EVERY := 30
+## Every this-many floors has a treasure chest.
+const CHEST_EVERY := 100
 ## Layouts unlocked at the start, and how many more unlock per floor climbed.
 const FIRST_UNLOCKED := 10
 const UNLOCKS_PER_FLOOR := 3
@@ -38,6 +40,7 @@ var start := Vector2i.ZERO
 ## For tests: when 0 or more, every tile from this room up is the exit.
 var room_limit := -1
 var trap_every := TRAP_EVERY
+var chest_every := CHEST_EVERY
 
 var _defs: Array = []
 var _rooms: Array = []           # generated rooms, each an Array of rows of chars
@@ -65,6 +68,17 @@ func build(start_room: Array, layouts: Array, seed_value: int) -> void:
 ## Whether room `k` (0 = bottom) is a trap floor.
 func is_trap(k: int) -> bool:
 	return (k + 1) % trap_every == 0
+
+
+func is_chest_floor(k: int) -> bool:
+	return (k + 1) % chest_every == 0
+
+
+## Where the chest sits in room `k`: the spot you land on when you slide in
+## through the bottom door, so you can't miss it.
+func chest_cell(k: int) -> Vector2i:
+	var door := Vector2i(floori(width / 2.0), -k * ROOM_H - 1)
+	return simulate_slide(door, Vector2i.UP).end
 
 
 ## Which room (0 = bottom) a grid row belongs to. Negative means below the tower.

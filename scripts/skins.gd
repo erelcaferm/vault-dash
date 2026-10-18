@@ -1,6 +1,7 @@
 extends RefCounted
 ## Everything the shop sells, and how to draw it.
 ## Prices are in coins. Items priced 0 are owned from the start.
+## Items marked chest_only can't be bought; they only drop from chests.
 
 const HERO := [
 	{"id": "white", "name": "White", "price": 0, "color": Color("f4f1de")},
@@ -16,6 +17,9 @@ const HERO := [
 	{"id": "pink", "name": "Pink", "price": 250, "color": Color("ff70a6")},
 	{"id": "gold", "name": "Gold", "price": 600, "color": Color("ffc300")},
 	{"id": "rainbow", "name": "Rainbow", "price": 1500, "rainbow": true},
+	{"id": "neon", "name": "Neon", "price": -1, "chest_only": true, "color": Color("39ff14"), "glow": Color(0.22, 1.0, 0.08, 0.35)},
+	{"id": "ember", "name": "Ember", "price": -1, "chest_only": true, "color": Color("ff7b1c"), "glow": Color(1.0, 0.35, 0.0, 0.4)},
+	{"id": "void", "name": "Void", "price": -1, "chest_only": true, "color": Color("2b0a3d"), "glow": Color(0.7, 0.3, 0.95, 0.45)},
 ]
 
 ## Cracked-wall skins. `style` picks the pattern drawn on top of the block.
@@ -34,6 +38,10 @@ const WALLS := [
 		"base": Color("7b2cbf"), "top": Color("c77dff"), "detail": Color("e0aaff")},
 	{"id": "gold_bars", "name": "Gold Bars", "price": 800, "style": "bars",
 		"base": Color("d4a017"), "top": Color("ffd75e"), "detail": Color("9c7400")},
+	{"id": "obsidian", "name": "Obsidian", "price": -1, "chest_only": true, "style": "crystal",
+		"base": Color("14111f"), "top": Color("2e2547"), "detail": Color("8c5bd6")},
+	{"id": "magma", "name": "Magma", "price": -1, "chest_only": true, "style": "magma",
+		"base": Color("2a1410"), "top": Color("4a2218"), "detail": Color("ff7b00")},
 ]
 
 ## How fast the rainbow hero cycles through every colour, in full cycles per
@@ -56,9 +64,16 @@ static func hero_color(item: Dictionary, phase: float) -> Color:
 	return item.color
 
 
+static func hero_glow(item: Dictionary) -> Color:
+	return item.get("glow", Color.TRANSPARENT)
+
+
 ## Draws the hero as a square of `size` centred on `center`, eyes looking `look`.
-static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color: Color, look := Vector2.ZERO, alpha := 1.0) -> void:
+static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color: Color, look := Vector2.ZERO, alpha := 1.0, glow := Color.TRANSPARENT) -> void:
 	var r := Rect2(center - size * 0.5, size)
+	if glow.a > 0.0 and alpha >= 1.0:
+		canvas.draw_rect(r.grow(size.x * 0.3), Color(glow, glow.a * 0.4))
+		canvas.draw_rect(r.grow(size.x * 0.15), glow)
 	canvas.draw_rect(r, Color(color, alpha))
 	if alpha < 1.0:
 		return
@@ -123,6 +138,16 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			canvas.draw_colored_polygon(PackedVector2Array([
 				mid + Vector2(0, -h * 0.38), mid + Vector2(w * 0.3, 0), mid,
 			]), detail)
+		"magma":
+			# Cracks that glow and pulse like the lava.
+			var glow := Color(detail, 0.55 + 0.45 * sin(time * 3.0 + p.y * 0.1))
+			var path := PackedVector2Array([
+				p + Vector2(w * 0.15, h * 0.3), mid + Vector2(-w * 0.08, -h * 0.02),
+				mid + Vector2(w * 0.1, h * 0.15), r.end - Vector2(w * 0.12, h * 0.15),
+			])
+			canvas.draw_polyline(path, Color(glow, glow.a * 0.4), 5.0)
+			canvas.draw_polyline(path, glow, 2.0)
+			canvas.draw_line(mid + Vector2(-w * 0.08, -h * 0.02), mid + Vector2(w * 0.22, -h * 0.28), glow, 2.0)
 		"bars":
 			for i in 2:
 				var bar := Rect2(p + Vector2(w * 0.1, h * (0.2 + i * 0.4)), Vector2(w * 0.8, h * 0.32))

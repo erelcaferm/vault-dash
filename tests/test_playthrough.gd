@@ -1,7 +1,8 @@
 extends SceneTree
-## Plays the real game scene along the solver's route up a fixed 32-floor
-## tower (so it crosses trap floor 30) and checks it reaches the top. Then it
-## stands still and checks the lava wins.
+## Plays the real game scene along the solver's route up a fixed 102-floor
+## tower and checks it reaches the top. On the way it crosses three trap
+## floors and must open the chest on floor 100. Then it stands still and
+## checks the lava wins.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 
 const TowerScript := preload("res://scripts/tower.gd")
@@ -12,9 +13,10 @@ var game
 var route: Array = []
 var phase := "escape"
 var frames := 0
+var chests := 0
 
 const SEED := 42
-const HEIGHT := 32
+const HEIGHT := 102
 
 
 func _initialize() -> void:
@@ -36,7 +38,18 @@ func _initialize() -> void:
 func _process(_delta: float) -> bool:
 	frames += 1
 	if phase == "escape":
-		if game.state == game.State.WON:
+		if game.state == game.State.CHEST:
+			if game.chest_screen.visible and frames % 30 == 0:
+				var tap := InputEventMouseButton.new()
+				tap.pressed = true
+				tap.button_index = MOUSE_BUTTON_LEFT
+				game.chest_screen._gui_input(tap)   # first tap skips the spin
+				game.chest_screen._gui_input(tap)   # second tap collects
+				chests += 1
+		elif game.state == game.State.WON:
+			if chests != 1:
+				printerr("FAIL: expected to open 1 chest, opened %d" % chests)
+				quit(1)
 			print("PASS: climbed %d floors in %.1f s of game time with %d coins" % [HEIGHT, game.elapsed, game.run_coins])
 			game.state_time = 1.0
 			game.test_room_limit = -1
@@ -49,7 +62,7 @@ func _process(_delta: float) -> bool:
 			quit(1)
 		elif game.is_idle() and not route.is_empty():
 			game._on_swipe(route.pop_front())
-		elif frames > 60 * 120:
+		elif frames > 60 * 400:
 			printerr("FAIL: did not reach the top in time")
 			quit(1)
 	elif phase == "lava":

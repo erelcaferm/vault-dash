@@ -17,6 +17,12 @@ func _draw() -> void:
 	var s := minf(size.x, size.y) * 0.7
 	var c := size * 0.5
 	if kind == "hero":
-		Skins.draw_hero(self, c, Vector2(s, s), Skins.hero_color(item, _time * Skins.RAINBOW_IDLE_SPEED))
+		Skins.draw_hero(self, c, Vector2(s, s) * 0.85, Skins.hero_color(item, _time * Skins.RAINBOW_IDLE_SPEED),
+				Vector2.ZERO, 1.0, Skins.hero_glow(item))
+	elif kind == "coins":
+		for i in 3:
+			var o := Vector2((i - 1) * s * 0.22, (1 - i) * s * 0.12)
+			draw_circle(c + o, s * 0.24, Color("c99700"))
+			draw_circle(c + o - Vector2(0, s * 0.04), s * 0.24, Color("ffd23f"))
 	else:
 		Skins.draw_cracked(self, Rect2(c - Vector2(s, s) * 0.5, Vector2(s, s)), item, _time)
