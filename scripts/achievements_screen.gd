@@ -1,5 +1,6 @@
 extends Control
-## The list of achievements, with progress towards each one.
+## The list of achievements, with progress towards each one, and a Stats
+## tab of lifetime numbers.
 
 signal closed
 
@@ -11,6 +12,12 @@ const DIM := Color(1, 1, 1, 0.55)
 var game
 var _list: VBoxContainer
 var _count: Label
+var _title: Label
+var _tabs: HBoxContainer
+var showing_stats := false
+
+const PillStyle := preload("res://scripts/pill_style.gd")
+const Skins := preload("res://scripts/skins.gd")
 
 
 func setup(main_game) -> void:
@@ -32,11 +39,31 @@ func setup(main_game) -> void:
 
 	var header := HBoxContainer.new()
 	column.add_child(header)
-	var title := _label("TROPHIES", 28)
-	title.size_flags_horizontal = SIZE_EXPAND_FILL
-	header.add_child(title)
+	_title = _label("TROPHIES", 28)
+	_title.size_flags_horizontal = SIZE_EXPAND_FILL
+	header.add_child(_title)
 	_count = _label("", 20, Color("ffd23f"))
 	header.add_child(_count)
+
+	_tabs = HBoxContainer.new()
+	_tabs.add_theme_constant_override("separation", 0)
+	column.add_child(_tabs)
+	for t in [["Trophies", false], ["Stats", true]]:
+		var b := Button.new()
+		b.text = t[0]
+		b.toggle_mode = true
+		b.size_flags_horizontal = SIZE_EXPAND_FILL
+		b.custom_minimum_size.y = 40
+		b.add_theme_font_size_override("font_size", 16)
+		for key in ["normal", "hover", "disabled"]:
+			b.add_theme_stylebox_override(key, PillStyle.new(Color(0.24, 0.25, 0.29, 0.62)))
+		b.add_theme_stylebox_override("pressed", PillStyle.new(Color(0.85, 0.6, 0.1, 0.8)))
+		b.add_theme_stylebox_override("hover_pressed", PillStyle.new(Color(0.85, 0.6, 0.1, 0.8)))
+		b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		b.pressed.connect(func():
+			showing_stats = t[1]
+			open())
+		_tabs.add_child(b)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
@@ -61,6 +88,18 @@ func open() -> void:
 	for c in _list.get_children():
 		_list.remove_child(c)
 		c.queue_free()
+	for i in _tabs.get_child_count():
+		var b: Button = _tabs.get_child(i)
+		b.set_pressed_no_signal((i == 1) == showing_stats)
+		for key in ["normal", "pressed", "hover_pressed", "disabled"]:
+			var face: PillStyle = b.get_theme_stylebox(key)
+			face.round_left = i == 0
+			face.round_right = i == 1
+			face.divider = i == 0
+	_title.text = "STATS" if showing_stats else "TROPHIES"
+	if showing_stats:
+		_show_stats()
+		return
 	var done := 0
 	# Unlocked first, then the ones you're closest to.
 	var rows: Array = Achievements.LIST.duplicate()
@@ -75,6 +114,57 @@ func open() -> void:
 			done += 1
 		_list.add_child(_row(a))
 	_count.text = "%d/%d" % [done, Achievements.LIST.size()]
+
+
+## Lifetime numbers, as [label, value] rows.
+func stat_rows() -> Array:
+	var owned := 0
+	var total := 0
+	for kind in ["hero", "hat", "walls", "trail", "lava"]:
+		for item in Skins.list(kind):
+			total += 1
+			if game.owns(item):
+				owned += 1
+	var seconds: int = game.stat("play_seconds")
+	var deaths: int = game.stat("deaths")
+	return [
+		["Runs played", str(game.stat("runs"))],
+		["Time climbing", "%dh %02dm" % [seconds / 3600, (seconds / 60) % 60]],
+		["Floors climbed", str(game.stat("floors_climbed"))],
+		["Best floor", str(game.best_floor)],
+		["Coins collected", str(game.stat("coins_collected"))],
+		["Cracked walls broken", str(game.stat("walls_broken"))],
+		["Trap floors passed", str(game.stat("trap_floors"))],
+		["Power-ups grabbed", str(game.stat("powerups"))],
+		["Chests opened", str(game.stat("chests_opened"))],
+		["Legendaries found", str(game.stat("legendaries"))],
+		["Deaths", str(deaths)],
+		["  by lava", str(game.stat("deaths_lava"))],
+		["  by spikes", str(game.stat("deaths_spikes"))],
+		["  by fake floors", str(game.stat("deaths_fake"))],
+		["Revives", str(game.stat("revives"))],
+		["Daily Climbs played", str(game.stat("daily_days"))],
+		["Daily gold medals", str(game.stat("daily_golds"))],
+		["Levels cleared", "%d / %d" % [game.levels_cleared.size(), game.Levels.LEVELS.size()]],
+		["Level stars", str(game.total_stars())],
+		["Missions finished", str(game.stat("missions_done"))],
+		["Cosmetics owned", "%d / %d" % [owned, total]],
+	]
+
+
+func _show_stats() -> void:
+	_count.text = ""
+	for row in stat_rows():
+		var line := HBoxContainer.new()
+		var name_label := _label(row[0], 16, DIM)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		name_label.size_flags_horizontal = SIZE_EXPAND_FILL
+		line.add_child(name_label)
+		line.add_child(_label(row[1], 16, Color.WHITE))
+		var gap := Control.new()
+		gap.custom_minimum_size.x = 12
+		line.add_child(gap)
+		_list.add_child(line)
 
 
 func _fraction(a: Dictionary) -> float:

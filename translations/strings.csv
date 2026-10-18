@@ -386,3 +386,27 @@ Your look,Your look,Tu estilo,Votre look,Dein Look,Görünümün,Твой обл
 Preview: %d items,Preview: %d items,Vista previa: %d objetos,Aperçu : %d objets,Vorschau: %d Gegenstände,Önizleme: %d eşya,Просмотр: %d предм.,预览：%d 件,預覽：%d 件
 AD: +%d coins (%d),AD: +%d coins (%d),ANUNCIO: +%d monedas (%d),PUB : +%d pièces (%d),WERBUNG: +%d Münzen (%d),REKLAM: +%d altın (%d),РЕКЛАМА: +%d монет (%d),广告：+%d 金币（%d）,廣告：+%d 金幣（%d）
 DEAL: %s -%d%%,DEAL: %s -%d%%,OFERTA: %s -%d%%,PROMO : %s -%d%%,ANGEBOT: %s -%d%%,FIRSAT: %s -%d%%,СКИДКА: %s -%d%%,特惠：%s -%d%%,特惠：%s -%d%%
+STATS,STATS,ESTADÍSTICAS,STATS,STATISTIK,İSTATİSTİK,СТАТИСТИКА,统计,統計
+Stats,Stats,Estadísticas,Stats,Statistik,İstatistik,Статистика,统计,統計
+Trophies,Trophies,Trofeos,Trophées,Trophäen,Kupalar,Трофеи,奖杯,獎盃
+Runs played,Runs played,Partidas jugadas,Parties jouées,Gespielte Runden,Oynanan tur,Сыграно забегов,游玩次数,遊玩次數
+Time climbing,Time climbing,Tiempo escalando,Temps d'escalade,Kletterzeit,Tırmanma süresi,Время подъёма,攀爬时间,攀爬時間
+Floors climbed,Floors climbed,Pisos escalados,Étages gravis,Erklommene Etagen,Tırmanılan kat,Пройдено этажей,攀爬楼层,攀爬樓層
+Best floor,Best floor,Mejor piso,Meilleur étage,Beste Etage,En iyi kat,Лучший этаж,最高楼层,最高樓層
+Coins collected,Coins collected,Monedas recogidas,Pièces ramassées,Gesammelte Münzen,Toplanan altın,Собрано монет,收集金币,收集金幣
+Cracked walls broken,Cracked walls broken,Muros agrietados rotos,Murs fissurés cassés,Zerbrochene Risswände,Kırılan çatlak duvar,Разбито стен,击碎裂墙,擊碎裂牆
+Trap floors passed,Trap floors passed,Pisos trampa superados,Étages piégés passés,Fallen-Etagen geschafft,Geçilen tuzak kat,Пройдено ловушек,通过陷阱层,通過陷阱層
+Power-ups grabbed,Power-ups grabbed,Potenciadores cogidos,Bonus ramassés,Power-ups gesammelt,Alınan güçlendirici,Собрано бонусов,拾取道具,拾取道具
+Chests opened,Chests opened,Cofres abiertos,Coffres ouverts,Geöffnete Truhen,Açılan sandık,Открыто сундуков,开启宝箱,開啟寶箱
+Legendaries found,Legendaries found,Legendarios encontrados,Légendaires trouvés,Gefundene Legendäre,Bulunan efsanevi,Найдено легендарных,获得传说,獲得傳說
+Deaths,Deaths,Muertes,Morts,Tode,Ölüm,Смерти,死亡次数,死亡次數
+  by lava,  by lava,  por lava,  par la lave,  durch Lava,  lavadan,  от лавы,  被岩浆,  被岩漿
+  by spikes,  by spikes,  por pinchos,  par les pics,  durch Stacheln,  dikenlerden,  от шипов,  被尖刺,  被尖刺
+  by fake floors,  by fake floors,  por suelos falsos,  par les faux sols,  durch falsche Böden,  sahte zeminden,  от ложного пола,  被假地板,  被假地板
+Revives,Revives,Resurrecciones,Résurrections,Wiederbelebungen,Dirilme,Воскрешения,复活次数,復活次數
+Daily Climbs played,Daily Climbs played,Escaladas diarias jugadas,Ascensions du jour jouées,Gespielte Tagesaufstiege,Oynanan günlük tırmanış,Сыграно ежедневных,每日攀登次数,每日攀登次數
+Daily gold medals,Daily gold medals,Medallas de oro diarias,Médailles d'or du jour,Tägliche Goldmedaillen,Günlük altın madalya,Золотые медали,每日金牌,每日金牌
+Levels cleared,Levels cleared,Niveles superados,Niveaux réussis,Geschaffte Level,Geçilen seviye,Пройдено уровней,通关关卡,通關關卡
+Level stars,Level stars,Estrellas de nivel,Étoiles de niveau,Level-Sterne,Seviye yıldızı,Звёзды уровней,关卡星星,關卡星星
+Missions finished,Missions finished,Misiones completadas,Missions terminées,Erledigte Missionen,Biten görev,Выполнено заданий,完成任务,完成任務
+Cosmetics owned,Cosmetics owned,Cosméticos obtenidos,Cosmétiques possédés,Eigene Kosmetik,Sahip olunan kozmetik,Косметики собрано,拥有外观,擁有外觀

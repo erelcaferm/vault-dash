@@ -38,7 +38,9 @@ func _initialize() -> void:
 	_expect(game.run_coins == 0, "coins from before the death stay banked, not counted twice")
 	_expect(game.unlocked.has("second_wind"), "reviving unlocks Second Wind")
 
+	game.run_floor = 12
 	game._die("Test on floor %d", "lava")
+	_expect(game.stat("floors_climbed") == 12, "a revived run's floors count once in the stats")
 	_expect(not game.revive_button.visible and not game.revive(), "only one revive per run")
 	game.reset()
 	_expect(not game.revived, "a new run gets its revive back")

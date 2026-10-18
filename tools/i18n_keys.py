@@ -26,7 +26,7 @@ SKIP = {"✓", "● %d  -%d%%", "", "%d%%", "II", "● %d/%d", "★ %d/%d", "✕
         # Language names are always shown in their own language.
         "English", "Español", "Français", "Deutsch", "Türkçe", "Русский", "简体中文", "繁體中文"}
 # Shown, but only reachable through an expression the patterns above miss.
-EXTRA = ["Bronze medal", "Silver medal", "Gold medal", "Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
+EXTRA = ["Trophies", 'Runs played', 'Time climbing', 'Floors climbed', 'Best floor', 'Coins collected', 'Cracked walls broken', 'Trap floors passed', 'Power-ups grabbed', 'Chests opened', 'Legendaries found', 'Deaths', '  by lava', '  by spikes', '  by fake floors', 'Revives', 'Daily Climbs played', 'Daily gold medals', 'Levels cleared', 'Level stars', 'Missions finished', 'Cosmetics owned', "Bronze medal", "Silver medal", "Gold medal", "Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
 
 
 def unescape(s):

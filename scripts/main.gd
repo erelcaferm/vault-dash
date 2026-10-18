@@ -208,6 +208,7 @@ var ad_bar: HBoxContainer          # the watch-an-ad buttons on the death screen
 var ad_revive_button: Button
 var ad_double_button: Button
 var doubled := false               # this run's coins were already doubled by an ad
+var stats_banked := Vector2i.ZERO  # floors and seconds of this run already added to the stats
 var ad_coins_day := ""             # the day ad_coins_today counts
 var ad_coins_today := 0            # shop coin ads watched that day
 var deal_day := ""                 # the day deal_id was picked
@@ -312,6 +313,7 @@ func reset() -> void:
 	slide_start = cell
 	revived = false
 	doubled = false
+	stats_banked = Vector2i.ZERO
 	lava_grace = 0.0
 	best_at_start = best_floor
 	daily_best_at_start = daily_best
@@ -1033,6 +1035,11 @@ func _end_run(text: String) -> void:
 
 
 func _bank_run() -> void:
+	# Lifetime totals for the stats page (a revive banks only what's new).
+	if not is_level():
+		add_stat("floors_climbed", maxi(run_floor - stats_banked.x, 0))
+		add_stat("play_seconds", maxi(int(elapsed) - stats_banked.y, 0))
+		stats_banked = Vector2i(run_floor, int(elapsed))
 	total_coins += run_coins
 	best_floor = maxi(best_floor, run_floor)
 	check_achievements()
