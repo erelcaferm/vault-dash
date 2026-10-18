@@ -32,6 +32,9 @@ const POWERUP_COLORS := {"shield": Color("4cc9f0"), "magnet": Color("e84855"), "
 ## The Daily Climb ghost: your best run today, replayed for you to race.
 ## Positions are recorded every GHOST_STEP seconds of play.
 const GHOST_STEP := 0.1
+## Coin combos: grab at least COMBO_MIN coins in one slide and every coin
+## past the first COMBO_MIN - 1 pays double.
+const COMBO_MIN := 5
 const DANGER_GAP := 5.0          # the screen edges glow red when the lava is this close (tiles)
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
@@ -166,6 +169,7 @@ var effects_label: Label
 var daily_ghost := PackedVector2Array()  # saved; today's best daily run
 var recording := PackedVector2Array()    # this run, in case it beats the ghost
 var daily_best_at_start := 0
+var slide_coins := 0             # coins grabbed in the current slide
 var danger := 0.0                # 0-1, how close the lava is, for the red glow
 var heartbeat_time := 0.0
 var danger_overlay: Control
@@ -302,6 +306,7 @@ func _start_move(d: Vector2i) -> void:
 		_break_wall(cell + d)
 		return
 	slide_start = cell
+	slide_coins = 0
 	move_dir = d
 	move_progress = 0.0
 	sfx.play("swipe", randf_range(0.9, 1.1))
@@ -314,6 +319,7 @@ func _advance() -> void:
 	if powerups.has(cell):
 		_take_powerup(cell)
 	if t == TowerScript.COIN:
+		slide_coins += 1
 		_collect_coin(cell)
 	elif t == TowerScript.SPIKES:
 		_die("Spiked on floor %d", "spikes")
@@ -340,6 +346,21 @@ func _advance() -> void:
 			_save()
 		_stop()
 		_open_chest()
+
+
+## Pays the combo bonus for the slide that just ended, if it earned one.
+func _finish_combo() -> void:
+	var combo := slide_coins
+	slide_coins = 0
+	if combo < COMBO_MIN:
+		return
+	var bonus := combo - (COMBO_MIN - 1)
+	run_coins += bonus
+	report_run("run_coins", run_coins)
+	if combo >= 10 and stat("combo_10") == 0:
+		add_stat("combo_10")
+	_celebrate("COMBO x%d!  +%d" % [combo, bonus])
+	_update_hud()
 
 
 func _collect_coin(c: Vector2i) -> void:
@@ -442,6 +463,7 @@ func _update_effects() -> void:
 func _stop() -> void:
 	if move_dir != Vector2i.ZERO:
 		sfx.play("stop")
+		_finish_combo()
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
 	squash = 0.12

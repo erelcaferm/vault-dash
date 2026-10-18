@@ -1,5 +1,5 @@
 extends SceneTree
-## Checks pausing freezes the run, and the "New best!" moment.
+## Checks pausing freezes the run, the "New best!" moment, and coin combos.
 ## Run: godot --headless --path . --script res://tests/test_pause.gd
 
 const SAVE := "user://test_pause_save.cfg"
@@ -44,10 +44,26 @@ func _initialize() -> void:
 	game.cell = Vector2i(6, -3 * 12 - 6)
 	game._update_floor()
 	_expect(game.new_best_shown and game.toast_label.text == "NEW BEST!", "passing your best celebrates")
+
+	# Coin combos.
+	var coins: int = game.run_coins
+	game.slide_coins = 4
+	game.move_dir = Vector2i.UP
+	game._stop()
+	_expect(game.run_coins == coins, "4 coins in a slide isn't a combo")
+	game.slide_coins = 7
+	game.move_dir = Vector2i.UP
+	game._stop()
+	_expect(game.run_coins == coins + 3, "7 coins in a slide pays 3 bonus coins")
+	_expect(not game.unlocked.has("coin_rush"), "Coin Rush needs 10 in one slide")
+	game.slide_coins = 10
+	game.move_dir = Vector2i.UP
+	game._stop()
+	_expect(game.unlocked.has("coin_rush"), "10 coins in one slide unlocks Coin Rush")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 
 	if failures == 0:
-		print("PASS: pause freezes the run, new best celebrates")
+		print("PASS: pause freezes the run, new best celebrates, combos pay")
 	quit(1 if failures > 0 else 0)
 
 

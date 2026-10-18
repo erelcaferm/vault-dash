@@ -16,6 +16,7 @@ const LIST := [
 	{"id": "tower_legend", "name": "Tower Legend", "desc": "Reach floor 200", "stat": "best_floor", "goal": 200, "item": ["walls", "marble"]},
 	{"id": "speedrunner", "name": "Speedrunner", "desc": "Reach floor 20 within 60 seconds", "stat": "fast_20", "goal": 1, "item": ["hero", "speedster"]},
 	# Coins
+	{"id": "coin_rush", "name": "Coin Rush", "desc": "Grab 10 coins in one slide", "stat": "combo_10", "goal": 1, "coins": 75},
 	{"id": "pocket_change", "name": "Pocket Change", "desc": "Collect 10 coins", "stat": "coins_collected", "goal": 10, "coins": 10},
 	{"id": "coin_collector", "name": "Coin Collector", "desc": "Collect 250 coins", "stat": "coins_collected", "goal": 250, "coins": 50},
 	{"id": "treasure_hunter", "name": "Treasure Hunter", "desc": "Collect 1,000 coins", "stat": "coins_collected", "goal": 1000, "item": ["walls", "treasure"]},

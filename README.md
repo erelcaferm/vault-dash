@@ -71,10 +71,10 @@ In a debug build (running from the editor), press **F2** to open a chest without
 
 ## Trophies (achievements)
 
-The **TROPHIES** button lists 31 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
+The **TROPHIES** button lists 32 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
 
 - **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
-- **Coins:** collect 10, 250 and 1,000 (Treasure walls).
+- **Coins:** collect 10, 250 and 1,000 (Treasure walls), and grab 10 in one slide.
 - **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths (Ash lava), 10 spike deaths and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
 - **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, grab 25 power-ups, and play 25 runs.
@@ -101,6 +101,10 @@ Three missions show at the top of the menu, such as "Collect 15 coins in one run
 ## Daily Climb
 
 The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Your best run of the day is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
+
+## Coin combos
+
+Grab 5 or more coins in a single slide and every coin from the 5th on pays double, with a **COMBO** pop when the slide ends. 10 in one slide earns the Coin Rush trophy. `COMBO_MIN` in `scripts/main.gd` sets where combos start.
 
 ## Pause and new best
 
