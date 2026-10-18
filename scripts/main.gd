@@ -137,6 +137,8 @@ var revive_button: Button
 var pause_button: Button
 var best_at_start := 0           # best floor before this run, for the "New best!" moment
 var new_best_shown := false
+var idle_time := 0.0             # seconds standing still, for the new-player hints
+var marker_floor := 0            # the best to beat, drawn as a line on the tower
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
 
@@ -188,6 +190,7 @@ func reset() -> void:
 	camera.position = _camera_target()
 	camera.reset_smoothing()
 	_update_hud()
+	marker_floor = daily_best if daily_mode else best_floor
 	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
 	if daily_mode:
 		var goal := "Goal done! +%d coins" % DAILY_REWARD if daily_claimed else "Floor %d pays %d coins" % [DAILY_GOAL, DAILY_REWARD]
@@ -214,6 +217,7 @@ func _process(delta: float) -> void:
 	if state == State.PLAYING:
 		elapsed += delta
 		_update_slide(delta)
+		idle_time = idle_time + delta if is_idle() else 0.0
 	if state == State.PLAYING:
 		_update_lava(delta)
 	shake = maxf(shake - delta, 0.0)
@@ -1065,6 +1069,8 @@ func _draw() -> void:
 			_draw_tile(Vector2i(x, y), biome)
 
 	_draw_chests(y0, y1)
+	_draw_best_marker(top, bottom)
+	_draw_hints()
 	_draw_player()
 	for b in bursts:
 		var k: float = b.t / 0.35
@@ -1134,6 +1140,51 @@ func _draw_chests(y0: int, y1: int) -> void:
 		draw_rect(Rect2(body.position - Vector2(1, h * 0.25), Vector2(w + 2, h * 0.35)), Color("9c5f2c"))
 		draw_rect(Rect2(body.position.x, body.position.y - h * 0.25, w, h * 1.05), Color("ffd23f"), false, 2.0)
 		draw_rect(Rect2(mid.x - 2.5, mid.y - h * 0.15, 5, 7), Color("ffd23f"))
+
+
+## Pulsing arrows round the player, for new players who stand still: one
+## for each way they can slide from here.
+const HINT_RUNS := 3
+const HINT_DELAY := 1.2
+
+func _draw_hints() -> void:
+	if state != State.PLAYING or stat("runs") > HINT_RUNS or run_floor > 2 or idle_time < HINT_DELAY:
+		return
+	var p := _player_center()
+	var pulse := 0.5 + 0.5 * sin(anim_time * 6.0)
+	var alpha := clampf((idle_time - HINT_DELAY) / 0.4, 0.0, 1.0) * (0.5 + 0.5 * pulse)
+	for d in [Vector2i.UP, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.DOWN]:
+		if tower.get_tile(cell + d) == TowerScript.WALL:
+			continue
+		var dir := Vector2(d)
+		var side := Vector2(-dir.y, dir.x)
+		var tip := p + dir * TILE * (1.1 + 0.2 * pulse)
+		var back := tip - dir * 9.0
+		draw_polyline(PackedVector2Array([back + side * 8.0, tip, back - side * 8.0]), Color(1, 1, 1, alpha), 4.0)
+
+
+## A dashed gold line across the door you need to pass to beat your best
+## (today's best in the Daily Climb). It goes once you've beaten it.
+func _draw_best_marker(top: float, bottom: float) -> void:
+	if marker_floor < 2 or run_floor > marker_floor:
+		return
+	var y := -marker_floor * TowerScript.ROOM_H * TILE
+	if y < top or y > bottom:
+		return
+	var width := tower.width * TILE
+	var color := Color(COIN_COLOR, 0.65 + 0.25 * sin(anim_time * 3.0))
+	var dash := 9.0
+	var x := 0.0
+	while x < width:
+		draw_line(Vector2(x, y), Vector2(minf(x + dash, width), y), color, 3.0)
+		x += dash * 2.0
+	var label := "TODAY'S BEST %d" if daily_mode else "BEST %d"
+	var font := ThemeDB.fallback_font
+	var text := label % marker_floor
+	var size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13)
+	var pos := Vector2(width - size.x - 6, y - 5)
+	draw_rect(Rect2(pos - Vector2(4, size.y - 2), size + Vector2(8, 2)), Color(0, 0, 0, 0.6))
+	draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, color)
 
 
 func _draw_lava(view: Vector2) -> void:

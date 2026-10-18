@@ -89,6 +89,11 @@ The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** 
 
 The **II** button at the top pauses a run (Esc or P on a keyboard), and the game also pauses itself when you switch apps or take a call. The lava, the timer and any slide in progress freeze; tap or swipe to carry on. Passing your best floor in Endless shows **NEW BEST!** with a sound and a ring of gold.
 
+## Helpers on the tower
+
+- A dashed gold line marks the door you need to pass to beat your best floor (today's best in the Daily Climb), so you can see it coming.
+- In a player's first 3 runs, standing still for over a second on floors 1 and 2 shows pulsing arrows for each way you can slide. Tune `HINT_RUNS` and `HINT_DELAY` in `scripts/main.gd`.
+
 ## Revive
 
 When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
