@@ -2065,15 +2065,17 @@ func _has_roof(c: Vector2i) -> bool:
 	return above != TowerScript.WALL and above != TowerScript.CRACKED
 
 
-## Fake floor that will give way looks like normal floor with a crack and
-## a thin white outline, so it's easy to spot at a glance. (On normal floors
-## fake tiles are solid and unmarked, so only real traps show.)
+## Fake floor that will give way looks like normal floor with a dark crack
+## that has a subtle white edge, so it stands out without boxing the tile.
+## (On normal floors fake tiles are solid and unmarked, so only real traps show.)
 func _draw_fake_floor(r: Rect2, _c: Vector2i) -> void:
-	draw_rect(r.grow(-2.5), Color(1, 1, 1, 0.55), false, 1.5)
-	var crack := Color(1, 1, 1, 0.6)
 	var p := r.position
-	draw_polyline(PackedVector2Array([p + Vector2(8, 9), p + Vector2(13, 14), p + Vector2(12, 18), p + Vector2(17, 21)]), crack, 1.5)
-	draw_line(p + Vector2(13, 14), p + Vector2(19, 11), crack, 1.5)
+	var main := PackedVector2Array([p + Vector2(7, 8), p + Vector2(13, 14), p + Vector2(12, 18), p + Vector2(18, 22)])
+	var branch := PackedVector2Array([p + Vector2(13, 14), p + Vector2(20, 11)])
+	for line in [main, branch]:
+		draw_polyline(line, Color(1, 1, 1, 0.45), 3.5)
+	for line in [main, branch]:
+		draw_polyline(line, Color(0, 0, 0, 0.75), 1.5)
 
 
 func _draw_player() -> void:
