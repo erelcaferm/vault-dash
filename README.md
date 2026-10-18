@@ -29,7 +29,7 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Trophies screen | `scripts/achievements_screen.gd` |
 | Chest opening animation | `scripts/chest_screen.gd` |
 
-Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor.
+Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor. Plain walls stacked on top of each other only show a lit top edge on the top one, so a column reads as one block; cracked walls always keep their top edge.
 
 Every run builds a new endless tower. After the start room, each floor picks one of the 100 layouts at random:
 - The first 10 layouts are unlocked from the start, and 3 more unlock per floor.
@@ -47,7 +47,7 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 
 - **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
 - **Hats:** worn on top of any colour. No hat is free. Cap, Beanie, Party Hat, Headphones, Top Hat and Wizard cost 150–600. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
-- **Cracked-wall skins:** Rubble is free. Mud, Snow, Moss, Wood, Brick, Glass, Crystal, Neon and Gold Bars cost 150–800. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy. Walls stacked on top of each other only show a lit top edge on the top one, so a column reads as one block.
+- **Cracked-wall skins:** Rubble is free. Mud, Snow, Moss, Wood, Brick, Glass, Crystal, Neon and Gold Bars cost 150–800. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy.
 - **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy. Smoke, Hearts and Lightning cost 200–450, and Music Notes and Confetti come from levels 18 and 21.
 - **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum and Plasma cost 250–500. Molten Gold only drops from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
 

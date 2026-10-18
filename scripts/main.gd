@@ -2048,7 +2048,7 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 					Vector2(bx, r.end.y - 3), Vector2(bx + w * 0.5, r.position.y + TILE * 0.25), Vector2(bx + w, r.end.y - 3),
 				]), SPIKE_COLOR)
 		TowerScript.CRACKED:
-			Skins.draw_cracked(self, r, _wall_skin(), anim_time, _has_roof(c))
+			Skins.draw_cracked(self, r, _wall_skin(), anim_time)
 		TowerScript.FAKE:
 			_draw_fake_floor(r, c)
 		TowerScript.GOAL:
@@ -2059,7 +2059,8 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 
 
 ## Whether a wall at `c` shows its lit top edge: only when nothing solid
-## sits right above it, so stacked walls read as one block.
+## sits right above it, so stacked walls read as one block. (Cracked walls
+## always keep theirs, so they stand out.)
 func _has_roof(c: Vector2i) -> bool:
 	var above: String = tower.get_tile(c + Vector2i.UP)
 	return above != TowerScript.WALL and above != TowerScript.CRACKED

@@ -361,7 +361,7 @@ func _draw_tile(canvas: CanvasItem, r: Rect2, t: String, roof := true) -> void:
 					Vector2(bx, r.end.y - 2), Vector2(bx + w * 0.5, r.position.y + s * 0.25), Vector2(bx + w, r.end.y - 2),
 				]), Color("e84855"))
 		"x":
-			Skins.draw_cracked(canvas, r, game._wall_skin(), 0.0, roof)
+			Skins.draw_cracked(canvas, r, game._wall_skin())
 		"f":
 			canvas.draw_rect(r.grow(-2), Color(0, 0, 0, 0.35))
 			canvas.draw_line(r.position + Vector2(s * 0.25, s * 0.3), mid, Color(1, 1, 1, 0.3), 1.5)
