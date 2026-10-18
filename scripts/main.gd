@@ -20,6 +20,15 @@ const LAVA_START_SPEED := 0.5    # tiles per second
 const LAVA_ACCEL := 0.012        # extra tiles per second, gained each second
 const LAVA_MAX_SPEED := 2.6
 const LAVA_MAX_GAP := 11.0       # the lava never falls further behind than this
+## Power-ups replace a coin on some floors: a shield that saves you once,
+## a magnet that pulls in nearby coins, and a freeze that stops the lava.
+const POWERUP_FROM_FLOOR := 4
+const POWERUP_CHANCE := 0.3
+const POWERUPS := ["shield", "magnet", "freeze"]
+const MAGNET_TIME := 8.0
+const MAGNET_RANGE := 2          # tiles, in every direction
+const FREEZE_TIME := 4.0
+const POWERUP_COLORS := {"shield": Color("4cc9f0"), "magnet": Color("e84855"), "freeze": Color("bdefff")}
 const DANGER_GAP := 5.0          # the screen edges glow red when the lava is this close (tiles)
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
@@ -145,6 +154,13 @@ var missions: Array = []         # saved; the active missions, see missions.gd
 var mission_rng := RandomNumberGenerator.new()
 var missions_panel: PanelContainer
 var missions_rows: VBoxContainer
+var powerups := {}               # cell -> power-up type, on floors loaded this run
+var powerups_rolled := 0         # floors below this have had their power-up roll
+var powerup_rng := RandomNumberGenerator.new()
+var shield := false
+var magnet_time := 0.0
+var freeze_time := 0.0
+var effects_label: Label
 var danger := 0.0                # 0-1, how close the lava is, for the red glow
 var heartbeat_time := 0.0
 var danger_overlay: Control
@@ -177,6 +193,15 @@ func reset() -> void:
 	elif daily_mode:
 		seed_value = daily_seed(daily_date)
 	tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
+	# Seeded from the tower, so the Daily Climb has the same power-ups for everyone.
+	powerup_rng.seed = seed_value + 1
+	powerups.clear()
+	powerups_rolled = 0
+	shield = false
+	magnet_time = 0.0
+	freeze_time = 0.0
+	_roll_powerups(3)
+	_update_effects()
 	tower.room_limit = test_room_limit
 	cell = tower.start
 	slide_start = cell
@@ -231,6 +256,7 @@ func _process(delta: float) -> void:
 		_update_slide(delta)
 		idle_time = idle_time + delta if is_idle() else 0.0
 	if state == State.PLAYING:
+		_update_powerups(delta)
 		_update_lava(delta)
 	shake = maxf(shake - delta, 0.0)
 	squash = maxf(squash - delta, 0.0)
@@ -275,14 +301,10 @@ func _start_move(d: Vector2i) -> void:
 func _advance() -> void:
 	cell += move_dir
 	var t: String = tower.get_tile(cell)
+	if powerups.has(cell):
+		_take_powerup(cell)
 	if t == TowerScript.COIN:
-		tower.set_tile(cell, TowerScript.EMPTY)
-		run_coins += 1
-		add_stat("coins_collected")
-		report_run("run_coins", run_coins)
-		sfx.play("coin", randf_range(0.97, 1.06))
-		bursts.append({"pos": _tile_center(cell), "t": 0.0, "color": COIN_COLOR})
-		_update_hud()
+		_collect_coin(cell)
 	elif t == TowerScript.SPIKES:
 		_die("Spiked on floor %d", "spikes")
 		return
@@ -310,6 +332,103 @@ func _advance() -> void:
 		_open_chest()
 
 
+func _collect_coin(c: Vector2i) -> void:
+	tower.set_tile(c, TowerScript.EMPTY)
+	run_coins += 1
+	add_stat("coins_collected")
+	report_run("run_coins", run_coins)
+	sfx.play("coin", randf_range(0.97, 1.06))
+	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": COIN_COLOR})
+	_update_hud()
+
+
+# --- Power-ups -------------------------------------------------------------
+
+## Rolls power-ups for every floor below `count` not rolled yet. Each one
+## takes the place of a coin, since coins sit where you can reach them.
+func _roll_powerups(count: int) -> void:
+	while powerups_rolled < count:
+		var k := powerups_rolled
+		powerups_rolled += 1
+		if k + 1 < POWERUP_FROM_FLOOR or powerup_rng.randf() >= POWERUP_CHANCE:
+			continue
+		var coins: Array = []
+		for y in range(-(k + 1) * TowerScript.ROOM_H, -k * TowerScript.ROOM_H):
+			for x in tower.width:
+				var c := Vector2i(x, y)
+				if tower.get_tile(c) == TowerScript.COIN and not (has_chest(k) and c == tower.chest_cell(k)):
+					coins.append(c)
+		if coins.is_empty():
+			continue
+		var spot: Vector2i = coins[powerup_rng.randi_range(0, coins.size() - 1)]
+		tower.set_tile(spot, TowerScript.EMPTY)
+		powerups[spot] = POWERUPS[powerup_rng.randi_range(0, POWERUPS.size() - 1)]
+
+
+func _take_powerup(c: Vector2i) -> void:
+	var kind: String = powerups[c]
+	powerups.erase(c)
+	give_powerup(kind)
+	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": POWERUP_COLORS[kind]})
+
+
+func give_powerup(kind: String) -> void:
+	match kind:
+		"shield":
+			shield = true
+			_toast("Shield!")
+		"magnet":
+			magnet_time = MAGNET_TIME
+			_toast("Coin magnet!")
+		"freeze":
+			freeze_time = FREEZE_TIME
+			_toast("Lava frozen!")
+	add_stat("powerups")
+	sfx.play("trophy", 1.3)
+	vibrate(30)
+	_update_effects()
+
+
+## The shield pops instead of you: back to where your slide began, with the
+## lava pushed down if it was close.
+func _use_shield() -> void:
+	shield = false
+	cell = slide_start
+	move_dir = Vector2i.ZERO
+	queued_dir = Vector2i.ZERO
+	lava_y = maxf(lava_y, _player_center().y + REVIVE_LAVA_GAP * TILE * 0.5)
+	shake = 0.25
+	sfx.play("break", 1.4)
+	vibrate(80)
+	bursts.append({"pos": _player_center(), "t": 0.0, "color": POWERUP_COLORS.shield})
+	_toast("Shield saved you!")
+	_update_effects()
+
+
+func _update_powerups(delta: float) -> void:
+	if freeze_time > 0.0:
+		freeze_time = maxf(freeze_time - delta, 0.0)
+	if magnet_time > 0.0:
+		magnet_time = maxf(magnet_time - delta, 0.0)
+		for dy in range(-MAGNET_RANGE, MAGNET_RANGE + 1):
+			for dx in range(-MAGNET_RANGE, MAGNET_RANGE + 1):
+				var c := cell + Vector2i(dx, dy)
+				if tower.get_tile(c) == TowerScript.COIN:
+					_collect_coin(c)
+	_update_effects()
+
+
+func _update_effects() -> void:
+	var parts: Array = []
+	if shield:
+		parts.append("SHIELD")
+	if magnet_time > 0.0:
+		parts.append("MAGNET %d" % ceili(magnet_time))
+	if freeze_time > 0.0:
+		parts.append("FREEZE %d" % ceili(freeze_time))
+	effects_label.text = "\n".join(parts)
+
+
 func _stop() -> void:
 	if move_dir != Vector2i.ZERO:
 		sfx.play("stop")
@@ -330,6 +449,8 @@ func _break_wall(c: Vector2i) -> void:
 func _update_lava(delta: float) -> void:
 	if lava_grace > 0.0:
 		lava_grace -= delta
+		return
+	if freeze_time > 0.0:
 		return
 	var speed := minf(LAVA_START_SPEED + LAVA_ACCEL * elapsed, LAVA_MAX_SPEED)
 	lava_y -= speed * TILE * delta
@@ -377,6 +498,7 @@ func _update_floor() -> void:
 				add_stat("trap_floors")
 				add_trap_meter(passed, meter_rng.randf_range(TRAP_METER_MIN, TRAP_METER_MAX))
 		run_floor = f
+		_roll_powerups(f + 3)
 		report_run("run_floor", f)
 		if daily_mode:
 			report_run("daily_floor", f)
@@ -407,6 +529,9 @@ func _update_floor() -> void:
 
 
 func _die(reason: String, cause: String) -> void:
+	if shield:
+		_use_shield()
+		return
 	state = State.DEAD
 	add_stat("deaths")
 	add_stat("deaths_" + cause)
@@ -629,6 +754,11 @@ func _build_hud() -> void:
 	floor_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	floor_label.offset_right = -14
 	floor_label.offset_top = 10
+	effects_label = _make_label(hud, 15, HORIZONTAL_ALIGNMENT_LEFT)
+	effects_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	effects_label.offset_left = 14
+	effects_label.offset_top = 40
+	effects_label.add_theme_color_override("font_color", Color("bdefff"))
 	chest_label = _make_label(hud, 15, HORIZONTAL_ALIGNMENT_RIGHT)
 	chest_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	chest_label.offset_right = -14
@@ -1239,6 +1369,7 @@ func _draw() -> void:
 			_draw_tile(Vector2i(x, y), biome)
 
 	_draw_chests(y0, y1)
+	_draw_powerups(y0, y1)
 	_draw_best_marker(top, bottom)
 	_draw_hints()
 	_draw_player()
@@ -1291,6 +1422,11 @@ func _draw_player() -> void:
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
 	Skins.draw_hero(self, p, size, color, look, 1.0, Skins.hero_glow(_hero_skin()))
+	if shield:
+		draw_arc(p, TILE * 0.72, 0, TAU, 28, Color(POWERUP_COLORS.shield, 0.6 + 0.3 * sin(anim_time * 6.0)), 2.5)
+	if magnet_time > 0.0:
+		var reach := (MAGNET_RANGE + 0.5) * TILE
+		draw_arc(p, reach * (0.6 + 0.4 * fposmod(anim_time * 1.5, 1.0)), 0, TAU, 40, Color(POWERUP_COLORS.magnet, 0.35), 1.5)
 
 
 func _draw_chests(y0: int, y1: int) -> void:
@@ -1354,6 +1490,38 @@ func _draw_best_marker(top: float, bottom: float) -> void:
 	draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, color)
 
 
+func _draw_powerups(y0: int, y1: int) -> void:
+	for c: Vector2i in powerups:
+		if c.y < y0 or c.y > y1:
+			continue
+		var kind: String = powerups[c]
+		var color: Color = POWERUP_COLORS[kind]
+		var mid := _tile_center(c) + Vector2(0, sin(anim_time * 3.0 + c.x) * 2.0)
+		draw_circle(mid, TILE * 0.55, Color(color, 0.18 + 0.08 * sin(anim_time * 5.0)))
+		draw_circle(mid, TILE * 0.4, Color(0.08, 0.08, 0.14))
+		draw_arc(mid, TILE * 0.4, 0, TAU, 24, color, 2.0)
+		_draw_powerup_icon(kind, mid, TILE * 0.22, color)
+
+
+func _draw_powerup_icon(kind: String, mid: Vector2, r: float, color: Color) -> void:
+	match kind:
+		"shield":
+			draw_colored_polygon(PackedVector2Array([
+				mid + Vector2(-r, -r * 0.8), mid + Vector2(r, -r * 0.8), mid + Vector2(r * 0.8, r * 0.3),
+				mid + Vector2(0, r * 1.1), mid + Vector2(-r * 0.8, r * 0.3),
+			]), color)
+		"magnet":
+			draw_arc(mid + Vector2(0, -r * 0.1), r * 0.75, 0, PI, 12, color, r * 0.55)
+			draw_line(mid + Vector2(-r * 0.75, -r * 0.1), mid + Vector2(-r * 0.75, -r), color, r * 0.55)
+			draw_line(mid + Vector2(r * 0.75, -r * 0.1), mid + Vector2(r * 0.75, -r), color, r * 0.55)
+			draw_line(mid + Vector2(-r * 0.75, -r * 0.75), mid + Vector2(-r * 0.75, -r * 1.05), Color.WHITE, r * 0.55)
+			draw_line(mid + Vector2(r * 0.75, -r * 0.75), mid + Vector2(r * 0.75, -r * 1.05), Color.WHITE, r * 0.55)
+		"freeze":
+			for i in 3:
+				var d := Vector2.from_angle(i * PI / 3.0) * r * 1.1
+				draw_line(mid - d, mid + d, color, 2.0)
+
+
 func _draw_lava(view: Vector2) -> void:
 	var left := -view.x
 	var right := tower.width * TILE + view.x
@@ -1365,5 +1533,7 @@ func _draw_lava(view: Vector2) -> void:
 	var glow := points.duplicate()
 	points.append(Vector2(right, lava_y + view.y * 2))
 	points.append(Vector2(left, lava_y + view.y * 2))
-	draw_colored_polygon(points, LAVA_COLOR)
-	draw_polyline(glow, LAVA_GLOW, 4.0)
+	# Frozen lava turns icy blue, thawing back over its last second.
+	var ice := clampf(freeze_time, 0.0, 1.0)
+	draw_colored_polygon(points, LAVA_COLOR.lerp(Color("6fc3e8"), ice))
+	draw_polyline(glow, LAVA_GLOW.lerp(Color("e8fbff"), ice), 4.0)

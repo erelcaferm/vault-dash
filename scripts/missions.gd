@@ -19,6 +19,7 @@ const TEMPLATES := [
 	{"id": "walls", "text": "Break %d cracked walls", "stat": "walls_broken", "base": 10, "step": 8},
 	{"id": "traps", "text": "Pass %d trap floors", "stat": "trap_floors", "base": 2, "step": 2},
 	{"id": "chests", "text": "Open %d chests", "one": "Open a chest", "stat": "chests_opened", "base": 1, "step": 0.5},
+	{"id": "powerups", "text": "Grab %d power-ups", "one": "Grab a power-up", "stat": "powerups", "base": 2, "step": 1},
 	{"id": "coins_total", "text": "Collect %d coins", "stat": "coins_collected", "base": 50, "step": 40},
 ]
 

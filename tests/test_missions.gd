@@ -18,7 +18,7 @@ func _initialize() -> void:
 
 	# A cumulative mission only counts progress made after it started.
 	game.add_stat("walls_broken", 500)
-	game.missions = [Missions.make(game.mission_rng, 0, ["coins_run", "floor_run", "daily_floor", "traps", "chests", "coins_total"], game.stat)]
+	game.missions = [Missions.make(game.mission_rng, 0, _others("walls"), game.stat)]
 	game._fill_missions()
 	var walls: Dictionary = game.missions[0]
 	_expect(walls.id == "walls" and walls.goal == 10 and walls.start == 500, "a new mission starts from the current count")

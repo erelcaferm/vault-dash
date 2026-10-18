@@ -70,18 +70,28 @@ In a debug build (running from the editor), press **F2** to open a chest without
 
 ## Trophies (achievements)
 
-The **TROPHIES** button lists 30 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
+The **TROPHIES** button lists 31 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
 
 - **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
 - **Coins:** collect 10, 250 and 1,000 (Treasure walls).
 - **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths, 10 spike deaths and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
-- **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, and play 25 runs.
+- **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, grab 25 power-ups, and play 25 runs.
 - **Daily Climb:** play one (coins), hit the daily goal 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.
 - **Missions:** finish 10 and 50.
 - **Collecting:** own 5 hero colours.
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
+
+## Power-ups
+
+From floor 4, about 3 in 10 floors swap one coin for a power-up. They're seeded with the tower, so the Daily Climb has the same ones for everyone.
+
+- **Shield** (blue): the next thing that would kill you sends you back to where your slide began instead, and pushes the lava down if it's close.
+- **Magnet** (red): for 8 seconds, coins within 2 tiles fly to you.
+- **Freeze** (ice): the lava stops for 4 seconds and turns icy blue.
+
+Active power-ups are listed under the coin counter. Tune the `POWERUP_*`, `MAGNET_*` and `FREEZE_TIME` constants in `scripts/main.gd`.
 
 ## Missions
 
@@ -139,6 +149,7 @@ godot --headless --path . --script res://tests/test_daily.gd
 godot --headless --path . --script res://tests/test_revive.gd
 godot --headless --path . --script res://tests/test_pause.gd
 godot --headless --path . --script res://tests/test_missions.gd
+godot --headless --path . --script res://tests/test_powerups.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

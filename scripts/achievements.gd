@@ -35,6 +35,7 @@ const LIST := [
 	{"id": "wrecking_ball", "name": "Wrecking Ball", "desc": "Break 100 cracked walls", "stat": "walls_broken", "goal": 100, "item": ["hero", "brick"]},
 	{"id": "trap_dodger", "name": "Trap Dodger", "desc": "Reach 25 trap floors", "stat": "trap_floors", "goal": 25, "item": ["walls", "frozen"]},
 	{"id": "second_wind", "name": "Second Wind", "desc": "Revive after dying", "stat": "revives", "goal": 1, "coins": 25},
+	{"id": "powered_up", "name": "Powered Up", "desc": "Grab 25 power-ups", "stat": "powerups", "goal": 25, "coins": 100},
 	{"id": "regular", "name": "Regular", "desc": "Play 25 runs", "stat": "runs", "goal": 25, "coins": 100},
 	# Daily Climb
 	{"id": "daily_climber", "name": "Daily Climber", "desc": "Play a Daily Climb", "stat": "daily_days", "goal": 1, "coins": 25},
