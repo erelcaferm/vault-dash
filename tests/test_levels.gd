@@ -114,6 +114,40 @@ func _initialize() -> void:
 	_expect(game.levels_screen._code_panel.visible and game.levels_screen._code_edit.text == game.custom_levels[0], "SHARE shows the code")
 	_expect(LevelCode.decode(game.custom_levels[0]).name == "Mine", "the shared code is the level")
 
+	# Sizes: the editor grows and shrinks a level within the limits, keeping
+	# the border on the edges and the start in place.
+	editor.open(LevelCode.blank("Sizes"), -1)
+	for i in 10:
+		editor._resize(1, 1)
+	_expect(LevelCode.width_of(editor.level) == LevelCode.MAX_W and editor.level.rows.size() == LevelCode.MAX_H, "growing stops at the biggest")
+	var big: Dictionary = editor.level
+	_expect(LevelCode.problem(big) == "" and big.rows[0] == "#".repeat(LevelCode.MAX_W) and big.rows[-1] == "#".repeat(LevelCode.MAX_W), "the border stays on the edges")
+	_expect((big.rows[-2] as String).find("S") == 6, "the start stays put")
+	_expect(editor.solve() > 0, "a grown blank level can still be solved")
+	_expect(editor._cell * LevelCode.MAX_H <= editor.GRID_AREA.y and editor._cell >= 16, "the biggest level fits in the editor")
+	_expect(LevelCode.decode(LevelCode.encode(big)).rows == big.rows, "a big level's code loads back")
+	for i in 30:
+		editor._resize(-1, -1)
+	_expect(LevelCode.width_of(editor.level) == LevelCode.MIN_W and editor.level.rows.size() == LevelCode.MIN_H, "shrinking stops at the smallest")
+
+	# A big level scrolls with the hero and never past its edges.
+	game.start_level(big, "custom")
+	var view: Vector2 = game.get_viewport_rect().size
+	var cam: Vector2 = game._camera_target()
+	_expect(cam.y + view.y * 0.5 <= 0.0 + game.LEVEL_FOOT_GAP + 0.1, "the camera stops at the level's bottom")
+	game.cell = Vector2i(LevelCode.MAX_W - 2, -LevelCode.MAX_H + 1)
+	cam = game._camera_target()
+	var right: float = LevelCode.MAX_W * game.TILE
+	if right > view.x:
+		_expect(cam.x + view.x * 0.5 <= right + 0.1, "the camera stops at the level's right edge")
+	else:
+		_expect(is_equal_approx(cam.x, right * 0.5), "a level narrower than the screen stays centred")
+	_expect(cam.y - view.y * 0.5 >= -LevelCode.MAX_H * game.TILE - game.LEVEL_HUD_GAP - 0.1, "the camera stops at the level's top")
+
+	# Codes made before sizes could change still load, as 13 x 18.
+	var first := Levels.level(0)
+	_expect(LevelCode.decode(_old_code(first)).rows == first.rows, "an old 13 x 18 code still loads")
+
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	print("PASS: levels, codes, timer, rewards and editor" if failures == 0 else "FAIL: %d level checks" % failures)
 	quit(1 if failures else 0)
@@ -132,6 +166,18 @@ func _play_campaign(game, i: int) -> void:
 		if game.is_idle() and not route.is_empty():
 			game._on_swipe(route.pop_front())
 		await process_frame
+
+
+## A code in the first format, which had no width or height.
+func _old_code(level: Dictionary) -> String:
+	var bytes := PackedByteArray([level.time & 0xff, level.time >> 8, 0])
+	var tiles := PackedByteArray()
+	for row: String in level.rows:
+		for t in row:
+			tiles.append(LevelCode.TILES.find(t))
+	bytes.append_array(tiles.compress(FileAccess.COMPRESSION_DEFLATE))
+	bytes.append(LevelCode._checksum(bytes))
+	return "VD1" + Marshalls.raw_to_base64(bytes).replace("+", "-").replace("/", "_").replace("=", "")
 
 
 func _expect(ok: bool, what: String) -> void:

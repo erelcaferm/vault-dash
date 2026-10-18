@@ -67,7 +67,8 @@ const REVIVE_LAVA_GAP := 8.0     # tiles between you and the lava after a revive
 const REVIVE_GRACE := 1.5        # seconds the lava waits after a revive
 ## Levels: the screen glows red and a heartbeat plays in the last seconds.
 const LEVEL_WARN_TIME := 5.0
-const LEVEL_TOP_GAP := 250.0     # camera y below the level's top edge
+const LEVEL_HUD_GAP := 70.0      # screen space kept clear for the HUD above a level
+const LEVEL_FOOT_GAP := 20.0     # and below it
 
 enum State { READY, PLAYING, DEAD, WON, CHEST, PAUSED }
 
@@ -216,6 +217,10 @@ func _ready() -> void:
 	add_child(camera)
 	camera.make_current()
 	_build_hud()
+	# Every button in the game clicks, including ones made later (shop cards, level rows).
+	get_tree().node_added.connect(_on_node_added)
+	for b in find_children("*", "BaseButton", true, false):
+		_add_click(b)
 	reset()
 
 
@@ -305,7 +310,11 @@ func _process(delta: float) -> void:
 		_update_slide(delta)
 		idle_time = idle_time + delta if is_idle() else 0.0
 	if state == State.PLAYING and is_level():
+		var before := ceili(time_left)
 		time_left -= delta
+		# A beep each second over the last few, rising as time runs out.
+		if ceili(time_left) < before and before <= LEVEL_WARN_TIME and time_left > 0.0:
+			sfx.play("countdown", 1.0 + (LEVEL_WARN_TIME - before) * 0.08)
 		if time_left <= 0.0:
 			time_left = 0.0
 			_die("Out of time!", "time")
@@ -787,6 +796,7 @@ func _on_swipe(d: Vector2i) -> void:
 		State.READY:
 			state = State.PLAYING
 			if is_level():
+				sfx.play("start")
 				_hide_message()
 				try_move(d)
 				return
@@ -829,8 +839,7 @@ func is_idle() -> bool:
 
 func _camera_target() -> Vector2:
 	if is_level():
-		# The whole level fits on screen, just below the HUD.
-		return Vector2(tower.width * TILE * 0.5, -tower.height * TILE + LEVEL_TOP_GAP)
+		return _level_camera()
 	# Keep the player a little below centre so you see more of what's above.
 	return Vector2(tower.width * TILE * 0.5, _player_center().y - TILE * 2)
 
@@ -1201,6 +1210,20 @@ func _refresh_texts() -> void:
 	_update_hud()
 
 
+func _on_node_added(node: Node) -> void:
+	if node is BaseButton:
+		_add_click(node)
+
+
+func _add_click(b: BaseButton) -> void:
+	if not b.pressed.is_connected(_click):
+		b.pressed.connect(_click)
+
+
+func _click() -> void:
+	sfx.play("click", randf_range(0.95, 1.05))
+
+
 func vibrate(ms: int) -> void:
 	if vibration_on:
 		Input.vibrate_handheld(ms)
@@ -1513,6 +1536,7 @@ func buy(kind: String, item: Dictionary) -> bool:
 	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or total_coins < item.price:
 		return false
 	total_coins -= item.price
+	sfx.play("buy")
 	owned.append(item.id)
 	equip(kind, item.id)
 	check_achievements()
@@ -1890,7 +1914,26 @@ func _leave_level() -> void:
 
 
 func _open_levels() -> void:
+	sfx.play("open")
 	levels_screen.open()
+
+
+## A level that fits on screen sits still, centred under the HUD. A bigger
+## one scrolls with the hero, along whichever direction doesn't fit, and
+## never past its edges.
+func _level_camera() -> Vector2:
+	var view := get_viewport_rect().size
+	var w := tower.width * TILE
+	var h: float = tower.height * TILE
+	var p := _player_center()
+	var target := Vector2(w * 0.5, -h * 0.5 - (LEVEL_HUD_GAP - LEVEL_FOOT_GAP) * 0.5)
+	if w > view.x:
+		target.x = clampf(p.x, view.x * 0.5, w - view.x * 0.5)
+	if h > view.y - LEVEL_HUD_GAP - LEVEL_FOOT_GAP:
+		var highest: float = -h + view.y * 0.5 - LEVEL_HUD_GAP
+		var lowest := -view.y * 0.5 + LEVEL_FOOT_GAP
+		target.y = clampf(p.y, highest, lowest)
+	return target
 
 
 func _clock(seconds: float) -> String:
@@ -1903,7 +1946,7 @@ func _level_won() -> void:
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	queued_dir = Vector2i.ZERO
-	sfx.play("reward")
+	sfx.play("level_clear")
 	vibrate(60)
 	_celebrate("")
 	var lines: Array = [tr("LEVEL CLEAR!"), "%s   ● %d/%d" % [tr("%.1f seconds") % elapsed, run_coins, level_coins]]
@@ -1941,7 +1984,7 @@ func _level_lost(cause: String) -> void:
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	queued_dir = Vector2i.ZERO
-	sfx.play("death")
+	sfx.play("time_up" if cause == "time" else "death")
 	vibrate(150)
 	shake = 0.35
 	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!"}.get(cause, "Out of time!") as String

@@ -33,6 +33,21 @@ func _ready() -> void:
 			var env: float = maxf(0.0, 1.0 - beat / 0.1) if beat >= 0.0 else 0.0
 			return sin(TAU * 55.0 * t) * 0.7 * env),
 		"trap": _make(0.4, func(t, _n): return sin(TAU * (220.0 + 30.0 * sin(TAU * 6.0 * t)) * t) * 0.3 * _fade(t, 0.4)),
+		# Menus and buttons.
+		"click": _make(0.035, func(t, _n): return sin(TAU * lerpf(1400.0, 900.0, t / 0.035) * t) * 0.3 * _fade(t, 0.035)),
+		"buy": _arpeggio([1318.5, 1760.0, 2093.0], 0.05),
+		"error": _make(0.22, func(t, _n):
+			var f := 180.0 if t < 0.1 else 140.0
+			return _square(f, t) * 0.14 * _fade(t, 0.22)),
+		"open": _make(0.12, func(t, n): return (_noise(n) * 0.15 + sin(TAU * lerpf(300.0, 700.0, t / 0.12) * t) * 0.25) * _fade(t, 0.12)),
+		# Levels.
+		"countdown": _make(0.08, func(t, _n): return sin(TAU * 1760.0 * t) * 0.3 * _fade(t, 0.08)),
+		"time_up": _make(0.6, func(t, _n): return (_square(110.0, t) * 0.5 + _square(116.5, t) * 0.5) * 0.18 * _fade(t, 0.6)),
+		"level_clear": _arpeggio([523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98, 2093.0], 0.075),
+		"start": _arpeggio([392.0, 523.25], 0.07),
+		# The level editor.
+		"paint": _make(0.03, func(t, _n): return _square(660.0, t) * 0.08 * _fade(t, 0.03)),
+		"erase": _make(0.04, func(t, n): return _noise(n) * 0.18 * _fade(t, 0.04)),
 	}
 
 

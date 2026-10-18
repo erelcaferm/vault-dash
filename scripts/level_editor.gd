@@ -1,6 +1,6 @@
 extends Control
-## The level editor: paint tiles on a 13 x 18 grid, set the time limit,
-## test it, and share it as a code. A level can only be shared once its
+## The level editor: paint tiles on a grid of any size within LevelCode's
+## limits, set the time limit, test it, and share it as a code. A level can only be shared once its
 ## maker has beaten it since the last change, so every shared level is
 ## known to be possible in the time given.
 
@@ -9,7 +9,9 @@ const LevelGrid := preload("res://scripts/level_grid.gd")
 const Solver := preload("res://scripts/solver.gd")
 const Skins := preload("res://scripts/skins.gd")
 
-const CELL := 24
+## The grid's cells shrink to fit big levels into this area, up to MAX_CELL.
+const GRID_AREA := Vector2(348, 400)
+const MAX_CELL := 24
 const GOLD := Color("ffd23f")
 const DIM := Color(1, 1, 1, 0.6)
 const BAD := Color("ff6b5b")
@@ -35,6 +37,9 @@ var changed := false
 var _canvas: Control
 var _name_edit: LineEdit
 var _time_label: Label
+var _width_label: Label
+var _height_label: Label
+var _cell := MAX_CELL
 var _status: Label
 var _tool_buttons := {}
 var _pending_clear := false
@@ -52,7 +57,7 @@ func setup(main_game) -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 8)
+		margin.add_theme_constant_override("margin_" + side, 6)
 	add_child(margin)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
@@ -85,9 +90,27 @@ func setup(main_game) -> void:
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	time_row.add_child(_status)
 
+	var size_row := HBoxContainer.new()
+	size_row.add_theme_constant_override("separation", 6)
+	size_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_child(size_row)
+	_button(size_row, "-", func(): _resize(-1, 0), false).custom_minimum_size.x = 34
+	_width_label = _label("", 15)
+	_width_label.custom_minimum_size.x = 80
+	size_row.add_child(_width_label)
+	_button(size_row, "+", func(): _resize(1, 0), false).custom_minimum_size.x = 34
+	var gap := Control.new()
+	gap.custom_minimum_size.x = 10
+	size_row.add_child(gap)
+	_button(size_row, "-", func(): _resize(0, -1), false).custom_minimum_size.x = 34
+	_height_label = _label("", 15)
+	_height_label.custom_minimum_size.x = 80
+	size_row.add_child(_height_label)
+	_button(size_row, "+", func(): _resize(0, 1), false).custom_minimum_size.x = 34
+
 	_canvas = Control.new()
-	_canvas.custom_minimum_size = Vector2(LevelCode.WIDTH * CELL, LevelCode.HEIGHT * CELL)
 	_canvas.size_flags_horizontal = SIZE_SHRINK_CENTER
+	_canvas.size_flags_vertical = SIZE_EXPAND | SIZE_SHRINK_CENTER
 	_canvas.mouse_filter = MOUSE_FILTER_STOP
 	_canvas.draw.connect(_draw_grid)
 	_canvas.gui_input.connect(_on_grid_input)
@@ -100,7 +123,7 @@ func setup(main_game) -> void:
 	for t in TOOLS:
 		var b := Button.new()
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(40, 40)
+		b.custom_minimum_size = Vector2(36, 36)
 		b.tooltip_text = t[1]
 		var tile: String = t[0]
 		b.draw.connect(func(): _draw_tile(b, Rect2(Vector2(8, 8), b.size - Vector2(16, 16)), tile))
@@ -144,6 +167,12 @@ func mark_tested() -> void:
 
 func _refresh() -> void:
 	_time_label.text = tr("Time %s") % game._clock(level.time)
+	var w := LevelCode.width_of(level)
+	var h: int = level.rows.size()
+	_width_label.text = tr("Width %d") % w
+	_height_label.text = tr("Height %d") % h
+	_cell = mini(MAX_CELL, mini(floori(GRID_AREA.x / w), floori(GRID_AREA.y / h)))
+	_canvas.custom_minimum_size = Vector2(w * _cell, h * _cell)
 	var problem := LevelCode.problem(level)
 	if problem != "":
 		_status.text = tr(problem)
@@ -176,6 +205,17 @@ func _change_time(amount: int) -> void:
 	_edited()
 
 
+## Grows or shrinks the level by `dw` columns and `dh` rows, within limits.
+func _resize(dw: int, dh: int) -> void:
+	var w := clampi(LevelCode.width_of(level) + dw, LevelCode.MIN_W, LevelCode.MAX_W)
+	var h := clampi(level.rows.size() + dh, LevelCode.MIN_H, LevelCode.MAX_H)
+	if w == LevelCode.width_of(level) and h == level.rows.size():
+		game._toast(tr("That's the biggest size") if dw + dh > 0 else tr("That's the smallest size"))
+		return
+	level = LevelCode.resized(level, w, h)
+	_edited()
+
+
 func _edited() -> void:
 	changed = true
 	tested = false
@@ -195,15 +235,15 @@ func _on_grid_input(event: InputEvent) -> void:
 
 
 func _cell_at(p: Vector2) -> Vector2i:
-	return Vector2i(floori(p.x / CELL), floori(p.y / CELL))
+	return Vector2i(floori(p.x / _cell), floori(p.y / _cell))
 
 
 ## Puts the current tool's tile at `c`. There's only one start, so placing
 ## it moves it.
 func paint(c: Vector2i) -> void:
-	if c.x < 0 or c.y < 0 or c.x >= LevelCode.WIDTH or c.y >= LevelCode.HEIGHT:
-		return
 	var rows: Array = level.rows
+	if c.x < 0 or c.y < 0 or c.x >= LevelCode.width_of(level) or c.y >= rows.size():
+		return
 	if rows[c.y][c.x] == tool:
 		return
 	if tool == "S":
@@ -211,6 +251,7 @@ func paint(c: Vector2i) -> void:
 			rows[y] = (rows[y] as String).replace("S", ".")
 	var row: String = rows[c.y]
 	rows[c.y] = row.substr(0, c.x) + tool + row.substr(c.x + 1)
+	game.sfx.play("erase" if tool == "." else "paint", randf_range(0.9, 1.15))
 	_edited()
 
 
@@ -220,7 +261,7 @@ func _clear() -> void:
 		_status.text = tr("Tap CLEAR again to empty the level")
 		_status.add_theme_color_override("font_color", BAD)
 		return
-	var fresh := LevelCode.blank(level.name)
+	var fresh := LevelCode.blank(level.name, LevelCode.width_of(level), level.rows.size())
 	fresh.time = level.time
 	level = fresh
 	_edited()
@@ -232,10 +273,12 @@ func _test() -> void:
 	var problem := LevelCode.problem(level)
 	if problem != "":
 		game._toast(tr(problem))
+		game.sfx.play("error")
 		return
 	if solve() == 0:
 		_status.text = tr("No way to reach an exit yet")
 		_status.add_theme_color_override("font_color", BAD)
+		game.sfx.play("error")
 		return
 	_save()
 	game.start_level(level.duplicate(true), "test")
@@ -245,10 +288,12 @@ func _share() -> void:
 	var problem := LevelCode.problem(level)
 	if problem != "":
 		game._toast(tr(problem))
+		game.sfx.play("error")
 		return
 	if not tested:
 		_status.text = tr("Beat your level with TEST before sharing it")
 		_status.add_theme_color_override("font_color", BAD)
+		game.sfx.play("error")
 		return
 	_save()
 	visible = false
@@ -284,14 +329,16 @@ func solve() -> int:
 # --- Drawing -----------------------------------------------------------------
 
 func _draw_grid() -> void:
-	for y in LevelCode.HEIGHT:
-		for x in LevelCode.WIDTH:
-			_draw_tile(_canvas, Rect2(x * CELL, y * CELL, CELL, CELL), level.rows[y][x])
+	var w := LevelCode.width_of(level)
+	var h: int = level.rows.size()
+	for y in h:
+		for x in w:
+			_draw_tile(_canvas, Rect2(x * _cell, y * _cell, _cell, _cell), level.rows[y][x])
 	var line := Color(1, 1, 1, 0.05)
-	for x in LevelCode.WIDTH + 1:
-		_canvas.draw_line(Vector2(x * CELL, 0), Vector2(x * CELL, LevelCode.HEIGHT * CELL), line)
-	for y in LevelCode.HEIGHT + 1:
-		_canvas.draw_line(Vector2(0, y * CELL), Vector2(LevelCode.WIDTH * CELL, y * CELL), line)
+	for x in w + 1:
+		_canvas.draw_line(Vector2(x * _cell, 0), Vector2(x * _cell, h * _cell), line)
+	for y in h + 1:
+		_canvas.draw_line(Vector2(0, y * _cell), Vector2(w * _cell, y * _cell), line)
 
 
 func _draw_tile(canvas: CanvasItem, r: Rect2, t: String) -> void:
@@ -330,7 +377,7 @@ func _draw_tile(canvas: CanvasItem, r: Rect2, t: String) -> void:
 func _button(parent: Node, text: String, action: Callable, big: bool) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size.y = 44 if big else 40
+	b.custom_minimum_size.y = 44 if big else 36
 	if big:
 		b.size_flags_horizontal = SIZE_EXPAND_FILL
 	b.add_theme_font_size_override("font_size", 18 if big else 16)

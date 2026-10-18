@@ -209,13 +209,16 @@ func _on_code_action() -> void:
 	if _sharing:
 		DisplayServer.clipboard_set(_code_edit.text)
 		game._toast(tr("Code copied"))
+		game.sfx.play("buy")
 		_code_panel.visible = false
 		return
 	var lv := LevelCode.decode(_code_edit.text)
 	if lv.is_empty():
 		_code_error.text = tr("That code doesn't work. Check it was copied in full.")
+		game.sfx.play("error")
 		return
 	game.save_custom_level(lv)
+	game.sfx.play("reward")
 	_code_panel.visible = false
 	_refresh()
 

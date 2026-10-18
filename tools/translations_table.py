@@ -311,4 +311,8 @@ T = {
     "Breadcrumbs": ("Migas de pan", "Miettes de pain", "Brotkrumen", "Ekmek Kırıntıları", "Хлебные крошки", "面包屑", "麵包屑"),
     "Explorer": ("Salacot", "Casque colonial", "Tropenhelm", "Kaşif Şapkası", "Пробковый шлем", "探险帽", "探險帽"),
     "Laurel": ("Laurel", "Laurier", "Lorbeerkranz", "Defne Tacı", "Лавровый венок", "桂冠", "桂冠"),
+    "Width %d": ("Ancho %d", "Largeur %d", "Breite %d", "Genişlik %d", "Ширина %d", "宽 %d", "寬 %d"),
+    "Height %d": ("Alto %d", "Hauteur %d", "Höhe %d", "Yükseklik %d", "Высота %d", "高 %d", "高 %d"),
+    "That's the biggest size": ("Ese es el tamaño máximo", "C'est la taille maximale", "Größer geht nicht", "En büyük boyut bu", "Больше нельзя", "已是最大尺寸", "已是最大尺寸"),
+    "That's the smallest size": ("Ese es el tamaño mínimo", "C'est la taille minimale", "Kleiner geht nicht", "En küçük boyut bu", "Меньше нельзя", "已是最小尺寸", "已是最小尺寸"),
 }

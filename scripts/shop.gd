@@ -177,6 +177,7 @@ func _on_card(item: Dictionary) -> void:
 		pending_buy = item.id
 	else:
 		pending_buy = ""
+		game.sfx.play("error")
 	_refresh()
 
 

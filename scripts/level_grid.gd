@@ -10,9 +10,9 @@ var height := 0
 var _grid: Array = []
 
 
-## `rows` are strings of WIDTH characters, top row first.
+## `rows` are equal-length strings, top row first.
 func load_rows(rows: Array) -> void:
-	width = ROOM_W
+	width = (rows[0] as String).length()
 	height = rows.size()
 	_grid = _parse(rows, false)
 	start = Vector2i.ZERO

@@ -126,8 +126,8 @@ When you die, a **REVIVE** button offers one second chance per run for 50 coins 
 **LEVELS** on the menu opens 12 handmade levels and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it's drawn faintly cracked. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
 
 - **Handmade levels** (`scripts/levels.gd`): each unlocks the next and pays once, the first time it's cleared: coins, or one of four level-only cosmetics (Pathfinder hero on 3, Explorer hat on 6, Breadcrumbs trail on 9, Laurel hat on 12). The best time is kept. The layouts came from a search for levels whose shortest solution grows from 7 to 19 moves, with a new hazard every few levels; `moves` in each entry is that shortest solution.
-- **Editor** (`scripts/level_editor.gd`): paint walls, floor, coins, spikes, cracked walls, fake floor, the start and exits on a 13 × 18 grid, and set a time limit from 10 seconds to 5 minutes. **TEST** refuses a level with no way to an exit. A level can only be shared after its maker has beaten it since the last change, so every shared level is possible in its time.
-- **Share codes** (`scripts/level_code.gd`): a level becomes a code of about 130 characters starting `VD1`, which **SHARE** shows and copies. **ADD CODE** takes one (with a Paste button). A checksum rejects codes that were cut short or mistyped. The same format could back an online level browser later: upload the code, list codes, download one.
+- **Editor** (`scripts/level_editor.gd`): paint walls, floor, coins, spikes, cracked walls, fake floor, the start and exits, and set a time limit from 10 seconds to 5 minutes. Levels start at 13 × 18 and can be 7 to 16 tiles wide and 8 to 24 tall (`MIN_W`…`MAX_H` in `level_code.gd`); the cells shrink to fit, and in play a level bigger than the screen scrolls with the hero. **TEST** refuses a level with no way to an exit. A level can only be shared after its maker has beaten it since the last change, so every shared level is possible in its time.
+- **Share codes** (`scripts/level_code.gd`): a level becomes a code of about 130 characters starting `VD2` (older `VD1` codes, always 13 × 18, still load), which **SHARE** shows and copies. **ADD CODE** takes one (with a Paste button). A checksum rejects codes that were cut short or mistyped. The same format could back an online level browser later: upload the code, list codes, download one.
 
 ## Settings and languages
 
@@ -143,7 +143,7 @@ In code, a Label or Button whose text is exactly an English key translates itsel
 
 ## Sound and vibration
 
-Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, and the chest tick and reveal. To use a real recording instead, load it into `sounds` under the same name.
+Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, the chest tick and reveal, a click on every button, buying, a refusal buzz, levels (start, the last-5-seconds countdown, time up, level clear) and painting in the editor. To use a real recording instead, load it into `sounds` under the same name.
 
 On phones, breaking a wall, dying and opening a chest give a short buzz. Settings turns these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
 

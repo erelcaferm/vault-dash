@@ -40,6 +40,14 @@ func _initialize() -> void:
 	game._on_swipe(Vector2i.UP)
 	_expect(not game.gear_button.visible, "the gear hides during a run")
 
+	for id in ["click", "buy", "error", "open", "countdown", "time_up", "level_clear", "start", "paint", "erase"]:
+		_expect(game.sfx.sounds.has(id) and game.sfx.sounds[id].data.size() > 0, "the %s sound is made" % id)
+	var clicks := 0
+	for c in game.shop_button.pressed.get_connections():
+		if c.callable == Callable(game, "_click"):
+			clicks += 1
+	_expect(clicks == 1, "buttons click once")
+
 	game.set_language("")
 	_expect(TranslationServer.get_locale() == game.device_locale(), "auto follows the phone's language")
 
