@@ -26,6 +26,8 @@ func _initialize() -> void:
 	solver.run()
 	route = solver.solution.duplicate()
 	game = load("res://scenes/main.tscn").instantiate()
+	game.save_path = "user://test_save.cfg"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game.test_seed = SEED
 	game.test_room_limit = HEIGHT
 	root.add_child(game)

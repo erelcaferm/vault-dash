@@ -4,6 +4,8 @@ extends Node2D
 
 const TowerScript := preload("res://scripts/tower.gd")
 const Rooms := preload("res://scripts/rooms.gd")
+const Skins := preload("res://scripts/skins.gd")
+const ShopScript := preload("res://scripts/shop.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -26,8 +28,6 @@ const BIOMES := [
 ]
 const COIN_COLOR := Color("ffd23f")
 const SPIKE_COLOR := Color("e84855")
-const CRACK_COLOR := Color("8a6a4a")
-const PLAYER_COLOR := Color("f4f1de")
 const LAVA_COLOR := Color("ff5a1f")
 const LAVA_GLOW := Color("ffb347")
 
@@ -51,10 +51,16 @@ var bursts: Array = []           # short-lived pops from coins and cracked walls
 ## Tests set these to build a fixed tower with an exit at the given room.
 var test_seed := -1
 var test_room_limit := -1
+## Tests point this elsewhere so they never touch the player's real save.
+var save_path := SAVE_PATH
 
 var total_coins := 0
 var best_floor := 0
 var best_time := 0.0
+var owned: Array = []            # ids of shop items bought (free ones aren't listed)
+var equipped_hero := "white"
+var equipped_wall := "rubble"
+var rainbow_phase := 0.0
 
 var touch_start := Vector2.ZERO
 var touch_active := false
@@ -67,6 +73,8 @@ var message_label: Label
 var message_backdrop: ColorRect
 var toast_label: Label
 var toast_time := 0.0
+var shop: Control
+var shop_button: Button
 
 
 func _ready() -> void:
@@ -109,6 +117,8 @@ func reset() -> void:
 
 func _process(delta: float) -> void:
 	anim_time += delta
+	var moving := move_dir != Vector2i.ZERO
+	rainbow_phase += delta * (Skins.RAINBOW_SLIDE_SPEED if moving else Skins.RAINBOW_IDLE_SPEED)
 	state_time += delta
 	if state == State.PLAYING:
 		elapsed += delta
@@ -185,7 +195,7 @@ func _stop() -> void:
 
 func _break_wall(c: Vector2i) -> void:
 	tower.set_tile(c, TowerScript.EMPTY)
-	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": CRACK_COLOR})
+	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": Color(_wall_skin().base, 1.0)})
 	shake = 0.12
 
 
@@ -241,6 +251,8 @@ func _bank_run() -> void:
 # --- Input -----------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if shop.visible:
+		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			touch_start = event.position
@@ -353,6 +365,22 @@ func _build_hud() -> void:
 	toast_label.offset_top = 70
 	toast_label.modulate.a = 0.0
 
+	shop_button = Button.new()
+	shop_button.text = "SHOP"
+	shop_button.add_theme_font_size_override("font_size", 22)
+	shop_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	shop_button.offset_left = -80
+	shop_button.offset_right = 80
+	shop_button.offset_top = -110
+	shop_button.offset_bottom = -56
+	shop_button.pressed.connect(_open_shop)
+	hud.add_child(shop_button)
+
+	shop = ShopScript.new()
+	hud.add_child(shop)
+	shop.setup(self)
+	shop.closed.connect(_close_shop)
+
 
 func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 	var label := Label.new()
@@ -374,11 +402,54 @@ func _show_message(text: String) -> void:
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
+	shop_button.visible = true
 
 
 func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
+	shop_button.visible = false
+
+
+# --- Shop ------------------------------------------------------------------
+
+func _open_shop() -> void:
+	shop.open()
+
+
+func _close_shop() -> void:
+	shop.visible = false
+	if state == State.READY:
+		reset()    # refreshes the title screen's coin count
+
+
+func owns(item: Dictionary) -> bool:
+	return item.price == 0 or owned.has(item.id)
+
+
+func buy(kind: String, item: Dictionary) -> bool:
+	if owns(item) or total_coins < item.price:
+		return false
+	total_coins -= item.price
+	owned.append(item.id)
+	equip(kind, item.id)
+	return true
+
+
+func equip(kind: String, id: String) -> void:
+	if kind == "hero":
+		equipped_hero = id
+	else:
+		equipped_wall = id
+	_save()
+
+
+func _hero_skin() -> Dictionary:
+	return Skins.find(Skins.HERO, equipped_hero)
+
+
+func _wall_skin() -> Dictionary:
+	return Skins.find(Skins.WALLS, equipped_wall)
 
 
 func _toast(text: String) -> void:
@@ -390,10 +461,13 @@ func _toast(text: String) -> void:
 
 func _load_save() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SAVE_PATH) == OK:
+	if cfg.load(save_path) == OK:
 		total_coins = cfg.get_value("progress", "total_coins", 0)
 		best_floor = cfg.get_value("progress", "best_floor", 0)
 		best_time = cfg.get_value("progress", "best_time", 0.0)
+		owned = cfg.get_value("shop", "owned", [])
+		equipped_hero = cfg.get_value("shop", "hero", "white")
+		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 
 
 func _save() -> void:
@@ -401,7 +475,10 @@ func _save() -> void:
 	cfg.set_value("progress", "total_coins", total_coins)
 	cfg.set_value("progress", "best_floor", best_floor)
 	cfg.set_value("progress", "best_time", best_time)
-	cfg.save(SAVE_PATH)
+	cfg.set_value("shop", "owned", owned)
+	cfg.set_value("shop", "hero", equipped_hero)
+	cfg.set_value("shop", "wall", equipped_wall)
+	cfg.save(save_path)
 
 
 # --- Drawing ---------------------------------------------------------------
@@ -460,13 +537,7 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 					Vector2(bx, r.end.y - 3), Vector2(bx + w * 0.5, r.position.y + TILE * 0.25), Vector2(bx + w, r.end.y - 3),
 				]), SPIKE_COLOR)
 		TowerScript.CRACKED:
-			draw_rect(r, CRACK_COLOR)
-			draw_rect(Rect2(r.position, Vector2(TILE, 4)), CRACK_COLOR.lightened(0.3))
-			var dark := CRACK_COLOR.darkened(0.5)
-			draw_polyline(PackedVector2Array([
-				r.position + Vector2(6, 8), mid + Vector2(-2, 0), mid + Vector2(4, 4), r.end - Vector2(5, 6),
-			]), dark, 2.0)
-			draw_line(mid + Vector2(-2, 0), mid + Vector2(6, -8), dark, 2.0)
+			Skins.draw_cracked(self, r, _wall_skin(), anim_time)
 		TowerScript.GOAL:
 			var pulse := 0.5 + 0.5 * sin(anim_time * 5.0)
 			draw_circle(mid, 12.0 + pulse * 4.0, Color(COIN_COLOR, 0.35))
@@ -483,16 +554,15 @@ func _draw_player() -> void:
 		size *= Vector2(0.82, 1.2)
 	elif squash > 0.0:
 		size *= Vector2(1.15, 0.88)
+	var color := Skins.hero_color(_hero_skin(), rainbow_phase)
 	# Speed trail
 	if move_dir != Vector2i.ZERO:
 		for i in range(3, 0, -1):
 			var ghost := p - Vector2(move_dir) * TILE * 0.4 * i
-			draw_rect(Rect2(ghost - size * 0.5, size), Color(PLAYER_COLOR, 0.12 * (4 - i)))
-	draw_rect(Rect2(p - size * 0.5, size), PLAYER_COLOR)
+			Skins.draw_hero(self, ghost, size, color, Vector2.ZERO, 0.12 * (4 - i))
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
-	draw_circle(p + Vector2(-5, -3) + look, 2.6, Color("1d2030"))
-	draw_circle(p + Vector2(5, -3) + look, 2.6, Color("1d2030"))
+	Skins.draw_hero(self, p, size, color, look)
 
 
 func _draw_lava(view: Vector2) -> void:

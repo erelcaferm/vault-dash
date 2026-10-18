@@ -21,7 +21,9 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Start room and 100 room layouts, easiest to hardest | `scripts/rooms.gd` (generated) |
 | Room layout generator and checker | `tools/generate_rooms.py` |
 | Endless tower builder and slide rules | `scripts/tower.gd` |
-| Game loop, input, lava, drawing, HUD, save | `scripts/main.gd` |
+| Game loop, input, lava, drawing, HUD, save, purchases | `scripts/main.gd` |
+| Shop items, prices and how they're drawn | `scripts/skins.gd` |
+| Shop screen | `scripts/shop.gd`, `scripts/skin_preview.gd` |
 
 Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor.
 
@@ -34,6 +36,15 @@ Every run builds a new endless tower. After the start room, each floor picks one
 **Trap floors:** every 30th floor (30, 60, 90 and so on) is a trap floor. Each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. A safe route always exists.
 
 The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Temple. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
+
+## Shop
+
+The **SHOP** button appears on the title and game-over screens, and everything in it is bought with banked coins. To buy an item, tap it once, then again to confirm. Tap an item you already own to equip it.
+
+- **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
+- **Cracked-wall skins:** Rubble is free. Mud, Snow, Wood, Glass, Crystal and Gold Bars cost 150–800.
+
+To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
 
 ## Changing the rooms
 
@@ -56,6 +67,9 @@ It then picks 100, spread from easiest to hardest. After generating, run the tes
 godot --headless --path . --import          # first time only
 godot --headless --path . --script res://tests/test_rooms.gd
 godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
+godot --headless --path . --script res://tests/test_shop.gd
 ```
 
-`test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 32-floor tower, crossing trap floor 30, along the solver's route. It then stands still and checks that the lava kills an idle player.
+The tests use their own save file, so they never touch your coins.
+
+`test_shop.gd` checks buying, equipping and saving. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 32-floor tower, crossing trap floor 30, along the solver's route. It then stands still and checks that the lava kills an idle player.
