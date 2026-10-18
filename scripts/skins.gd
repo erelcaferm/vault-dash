@@ -58,6 +58,18 @@ const WALLS := [
 		"base": Color(0.45, 0.75, 1.0, 0.7), "top": Color(0.9, 0.97, 1.0, 0.9), "detail": Color(1, 1, 1, 0.9)},
 	{"id": "marble", "name": "Marble", "price": -1, "achievement": "tower_legend", "style": "marble",
 		"base": Color("ece8e1"), "top": Color("ffffff"), "detail": Color("9a948c")},
+	{"id": "moss", "name": "Moss", "price": 200, "style": "moss",
+		"base": Color("6b6f5e"), "top": Color("6fbf4a"), "detail": Color("4d8a33")},
+	{"id": "brick", "name": "Brick", "price": 250, "style": "bricks",
+		"base": Color("a5452f"), "top": Color("c25a3f"), "detail": Color("e8d6c4")},
+	{"id": "neon", "name": "Neon", "price": 450, "style": "neon",
+		"base": Color("120c24"), "top": Color("2a1f4d"), "detail": Color("39f0ff")},
+	{"id": "candy", "name": "Candy", "price": -1, "level": 15, "style": "candy",
+		"base": Color("fff0f5"), "top": Color("ffffff"), "detail": Color("ff4f8b")},
+	{"id": "starlight", "name": "Starlight", "price": -1, "level": 24, "style": "neon",
+		"base": Color("0d0a1f"), "top": Color("231a45"), "detail": Color("d6a8ff")},
+	{"id": "gilded", "name": "Gilded", "price": -1, "achievement": "gold_rush", "style": "neon",
+		"base": Color("2b1d05"), "top": Color("4a3410"), "detail": Color("ffd23f")},
 ]
 
 ## Trails left behind the hero while sliding. `style` picks how it's drawn.
@@ -70,6 +82,11 @@ const TRAILS := [
 	{"id": "comet", "name": "Comet", "price": -1, "chest_only": true, "style": "comet"},
 	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
 	{"id": "breadcrumbs", "name": "Breadcrumbs", "price": -1, "level": 9, "style": "bubbles", "color": Color("d9a066")},
+	{"id": "smoke", "name": "Smoke", "price": 200, "style": "smoke", "color": Color("c8c8d0")},
+	{"id": "hearts", "name": "Hearts", "price": 300, "style": "hearts", "color": Color("ff4f8b")},
+	{"id": "lightning", "name": "Lightning", "price": 450, "style": "zap", "color": Color("9be7ff")},
+	{"id": "notes", "name": "Music Notes", "price": -1, "level": 18, "style": "notes", "color": Color("ffffff")},
+	{"id": "confetti", "name": "Confetti", "price": -1, "level": 21, "style": "confetti"},
 ]
 
 ## Hats worn on top of the hero. `style` picks how it's drawn.
@@ -288,6 +305,42 @@ static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, di
 				var r := base * (0.45 - i * 0.04)
 				canvas.draw_circle(center - dir * back, r, Color.from_hsv(hue, 0.65, 1.0, 0.75 - i * 0.07))
 			_sparkle(canvas, center - dir * tile * 0.6 + side * base * 0.5, base * 0.2, Color(1, 1, 1, 0.9))
+		"smoke":
+			var c: Color = item.color
+			for i in 6:
+				var back := tile * (0.4 + i * 0.28)
+				var drift := side * sin(time * 6.0 + i * 1.4) * base * 0.25
+				canvas.draw_circle(center - dir * back + drift, base * (0.18 + i * 0.05), Color(c, 0.45 - i * 0.07))
+		"hearts":
+			var c: Color = item.color
+			for i in 5:
+				var back := tile * (0.45 + i * 0.32)
+				var bob := side * sin(time * 10.0 + i * 2.0) * base * 0.3
+				_heart(canvas, center - dir * back + bob, base * (0.2 - i * 0.025), Color(c, 0.95 - i * 0.17))
+		"zap":
+			var c: Color = item.color
+			var points := PackedVector2Array([center - dir * tile * 0.35])
+			for i in 6:
+				var jag := side * base * 0.35 * (1.0 if (i + int(time * 20.0)) % 2 == 0 else -1.0)
+				points.append(center - dir * tile * (0.6 + i * 0.3) + jag)
+			canvas.draw_polyline(points, Color(c, 0.35), 5.0)
+			canvas.draw_polyline(points, Color(1, 1, 1, 0.9), 1.5)
+		"notes":
+			var c: Color = item.color
+			for i in 4:
+				var back := tile * (0.5 + i * 0.4)
+				var bob := side * sin(time * 8.0 + i * 1.9) * base * 0.35
+				var p := center - dir * back + bob
+				var r := base * (0.12 - i * 0.015)
+				canvas.draw_circle(p, r, Color(c, 0.9 - i * 0.18))
+				canvas.draw_line(p + Vector2(r * 0.9, 0), p + Vector2(r * 0.9, -r * 3.0), Color(c, 0.9 - i * 0.18), 1.5)
+		"confetti":
+			for i in 9:
+				var back := tile * (0.35 + i * 0.2)
+				var spread := side * sin(time * 23.0 + i * 2.7) * base * 0.5
+				var hue := fmod(i * 0.13, 1.0)
+				var s := base * 0.13
+				canvas.draw_rect(Rect2(center - dir * back + spread - Vector2(s, s * 0.5), Vector2(s * 2.0, s)), Color.from_hsv(hue, 0.7, 1.0, 0.9 - i * 0.08))
 
 
 ## Draws lava (or whatever the skin is) with its wavy surface at `top`,
@@ -397,6 +450,34 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 				p + Vector2(w * 0.55, h * 0.75), p + Vector2(w, h * 0.85),
 			]), detail, 1.5)
 			canvas.draw_line(p + Vector2(w * 0.35, h * 0.45), p + Vector2(w * 0.8, h * 0.2), Color(detail, 0.6), 1.0)
+		"moss":
+			# Moss growing over the top and creeping down the sides.
+			if roof:
+				canvas.draw_rect(Rect2(p, Vector2(w, h * 0.22)), top)
+				for i in 3:
+					canvas.draw_circle(p + Vector2(w * (0.2 + i * 0.3), h * 0.22), w * 0.1, top)
+			canvas.draw_circle(p + Vector2(w * 0.15, h * 0.65), w * 0.09, detail)
+			canvas.draw_circle(p + Vector2(w * 0.8, h * 0.5), w * 0.07, detail)
+			canvas.draw_polyline(PackedVector2Array([p + Vector2(w * 0.3, h * 0.35), mid + Vector2(w * 0.05, h * 0.1), p + Vector2(w * 0.62, h * 0.8)]), Color(0, 0, 0, 0.35), 1.5)
+		"bricks":
+			var row_h := h / 3.0
+			for i in 3:
+				var y := p.y + row_h * i
+				canvas.draw_line(Vector2(p.x, y), Vector2(r.end.x, y), detail, 1.0)
+				var off := w * (0.5 if i % 2 == 0 else 0.25)
+				canvas.draw_line(Vector2(p.x + off, y), Vector2(p.x + off, y + row_h), detail, 1.0)
+				if i % 2 == 1:
+					canvas.draw_line(Vector2(p.x + w * 0.75, y), Vector2(p.x + w * 0.75, y + row_h), detail, 1.0)
+			canvas.draw_line(mid + Vector2(-w * 0.15, -h * 0.05), mid + Vector2(w * 0.12, h * 0.2), Color(0, 0, 0, 0.45), 1.5)
+		"neon":
+			var pulse := 0.6 + 0.4 * sin(time * 3.0 + p.x * 0.05 + p.y * 0.03)
+			canvas.draw_rect(r.grow(-2), Color(detail, 0.25 * pulse), false, 4.0)
+			canvas.draw_rect(r.grow(-2), Color(detail, pulse), false, 1.5)
+			canvas.draw_polyline(PackedVector2Array([p + Vector2(w * 0.25, h * 0.3), mid, r.end - Vector2(w * 0.25, h * 0.3)]), Color(detail, pulse), 1.5)
+		"candy":
+			for x0 in [0.05, 0.35, 0.65]:
+				canvas.draw_line(p + Vector2(w * x0, h * 0.04), p + Vector2(w * (x0 + 0.28), h * 0.96), detail, w * 0.12)
+			canvas.draw_line(mid + Vector2(-w * 0.2, -h * 0.1), mid + Vector2(w * 0.15, h * 0.15), Color(0, 0, 0, 0.3), 1.5)
 		"bars":
 			for i in 2:
 				var bar := Rect2(p + Vector2(w * 0.1, h * (0.2 + i * 0.4)), Vector2(w * 0.8, h * 0.32))
@@ -406,6 +487,12 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			if shine >= 0.0 and shine <= 1.0:
 				var x := p.x + w * shine
 				canvas.draw_line(Vector2(x, p.y + 2), Vector2(x - w * 0.2, r.end.y - 2), Color(1, 1, 1, 0.6), 2.0)
+
+
+static func _heart(canvas: CanvasItem, c: Vector2, s: float, color: Color) -> void:
+	canvas.draw_circle(c + Vector2(-s * 0.5, -s * 0.2), s * 0.55, color)
+	canvas.draw_circle(c + Vector2(s * 0.5, -s * 0.2), s * 0.55, color)
+	canvas.draw_colored_polygon(PackedVector2Array([c + Vector2(-s * 1.0, 0), c + Vector2(s * 1.0, 0), c + Vector2(0, s * 1.1)]), color)
 
 
 static func _sparkle(canvas: CanvasItem, c: Vector2, s: float, color: Color) -> void:

@@ -47,8 +47,8 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 
 - **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
 - **Hats:** worn on top of any colour. No hat is free. Cap, Beanie, Party Hat, Headphones, Top Hat and Wizard cost 150–600. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
-- **Cracked-wall skins:** Rubble is free. Mud, Snow, Wood, Glass, Crystal and Gold Bars cost 150–800.
-- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy.
+- **Cracked-wall skins:** Rubble is free. Mud, Snow, Moss, Wood, Brick, Glass, Crystal, Neon and Gold Bars cost 150–800. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy. Walls stacked on top of each other only show a lit top edge on the top one, so a column reads as one block.
+- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy. Smoke, Hearts and Lightning cost 200–450, and Music Notes and Confetti come from levels 18 and 21.
 - **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum and Plasma cost 250–500. Molten Gold only drops from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
@@ -101,7 +101,9 @@ Three missions show at the top of the menu, such as "Collect 15 coins in one run
 
 ## Daily Climb
 
-The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. The tower is 20 floors high (`DAILY_TOP`): reaching the top ends the run and records your time, the fastest finish of the day is today's best time, and the first finish each day pays 100 coins. The HUD shows the floor out of 20 and a running clock. Today's best time (or best floor, before your first finish) is shown on the menu, and playing on days in a row builds a streak. Your best run of the day (the fastest finish, or the highest climb before you've finished) is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_TOP` and `DAILY_REWARD` in `scripts/main.gd`.
+The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. The tower is 20 floors high (`DAILY_TOP`): reaching the top ends the run and records your time, the fastest finish of the day is today's best time, and it earns a medal. Bronze is for finishing; the silver and gold times come from that day's tower (the slide time of its quickest route plus 0.75 or 0.42 seconds of thinking per swipe), and the intro shows them. Bronze pays 50 coins, silver 75 more, and gold a chest. Retrying for a better medal pays only the prizes you haven't won yet that day, so gold after bronze pays silver's coins and the chest. The daily lava is gentler than the endless tower's and hangs further back, so slower climbers can finish: `tests/test_daily_skill.gd` plays several days as simulated expert, good, casual and beginner players and checks they get gold, silver, bronze and bronze. The HUD shows the floor out of 20 and a running clock. Today's best time (or best floor, before your first finish) is shown on the menu, and playing on days in a row builds a streak. Your best run of the day (the fastest finish, or the highest climb before you've finished) is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_TOP`, `BRONZE_COINS`, `SILVER_COINS`, `GOLD_THINK`, `SILVER_THINK` and the `DAILY_LAVA_*` settings in `scripts/main.gd`.
+
+**Daily chest:** climbing 200 floors in a day, over any runs and either mode, earns a free chest (once a day). The title screen shows how many floors are left.
 
 ## Coin combos
 
@@ -123,10 +125,10 @@ When you die, a **REVIVE** button offers one second chance per run for 50 coins 
 
 ## Levels and the level editor
 
-**LEVELS** on the menu opens 12 handmade levels and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it always shows its white crack and outline. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
+**LEVELS** on the menu opens 24 handmade levels (levels 13–24 come in different sizes, from 9 × 16 to 16 × 24) and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it always shows its white crack and outline. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
 
 - **Handmade levels** (`scripts/levels.gd`): each unlocks the next and pays once, the first time it's cleared: coins, or one of four level-only cosmetics (Pathfinder hero on 3, Explorer hat on 6, Breadcrumbs trail on 9, Laurel hat on 12). The best time is kept. The layouts came from a search for levels whose shortest solution grows from 7 to 19 moves, with a new hazard every few levels; `moves` in each entry is that shortest solution.
-- **Stars**: each handmade level has 3 stars, for clearing it, clearing it within its par time (1.5 seconds per move of the shortest solution, plus 5), and grabbing every coin. Stars from different runs add up. Trophies: Maze Runner (6 levels), Level Master (all 12), Star Collector (18 stars) and Perfectionist (all 36, which gives the Starlight hero).
+- **Stars**: each handmade level has 3 stars, for clearing it, clearing it within its par time (1.5 seconds per move of the shortest solution, plus 5), and grabbing every coin. Stars from different runs add up. Trophies: Maze Runner (6 levels), Level Master (12), Grand Master (all 24), Star Collector (18 stars) and Perfectionist (36 stars, which gives the Starlight hero).
 - **Editor** (`scripts/level_editor.gd`): opened with the gold **+ BUILD YOUR OWN LEVEL** button at the top of the LEVELS screen, or EDIT on one of your levels. You can paint walls, floor, coins, spikes, cracked walls, fake floor, the start and exits, and set a time limit from 10 seconds to 5 minutes. Levels start at 13 × 18 and can be 7 to 16 tiles wide and 8 to 24 tall (`MIN_W`…`MAX_H` in `level_code.gd`); the cells shrink to fit, and in play a level bigger than the screen scrolls with the hero. **TEST** refuses a level with no way to an exit. A level can only be shared after its maker has beaten it since the last change, so every shared level is possible in its time.
 - **Share codes** (`scripts/level_code.gd`): a level becomes a code of about 130 characters starting `VD2` (older `VD1` codes, always 13 × 18, still load), which **SHARE** shows and copies. **ADD CODE** takes one (with a Paste button). A checksum rejects codes that were cut short or mistyped. The same format could back an online level browser later: upload the code, list codes, download one.
 
@@ -191,6 +193,8 @@ godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_chest.gd
 godot --headless --path . --script res://tests/test_achievements.gd
 godot --headless --path . --script res://tests/test_daily.gd
+godot --headless --path . --script res://tests/test_daily_skill.gd   # slow: about a minute
+godot --headless --path . --script res://tests/test_scroll.gd
 godot --headless --path . --script res://tests/test_revive.gd
 godot --headless --path . --script res://tests/test_pause.gd
 godot --headless --path . --script res://tests/test_missions.gd

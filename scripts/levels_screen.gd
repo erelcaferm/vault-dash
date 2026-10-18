@@ -54,7 +54,7 @@ func setup(main_game) -> void:
 	build.add_theme_color_override("font_color", GOLD)
 	build.add_theme_color_override("font_hover_color", GOLD)
 	_grid = GridContainer.new()
-	_grid.columns = 4
+	_grid.columns = 6
 	_grid.add_theme_constant_override("h_separation", 6)
 	_grid.add_theme_constant_override("v_separation", 6)
 	column.add_child(_grid)
@@ -106,7 +106,7 @@ func _refresh() -> void:
 
 func _campaign_card(i: int) -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(0, 58)
+	b.custom_minimum_size = Vector2(0, 52)
 	b.size_flags_horizontal = SIZE_EXPAND_FILL
 	var unlocked: bool = game.campaign_unlocked(i)
 	var cleared: bool = game.levels_cleared.has(i)
@@ -117,7 +117,7 @@ func _campaign_card(i: int) -> Button:
 	box.mouse_filter = MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 0)
 	b.add_child(box)
-	box.add_child(_label(str(i + 1), 22, Color.WHITE if unlocked else Color(1, 1, 1, 0.3)))
+	box.add_child(_label(str(i + 1), 20, Color.WHITE if unlocked else Color(1, 1, 1, 0.3)))
 	var sub: Label
 	if cleared:
 		sub = _label(game.stars_text(i), 14, GOLD)
@@ -126,7 +126,7 @@ func _campaign_card(i: int) -> Button:
 		sub = _label("● %d" % reward.coins if reward.has("coins") else tr("Skin"), 12, GOLD)
 	else:
 		sub = _label("Locked", 12, Color(1, 1, 1, 0.3))
-	game.fit_font(sub, 70, 9)
+	game.fit_font(sub, 46, 8)
 	box.add_child(sub)
 	b.pressed.connect(func(): game.start_campaign_level(i))
 	return b

@@ -13,6 +13,7 @@ const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
+const Solver := preload("res://scripts/solver.gd")
 const LevelGrid := preload("res://scripts/level_grid.gd")
 const LevelCode := preload("res://scripts/level_code.gd")
 const Levels := preload("res://scripts/levels.gd")
@@ -56,10 +57,29 @@ const BONUS_CHEST_AHEAD := 5
 const BONUS_CHEST_PUSH := 10
 const CARRYOVER_CHEST_FLOOR := 8
 ## Daily Climb: one tower per day, the same for every player, DAILY_TOP
-## floors high. Reaching the top pays DAILY_REWARD coins, once per day, and
-## the fastest time to the top is today's best.
+## floors high. The fastest time to the top is today's best, and earns a
+## medal: bronze for finishing, silver and gold for beating times worked out
+## from that day's tower (see medal_times). Each medal pays its own prize,
+## and a better medal later in the day pays only the prizes not yet won.
 const DAILY_TOP := 20
-const DAILY_REWARD := 100
+## The daily's lava is gentler than the endless tower's, so a beginner can
+## still reach the top; the medal times are what push good players.
+const DAILY_LAVA_ACCEL := 0.005
+const DAILY_LAVA_MAX_SPEED := 0.8
+## It also hangs further back, more than a room's height, so a route that
+## drops down a room on its way up is still safe for a slower climber.
+const DAILY_LAVA_MAX_GAP := 16.0
+const BRONZE_COINS := 50
+const SILVER_COINS := 75             # gold's prize is a chest
+## Thinking time per swipe that each medal allows, on top of the slides
+## themselves. tests/test_daily_skill.gd checks these against simulated
+## players: experts get gold, good players silver, beginners bronze.
+const GOLD_THINK := 0.42
+const SILVER_THINK := 0.75
+## Climbing this many floors in a day, over any runs, earns a free chest.
+const DAILY_CHEST_FLOORS := 200
+const MEDALS := ["", "Bronze medal", "Silver medal", "Gold medal"]
+const MEDAL_COLORS := [Color.WHITE, Color("cd7f32"), Color("c0c8d0"), Color("ffd23f")]
 ## Seconds between the end of a run and its saved chests opening.
 const CHEST_OPEN_DELAY := 0.9
 ## One revive per run, paid in coins: the base cost plus a bit per floor.
@@ -160,9 +180,12 @@ var settings_screen: Control
 var language := ""               # saved; "" means follow the phone's language
 var daily_mode := false
 var daily_button: Button
-var daily_date := ""             # saved; the day daily_best and daily_claimed are for
+var daily_date := ""             # saved; the day daily_best and daily_medal are for
 var daily_best := 0
-var daily_claimed := false
+var daily_medal := 0             # saved; today's best medal: 0 none, 1 bronze, 2 silver, 3 gold
+var floors_today := 0            # saved; floors climbed today in any mode, for the daily chest
+var floors_day := ""             # saved; the day floors_today counts
+var medal_cache := {}            # date -> [gold seconds, silver seconds]
 var daily_time := 0.0            # saved; today's fastest climb to the top, 0 if none yet
 var daily_time_at_start := 0.0
 var daily_last_played := ""      # saved; the last day a Daily Climb was started
@@ -306,8 +329,10 @@ func reset() -> void:
 	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
 	if daily_mode:
 		var goal := tr("Reach floor %d as fast as you can.") % DAILY_TOP
-		if not daily_claimed:
-			goal += "\n" + tr("The top pays %d coins") % DAILY_REWARD
+		var times := medal_times()
+		goal += "\n" + tr("Gold %s · Silver %s") % [time_text(times[0]), time_text(times[1])]
+		if daily_medal > 0:
+			goal += "\n" + tr("Won today: %s") % tr(MEDALS[daily_medal])
 		var progress := ""
 		if daily_time > 0.0:
 			progress += "\n" + tr("Today's best time: %s") % time_text(daily_time)
@@ -315,11 +340,15 @@ func reset() -> void:
 			progress += "\n" + tr("Today's best: floor %d") % daily_best
 		if daily_streak > 0:
 			progress += "\n" + tr("Streak: %d days") % daily_streak
-		_show_message("%s · %s\n\n%s\n%s\n%s" % [tr("DAILY CLIMB"), _pretty_date(daily_date), tr("Same tower for everyone today."), goal, progress])
+		# The tower is the same for everyone, which the date already says, so
+		# the space goes to the goal and medal times.
+		_show_message("%s · %s\n\n%s\n%s" % [tr("DAILY CLIMB"), _pretty_date(daily_date), goal, progress])
 		return
 	var best := ""
 	if best_floor > 0:
 		best = "\n\n" + tr("Best floor %d") % best_floor + "   ● %d" % total_coins
+	var left := daily_chest_left()
+	best += "\n" + (tr("Daily chest: %d floors to go") % left if left > 0 else tr("Daily chest earned. Back tomorrow!"))
 	_show_message("VAULT DASH\n\n%s%s" % [tr("Swipe to slide.") + "\n" + tr("Climb before the lava gets you."), best])
 
 
@@ -569,9 +598,11 @@ func _update_lava(delta: float) -> void:
 	if freeze_time > 0.0:
 		return
 	var speed := minf(LAVA_START_SPEED + LAVA_ACCEL * elapsed, LAVA_MAX_SPEED)
+	if daily_mode:
+		speed = minf(LAVA_START_SPEED + DAILY_LAVA_ACCEL * elapsed, DAILY_LAVA_MAX_SPEED)
 	lava_y -= speed * TILE * delta
 	var player_y := _player_center().y
-	lava_y = minf(lava_y, player_y + LAVA_MAX_GAP * TILE)
+	lava_y = minf(lava_y, player_y + (DAILY_LAVA_MAX_GAP if daily_mode else LAVA_MAX_GAP) * TILE)
 	if lava_y <= player_y:
 		_die("Melted on floor %d", "lava")
 
@@ -631,6 +662,7 @@ func _update_floor() -> void:
 			if tower.is_trap(passed - 1):
 				add_stat("trap_floors")
 				add_trap_meter(passed, meter_rng.randf_range(TRAP_METER_MIN, TRAP_METER_MAX))
+		_count_daily_floors(f - run_floor)
 		run_floor = f
 		_roll_powerups(f + 3)
 		report_run("run_floor", f)
@@ -785,16 +817,113 @@ func _daily_won() -> void:
 		daily_ghost = recording.duplicate()
 	else:
 		lines.append(tr("Today's best time: %s") % time_text(daily_time))
-	if not daily_claimed:
-		daily_claimed = true
-		total_coins += DAILY_REWARD
-		add_stat("daily_goals")
-		lines.append(tr("Daily reward: +%d coins") % DAILY_REWARD)
+	var medal := medal_level(elapsed)
+	lines.append(tr(MEDALS[medal]) + "!")
+	if medal > daily_medal:
+		if daily_medal == 0:
+			add_stat("daily_goals")
+		var prize := _medal_prize(daily_medal, medal)
+		if prize != "":
+			lines.append(prize)
+		if medal == 3:
+			add_stat("daily_golds")
+		daily_medal = medal
 	daily_best = DAILY_TOP
 	_bank_run()
 	lines.append("")
 	lines.append(tr("Swipe to climb again"))
 	_end_run("\n".join(lines))
+
+
+## Counts floors towards today's free chest, which is saved for the end of
+## the run like any other chest.
+func _count_daily_floors(n: int) -> void:
+	if floors_day != today():
+		floors_day = today()
+		floors_today = 0
+	var before := floors_today
+	floors_today += n
+	if before < DAILY_CHEST_FLOORS and floors_today >= DAILY_CHEST_FLOORS:
+		pending_chests += 1
+		add_stat("daily_chests")
+		banner_queue.append("%s\n%s" % [tr("DAILY CHEST!"), tr("%d floors climbed today") % DAILY_CHEST_FLOORS])
+		sfx.play("trophy")
+		_save()
+
+
+## Floors still to climb today for the daily chest; 0 once it's earned.
+func daily_chest_left() -> int:
+	if floors_day != today():
+		return DAILY_CHEST_FLOORS
+	return maxi(DAILY_CHEST_FLOORS - floors_today, 0)
+
+
+## Pays the prizes for every medal above `old` up to `new`, and says what
+## they were. Gold's chest is saved and opens as the run ends.
+func _medal_prize(old: int, new: int) -> String:
+	var coins := 0
+	if old < 1 and new >= 1:
+		coins += BRONZE_COINS
+	if old < 2 and new >= 2:
+		coins += SILVER_COINS
+	total_coins += coins
+	var parts: Array = []
+	if coins > 0:
+		parts.append(tr("+%d coins") % coins)
+	if old < 3 and new >= 3:
+		pending_chests += 1
+		parts.append(tr("+1 chest"))
+	return "   ".join(parts)
+
+
+## The gold and silver times for today's Daily Climb, in seconds. They come
+## from the quickest route up the tower: the time its slides take, plus a
+## little thinking time per swipe (GOLD_THINK, SILVER_THINK).
+func medal_times() -> Array:
+	if medal_cache.has(daily_date):
+		return medal_cache[daily_date]
+	var route := _daily_route()
+	var times := [
+		route.slide_time + route.moves * GOLD_THINK,
+		route.slide_time + route.moves * SILVER_THINK,
+	]
+	medal_cache[daily_date] = times
+	return times
+
+
+## 3 gold, 2 silver, 1 bronze for a finish in `seconds`.
+func medal_level(seconds: float) -> int:
+	var times := medal_times()
+	if seconds <= times[0]:
+		return 3
+	if seconds <= times[1]:
+		return 2
+	return 1
+
+
+func medal_for(seconds: float) -> String:
+	return ["", "bronze", "silver", "gold"][medal_level(seconds)]
+
+
+## The fewest-swipes route up today's tower, and how long its slides take.
+func _daily_route() -> Dictionary:
+	var t := TowerScript.new()
+	t.build(Rooms.START, Rooms.LAYOUTS, daily_seed(daily_date))
+	t.room_limit = DAILY_TOP
+	var solver = Solver.new(t)
+	solver.upward_only = true
+	solver.run()
+	var tiles := 0
+	var c: Vector2i = t.start
+	var broken := {}
+	for dir: Vector2i in solver.solution:
+		var r: Dictionary = t.simulate_slide(c, dir, broken)
+		var end: Vector2i = r.end
+		tiles += absi(end.x - c.x) + absi(end.y - c.y)
+		if r.broke != null:
+			broken[r.broke] = true
+		c = end
+	return {"moves": solver.solution.size(), "slide_time": tiles / SLIDE_SPEED}
 
 
 ## Seconds with tenths, like "47.3 s", or "1:05.2" past a minute.
@@ -1597,7 +1726,7 @@ func _refresh_daily() -> void:
 	if daily_date != today():
 		daily_date = today()
 		daily_best = 0
-		daily_claimed = false
+		daily_medal = 0
 		daily_time = 0.0
 		daily_ghost = PackedVector2Array()
 
@@ -1791,7 +1920,9 @@ func _load_save() -> void:
 		language = cfg.get_value("settings", "language", "")
 		daily_date = cfg.get_value("daily", "date", "")
 		daily_best = cfg.get_value("daily", "best", 0)
-		daily_claimed = cfg.get_value("daily", "claimed", false)
+		daily_medal = cfg.get_value("daily", "medal", 0)
+		floors_today = cfg.get_value("daily", "floors_today", 0)
+		floors_day = cfg.get_value("daily", "floors_day", "")
 		daily_time = cfg.get_value("daily", "time", 0.0)
 		pending_chests = cfg.get_value("secret", "pending_chests", 0)
 		daily_last_played = cfg.get_value("daily", "last_played", "")
@@ -1839,7 +1970,9 @@ func _save() -> void:
 	cfg.set_value("settings", "language", language)
 	cfg.set_value("daily", "date", daily_date)
 	cfg.set_value("daily", "best", daily_best)
-	cfg.set_value("daily", "claimed", daily_claimed)
+	cfg.set_value("daily", "medal", daily_medal)
+	cfg.set_value("daily", "floors_today", floors_today)
+	cfg.set_value("daily", "floors_day", floors_day)
 	cfg.set_value("daily", "time", daily_time)
 	cfg.set_value("secret", "pending_chests", pending_chests)
 	cfg.set_value("daily", "last_played", daily_last_played)

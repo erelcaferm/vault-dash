@@ -26,7 +26,7 @@ SKIP = {"", "%d%%", "II", "● %d/%d", "★ %d/%d", "✕", "-", "+", "%d/%d", "%
         # Language names are always shown in their own language.
         "English", "Español", "Français", "Deutsch", "Türkçe", "Русский", "简体中文", "繁體中文"}
 # Shown, but only reachable through an expression the patterns above miss.
-EXTRA = ["Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
+EXTRA = ["Bronze medal", "Silver medal", "Gold medal", "Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
 
 
 def unescape(s):

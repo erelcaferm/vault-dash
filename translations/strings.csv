@@ -34,7 +34,6 @@ The Crypt,The Crypt,La Cripta,La Crypte,Die Gruft,Mahzen,Склеп,地穴,地�
 Ice Caves,Ice Caves,Cuevas de Hielo,Grottes de Glace,Eishöhlen,Buz Mağaraları,Ледяные пещеры,冰洞,冰洞
 Jungle Temple,Jungle Temple,Templo de la Selva,Temple de la Jungle,Dschungeltempel,Orman Tapınağı,Храм в джунглях,丛林神殿,叢林神殿
 DAILY CLIMB,DAILY CLIMB,ESCALADA DIARIA,ASCENSION DU JOUR,TAGESAUFSTIEG,GÜNLÜK TIRMANIŞ,ЕЖЕДНЕВНЫЙ ПОДЪЁМ,每日攀登,每日攀登
-Same tower for everyone today.,Same tower for everyone today.,La misma torre para todos hoy.,La même tour pour tout le monde aujourd'hui.,Heute für alle derselbe Turm.,Bugün herkes için aynı kule.,Сегодня у всех одна и та же башня.,今天所有人挑战同一座塔。,今天所有人挑戰同一座塔。
 Today's best: floor %d,Today's best: floor %d,Mejor de hoy: piso %d,Meilleur du jour : étage %d,Heutiger Rekord: Etage %d,Bugünün rekoru: %d. kat,Лучшее сегодня: этаж %d,今日最佳：第%d层,今日最佳：第%d層
 Streak: %d days,Streak: %d days,Racha: %d días,Série : %d jours,Serie: %d Tage,Seri: %d gün,Серия: %d дн.,连续：%d天,連續：%d天
 {month} {day},{month} {day},{day} {month},{day} {month},{day}. {month},{day} {month},{day} {month},{month}{day}日,{month}{day}日
@@ -296,18 +295,54 @@ Clear all 12 levels,Clear all 12 levels,Supera los 12 niveles,Réussis les 12 ni
 Star Collector,Star Collector,Coleccionista de estrellas,Collectionneur d'étoiles,Sternensammler,Yıldız Koleksiyoncusu,Собиратель звёзд,集星者,集星者
 Earn 18 level stars,Earn 18 level stars,Consigue 18 estrellas de nivel,Gagne 18 étoiles de niveau,Verdiene 18 Levelsterne,18 bölüm yıldızı kazan,Получи 18 звёзд за уровни,获得18颗关卡星星,獲得18顆關卡星星
 Perfectionist,Perfectionist,Perfeccionista,Perfectionniste,Perfektionist,Mükemmeliyetçi,Перфекционист,完美主义者,完美主義者
-Earn all 36 level stars,Earn all 36 level stars,Consigue las 36 estrellas de nivel,Gagne les 36 étoiles de niveau,Verdiene alle 36 Levelsterne,36 bölüm yıldızının hepsini kazan,Получи все 36 звёзд за уровни,获得全部36颗关卡星星,獲得全部36顆關卡星星
+Earn 36 level stars,Earn 36 level stars,Consigue 36 estrellas de nivel,Gagne 36 étoiles de niveau,Verdiene 36 Levelsterne,36 bölüm yıldızı kazan,Получи 36 звёзд за уровни,获得36颗关卡星星,獲得36顆關卡星星
 Starlight,Starlight,Luz estelar,Lumière d'étoile,Sternenlicht,Yıldız Işığı,Звёздный свет,星光,星光
 Reach the top of the Daily Climb 10 times,Reach the top of the Daily Climb 10 times,Llega a la cima de la Escalada diaria 10 veces,Atteins le sommet de l'Ascension du jour 10 fois,Erreiche 10-mal die Spitze des Tagesaufstiegs,Günlük Tırmanış'ın zirvesine 10 kez ulaş,Доберись до вершины Ежедневного подъёма 10 раз,登顶每日攀登 10 次,登頂每日攀登 10 次
 Reach floor %d as fast as you can.,Reach floor %d as fast as you can.,Llega al piso %d lo más rápido posible.,Atteins l'étage %d le plus vite possible.,Erreiche so schnell wie möglich Etage %d.,%d. kata olabildiğince hızlı ulaş.,Доберись до этажа %d как можно быстрее.,尽快到达第 %d 层。,盡快到達第 %d 層。
-The top pays %d coins,The top pays %d coins,La cima paga %d monedas,Le sommet rapporte %d pièces,Die Spitze bringt %d Münzen,Zirve %d altın verir,Вершина даёт %d монет,登顶奖励 %d 金币,登頂獎勵 %d 金幣
 Today's best time: %s,Today's best time: %s,Mejor tiempo de hoy: %s,Meilleur temps du jour : %s,Heutige Bestzeit: %s,Bugünün en iyi süresi: %s,Лучшее время сегодня: %s,今日最佳时间：%s,今日最佳時間：%s
 Chests saved: %d,Chests saved: %d,Cofres guardados: %d,Coffres gardés : %d,Gesparte Truhen: %d,Saklanan sandık: %d,Сундуков в запасе: %d,已存宝箱：%d,已存寶箱：%d
 TOP REACHED!,TOP REACHED!,¡CIMA ALCANZADA!,SOMMET ATTEINT !,SPITZE ERREICHT!,ZİRVEYE ULAŞTIN!,ВЕРШИНА!,登顶！,登頂！
 Time: %s,Time: %s,Tiempo: %s,Temps : %s,Zeit: %s,Süre: %s,Время: %s,时间：%s,時間：%s
-Daily reward: +%d coins,Daily reward: +%d coins,Premio diario: +%d monedas,Récompense du jour : +%d pièces,Tagesbelohnung: +%d Münzen,Günlük ödül: +%d altın,Награда дня: +%d монет,每日奖励：+%d 金币,每日獎勵：+%d 金幣
 Swipe to climb again,Swipe to climb again,Desliza para volver a subir,Glisse pour grimper encore,"Wische, um nochmal zu klettern",Tekrar tırmanmak için kaydır,"Проведи, чтобы подняться снова",滑动再爬一次,滑動再爬一次
 Chest saved!,Chest saved!,¡Cofre guardado!,Coffre gardé !,Truhe gespart!,Sandık saklandı!,Сундук в запасе!,宝箱已存！,寶箱已存！
 CHEST %d OF %d,CHEST %d OF %d,COFRE %d DE %d,COFFRE %d SUR %d,TRUHE %d VON %d,SANDIK %d / %d,СУНДУК %d ИЗ %d,宝箱 %d / %d,寶箱 %d / %d
 + BUILD YOUR OWN LEVEL,+ BUILD YOUR OWN LEVEL,+ CREA TU PROPIO NIVEL,+ CRÉE TON NIVEAU,+ BAU DEIN EIGENES LEVEL,+ KENDİ BÖLÜMÜNÜ YAP,+ СОЗДАЙ СВОЙ УРОВЕНЬ,+ 制作你的关卡,+ 製作你的關卡
 Levels you build or add from a friend's code show here.,Levels you build or add from a friend's code show here.,Aquí salen los niveles que crees o añadas con un código.,Tes niveaux et ceux ajoutés par code apparaissent ici.,Deine Level und Level per Code erscheinen hier.,Yaptığın ve kodla eklediğin bölümler burada görünür.,Здесь появятся твои уровни и добавленные по коду.,你制作或用代码添加的关卡会显示在这里。,你製作或用代碼加入的關卡會顯示在這裡。
+Podium,Podium,Podio,Podium,Podest,Kürsü,Пьедестал,领奖台,領獎台
+Gold Rush,Gold Rush,Fiebre del oro,Ruée vers l'or,Goldrausch,Altına Hücum,Золотая лихорадка,淘金热,淘金熱
+Chest a Day,Chest a Day,Un cofre al día,Un coffre par jour,Eine Truhe am Tag,Günde Bir Sandık,Сундук в день,每日一箱,每日一箱
+Grand Master,Grand Master,Gran maestro,Grand maître,Großmeister,Büyük Usta,Гроссмейстер,宗师,宗師
+Win a gold medal in the Daily Climb,Win a gold medal in the Daily Climb,Gana una medalla de oro en la Escalada diaria,Gagne une médaille d'or à l'Ascension du jour,Hol eine Goldmedaille im Tagesaufstieg,Günlük Tırmanış'ta altın madalya kazan,Получи золотую медаль в Ежедневном подъёме,在每日攀登中获得金牌,在每日攀登中獲得金牌
+Win 10 daily gold medals,Win 10 daily gold medals,Gana 10 medallas de oro diarias,Gagne 10 médailles d'or du jour,Hol 10 Tages-Goldmedaillen,10 günlük altın madalya kazan,Получи 10 золотых медалей дня,获得 10 枚每日金牌,獲得 10 枚每日金牌
+Earn 7 daily chests for climbing 200 floors,Earn 7 daily chests for climbing 200 floors,Gana 7 cofres diarios subiendo 200 pisos,Gagne 7 coffres du jour en grimpant 200 étages,Verdiene 7 Tagestruhen für 200 Etagen,200 kat tırmanarak 7 günlük sandık kazan,Получи 7 сундуков дня за 200 этажей,攀爬 200 层获得 7 个每日宝箱,攀爬 200 層獲得 7 個每日寶箱
+Clear all 24 levels,Clear all 24 levels,Supera los 24 niveles,Termine les 24 niveaux,Schaffe alle 24 Level,24 bölümün hepsini geç,Пройди все 24 уровня,通关全部 24 关,通關全部 24 關
+Narrow Pass,Narrow Pass,Paso estrecho,Passage étroit,Engpass,Dar Geçit,Узкий проход,窄道,窄道
+Spike Garden,Spike Garden,Jardín de pinchos,Jardin de pics,Stachelgarten,Diken Bahçesi,Сад шипов,尖刺花园,尖刺花園
+Wide Open,Wide Open,Campo abierto,Grand ouvert,Weit offen,Açık Alan,Простор,开阔地,開闊地
+Glass Floor,Glass Floor,Suelo de cristal,Sol de verre,Glasboden,Cam Zemin,Стеклянный пол,玻璃地板,玻璃地板
+Crossroads,Crossroads,Encrucijada,Carrefour,Kreuzung,Kavşak,Перекрёсток,十字路口,十字路口
+Tall Order,Tall Order,Muy alto,Haute tour,Hoch hinaus,Yüksek Kule,Высокая башня,高塔,高塔
+Fakeout,Fakeout,Engaño,Feinte,Täuschung,Aldatmaca,Обман,假象,假象
+Crackdown,Crackdown,Derrumbe,Effondrement,Einsturz,Çöküş,Обвал,崩塌,崩塌
+Labyrinth,Labyrinth,Laberinto,Labyrinthe,Labyrinth,Labirent,Лабиринт,迷宫,迷宮
+Pressure,Pressure,Presión,Pression,Druck,Baskı,Давление,压力,壓力
+Deep Vault,Deep Vault,Bóveda profunda,Coffre profond,Tiefer Tresor,Derin Kasa,Глубокое хранилище,深层金库,深層金庫
+Final Ascent,Final Ascent,Ascenso final,Ascension finale,Letzter Aufstieg,Son Tırmanış,Последний подъём,最终攀登,最終攀登
+Gold %s · Silver %s,Gold %s · Silver %s,Oro %s · Plata %s,Or %s · Argent %s,Gold %s · Silber %s,Altın %s · Gümüş %s,Золото %s · Серебро %s,金牌 %s · 银牌 %s,金牌 %s · 銀牌 %s
+Won today: %s,Won today: %s,Ganado hoy: %s,Gagné aujourd'hui : %s,Heute gewonnen: %s,Bugün kazanılan: %s,Сегодня: %s,今日获得：%s,今日獲得：%s
+Daily chest: %d floors to go,Daily chest: %d floors to go,Cofre diario: faltan %d pisos,Coffre du jour : encore %d étages,Tagestruhe: noch %d Etagen,Günlük sandık: %d kat kaldı,Сундук дня: ещё %d этажей,每日宝箱：还差 %d 层,每日寶箱：還差 %d 層
+Daily chest earned. Back tomorrow!,Daily chest earned. Back tomorrow!,Cofre diario conseguido. ¡Vuelve mañana!,Coffre du jour gagné. À demain !,Tagestruhe verdient. Bis morgen!,Günlük sandık kazanıldı. Yarın görüşürüz!,Сундук дня получен. До завтра!,今日宝箱已获得，明天见！,今日寶箱已獲得，明天見！
+DAILY CHEST!,DAILY CHEST!,¡COFRE DIARIO!,COFFRE DU JOUR !,TAGESTRUHE!,GÜNLÜK SANDIK!,СУНДУК ДНЯ!,每日宝箱！,每日寶箱！
+%d floors climbed today,%d floors climbed today,%d pisos subidos hoy,%d étages grimpés aujourd'hui,%d Etagen heute geklettert,Bugün %d kat tırmanıldı,%d этажей за сегодня,今天已爬 %d 层,今天已爬 %d 層
++1 chest,+1 chest,+1 cofre,+1 coffre,+1 Truhe,+1 sandık,+1 сундук,+1 宝箱,+1 寶箱
+Bronze medal,Bronze medal,Medalla de bronce,Médaille de bronze,Bronzemedaille,Bronz madalya,Бронзовая медаль,铜牌,銅牌
+Silver medal,Silver medal,Medalla de plata,Médaille d'argent,Silbermedaille,Gümüş madalya,Серебряная медаль,银牌,銀牌
+Gold medal,Gold medal,Medalla de oro,Médaille d'or,Goldmedaille,Altın madalya,Золотая медаль,金牌,金牌
+Moss,Moss,Musgo,Mousse,Moos,Yosun,Мох,苔藓,苔蘚
+Candy,Candy,Caramelo,Bonbon,Zuckerstange,Şeker,Леденец,糖果,糖果
+Gilded,Gilded,Dorado,Doré,Vergoldet,Yaldızlı,Позолота,鎏金,鎏金
+Smoke,Smoke,Humo,Fumée,Rauch,Duman,Дым,烟雾,煙霧
+Hearts,Hearts,Corazones,Cœurs,Herzen,Kalpler,Сердца,爱心,愛心
+Lightning,Lightning,Rayo,Éclair,Blitz,Şimşek,Молния,闪电,閃電
+Music Notes,Music Notes,Notas,Notes,Noten,Notalar,Ноты,音符,音符
+Confetti,Confetti,Confeti,Confettis,Konfetti,Konfeti,Конфетти,彩纸,彩紙

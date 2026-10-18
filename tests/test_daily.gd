@@ -44,9 +44,9 @@ func _initialize() -> void:
 	_expect(game.tower.room_limit == game.DAILY_TOP, "the daily tower stops at floor %d" % game.DAILY_TOP)
 	_expect(game.tower.get_tile(Vector2i(6, -game.DAILY_TOP * 12 - 3)) == "G", "above the top floor is the finish")
 	_reach_floor(game, 15)
-	_expect(not game.daily_claimed and game.total_coins == coins_before, "climbing alone doesn't pay the reward")
+	_expect(game.daily_medal == 0 and game.total_coins == coins_before, "climbing alone doesn't pay a medal")
 	_reach_floor(game, 20)
-	_expect(game.daily_best == 20 and not game.daily_claimed, "today's best floor is tracked")
+	_expect(game.daily_best == 20 and game.daily_medal == 0, "today's best floor is tracked")
 	for i in 5:
 		await process_frame
 	game._die("Test on floor %d", "lava")
@@ -62,42 +62,77 @@ func _initialize() -> void:
 	game._on_swipe(Vector2i.UP)
 	_expect(game.daily_streak == 1 and game.stat("daily_days") == 1, "a second run the same day doesn't count again")
 
-	# Reaching the top records the time and pays the reward once.
+	# Reaching the top records the time and wins a medal. Better medals later
+	# in the day pay only the prizes not yet won.
+	var times: Array = game.medal_times()
+	_expect(times[0] > 20.0 and times[1] > times[0] and times[1] < 200.0, "medal times are sensible (%s)" % str(times))
+	_expect(game.medal_times() == times, "medal times are the same all day")
+	var bronze: float = times[1] + 10.25
 	game.reset()
 	game._on_swipe(Vector2i.UP)
-	game.elapsed = 95.25
+	game.elapsed = bronze
 	game.run_coins = 0
 	game._win()
-	_expect(game.state == game.State.WON and is_equal_approx(game.daily_time, 95.25), "reaching the top records the time")
-	_expect(game.daily_claimed and game.total_coins == coins_before + game.DAILY_REWARD, "the first finish pays the daily reward")
+	_expect(game.state == game.State.WON and is_equal_approx(game.daily_time, bronze), "reaching the top records the time")
+	_expect(game.daily_medal == 1 and game.total_coins == coins_before + game.BRONZE_COINS, "a slow finish wins bronze and its coins")
 	_expect(game.daily_best == game.DAILY_TOP, "a finish counts as the top floor")
-	_expect(game.message_label.text.contains("1:35.3"), "the time is shown (got: %s)" % game.message_label.text)
+	_expect(game.message_label.text.contains(game.time_text(bronze)), "the time is shown (got: %s)" % game.message_label.text)
 	game.reset()
-	_expect(game.message_label.text.contains("1:35.3"), "the daily intro shows today's best time")
+	_expect(game.message_label.text.contains(game.time_text(bronze)), "the daily intro shows today's best time")
+	_expect(game.message_label.text.contains(game.time_text(times[0])), "the daily intro shows the gold time")
 	game._on_swipe(Vector2i.UP)
-	game.elapsed = 120.0
+	game.elapsed = bronze + 20.0
 	game.run_coins = 0
 	game._win()
-	_expect(is_equal_approx(game.daily_time, 95.25), "a slower finish doesn't replace the best time")
-	_expect(game.total_coins == coins_before + game.DAILY_REWARD, "the daily reward pays once")
+	_expect(is_equal_approx(game.daily_time, bronze), "a slower finish doesn't replace the best time")
+	_expect(game.total_coins == coins_before + game.BRONZE_COINS, "bronze pays once")
 	game.reset()
 	game._on_swipe(Vector2i.UP)
-	game.elapsed = 61.0
+	game.elapsed = (times[0] + times[1]) / 2.0
 	game.run_coins = 0
 	game._win()
-	_expect(is_equal_approx(game.daily_time, 61.0) and game.message_label.text.contains(game.tr("New best time!")), "a faster finish is the new best")
+	_expect(game.daily_medal == 2 and game.message_label.text.contains(game.tr("New best time!")), "a faster finish wins silver")
+	_expect(game.total_coins == coins_before + game.BRONZE_COINS + game.SILVER_COINS, "going up to silver pays only silver's prize")
+	_expect(game.pending_chests == 0, "silver has no chest")
+	game.reset()
+	game._on_swipe(Vector2i.UP)
+	game.elapsed = times[0] - 5.0
+	game.run_coins = 0
+	game._win()
+	_expect(game.daily_medal == 3 and game.pending_chests == 1, "gold wins a chest")
+	_expect(game.total_coins == coins_before + game.BRONZE_COINS + game.SILVER_COINS, "gold pays no coins twice")
+	_expect(game.stat("daily_golds") == 1 and game.unlocked.has("first_gold"), "the first gold unlocks Podium")
+	game._on_tap()
+	_expect(game.chest_screen.visible, "the gold chest opens as the run ends")
+	game.chest_screen.visible = false
+	game.pending_chests = 0
+	game.state = game.State.WON
 	var finished_ghost: PackedVector2Array = game.daily_ghost
 	game.reset()
 	game._on_swipe(Vector2i.UP)
 	game._die("Test on floor %d", "lava")
 	_expect(game.daily_ghost == finished_ghost, "a run that didn't finish never replaces a finished ghost")
 	_expect(game.time_text(47.26) == "47.3 s" and game.time_text(125.0) == "2:05.0", "times read as seconds, or minutes past a minute")
+
+	# Climbing 200 floors in a day, over any runs, earns a chest once.
+	game.daily_mode = false
+	game.reset()
+	game.floors_today = 0
+	game.floors_day = game.today()
+	game._count_daily_floors(150)
+	_expect(game.pending_chests == 0 and game.daily_chest_left() == 50, "150 floors: 50 to go")
+	game._count_daily_floors(60)
+	_expect(game.pending_chests == 1 and game.daily_chest_left() == 0, "200 floors in a day earns a chest")
+	game._count_daily_floors(200)
+	_expect(game.pending_chests == 1, "only one daily chest a day")
+	game.pending_chests = 0
 	game._save()
 	game.queue_free()
 
 	var next_day = _new_game("2026-10-19")
 	await process_frame
-	_expect(next_day.daily_best == 0 and not next_day.daily_claimed and next_day.daily_time == 0.0, "a new day resets the best, the time and the reward")
+	_expect(next_day.daily_best == 0 and next_day.daily_medal == 0 and next_day.daily_time == 0.0, "a new day resets the best, the time and the medal")
+	_expect(next_day.daily_chest_left() == next_day.DAILY_CHEST_FLOORS, "a new day starts the daily chest count again")
 	_expect(next_day.daily_ghost.is_empty(), "a new day clears the ghost")
 	next_day.daily_mode = true
 	next_day.reset()
