@@ -11,7 +11,7 @@ const ChestScreen := preload("res://scripts/chest_screen.gd")
 const PillStyle := preload("res://scripts/pill_style.gd")
 const Ads := preload("res://scripts/ads.gd")
 ## The bottom bars are one pill split into buttons, all this colour.
-const BAR_COLOR := Color("2f7fd0")
+const BAR_COLOR := Color(0.24, 0.25, 0.29, 0.62)
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
@@ -1291,8 +1291,8 @@ func _build_hud() -> void:
 	ad_bar.add_theme_constant_override("separation", 0)
 	ad_bar.visible = false
 	hud.add_child(ad_bar)
-	ad_revive_button = _bar_button(ad_bar, "FREE REVIVE", ad_revive, Color("3aa856"))
-	ad_double_button = _bar_button(ad_bar, "2x COINS", ad_double_coins, Color("3aa856"))
+	ad_revive_button = _bar_button(ad_bar, "FREE REVIVE", ad_revive, Color(0.23, 0.66, 0.34, 0.6))
+	ad_double_button = _bar_button(ad_bar, "2x COINS", ad_double_coins, Color(0.23, 0.66, 0.34, 0.6))
 	for b in [ad_revive_button, ad_double_button]:
 		b.add_theme_font_size_override("font_size", 14)
 		b.clip_text = false
@@ -1495,7 +1495,7 @@ func _bar_button(bar: HBoxContainer, text: String, action: Callable, color: Colo
 	b.visibility_changed.connect(_style_bar.bind(bar))
 	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
 		b.add_theme_color_override(key, Color.WHITE)
-	b.add_theme_color_override("font_outline_color", color.darkened(0.65))
+	b.add_theme_color_override("font_outline_color", Color(color.darkened(0.7), 0.9))
 	b.add_theme_constant_override("outline_size", 5)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.size_flags_stretch_ratio = 1.0
