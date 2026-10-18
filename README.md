@@ -35,7 +35,7 @@ Every run builds a new endless tower. After the start room, each floor picks one
 - A layout doesn't come back within 12 floors.
 - Layouts are randomly mirrored left to right.
 
-**Trap floors:** every 30th floor (30, 60, 90 and so on) is a trap floor. Each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. A safe route always exists.
+**Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor has a 6% chance (only 1% straight after another trap floor). Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
 
 The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Temple. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
 
@@ -50,7 +50,7 @@ To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with
 
 ## Chests
 
-A treasure chest waits on floors 30, 60, 90 and so on (the same floors as the traps), right where you land when you enter the room. Touching it pauses the run, including the lava, and opens a case: a strip of prizes spins past a marker, slows down and lands on your reward. Tap during the spin to skip it, and tap again to carry on climbing. The HUD shows which floor the next chest is on.
+A treasure chest waits on floors 30, 60, 90 and so on (always trap floors too), right where you land when you enter the room. Touching it pauses the run, including the lava, and opens a case: a strip of prizes spins past a marker, slows down and lands on your reward. Tap during the spin to skip it, and tap again to carry on climbing. The HUD shows which floor the next chest is on.
 
 | Rarity | Chance | Reward |
 |---|---|---|

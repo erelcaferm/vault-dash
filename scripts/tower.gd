@@ -23,8 +23,13 @@ const GOAL := "G"
 const FAKE := "f"
 const FAKE_COIN := "F"
 
-## Every this-many floors is a trap floor, where fake floor gives way.
+## Trap floors, where fake floor gives way. Every TRAP_EVERY-th floor is
+## always a trap floor. Other floors past the first SAFE_FLOORS roll for one
+## as they load, with a much smaller chance right after another trap floor.
 const TRAP_EVERY := 30
+const SAFE_FLOORS := 5
+const TRAP_CHANCE := 0.06
+const TRAP_AGAIN_CHANCE := 0.01
 ## Every this-many floors has a treasure chest.
 const CHEST_EVERY := 30
 ## Layouts unlocked at the start, and how many more unlock per floor climbed.
@@ -39,12 +44,14 @@ var width := ROOM_W
 var start := Vector2i.ZERO
 ## For tests: when 0 or more, every tile from this room up is the exit.
 var room_limit := -1
-var trap_every := TRAP_EVERY
+## For tests: when above 0, only every this-many floors is a trap floor.
+var force_trap_every := 0
 var chest_every := CHEST_EVERY
 
 var _defs: Array = []
 var _rooms: Array = []           # generated rooms, each an Array of rows of chars
 var _picks: Array = []           # which room definition each room was built from
+var _traps: Array = []           # whether each room is a trap floor
 var _start_def: Array = []
 var _rng := RandomNumberGenerator.new()
 
@@ -56,8 +63,10 @@ func build(start_room: Array, layouts: Array, seed_value: int) -> void:
 	_rng.seed = seed_value
 	_rooms.clear()
 	_picks.clear()
+	_traps.clear()
 	_rooms.append(_parse(_start_def, false))
 	_picks.append(-1)
+	_traps.append(false)
 	for y in ROOM_H:
 		for x in ROOM_W:
 			if _rooms[0][y][x] == START:
@@ -67,7 +76,10 @@ func build(start_room: Array, layouts: Array, seed_value: int) -> void:
 
 ## Whether room `k` (0 = bottom) is a trap floor.
 func is_trap(k: int) -> bool:
-	return (k + 1) % trap_every == 0
+	if force_trap_every > 0:
+		return (k + 1) % force_trap_every == 0
+	_ensure(k)
+	return _traps[k]
 
 
 func is_chest_floor(k: int) -> bool:
@@ -84,6 +96,12 @@ func chest_cell(k: int) -> Vector2i:
 ## Which room (0 = bottom) a grid row belongs to. Negative means below the tower.
 func room_of(y: int) -> int:
 	return floori(float(-1 - y) / ROOM_H)
+
+
+## How many floors have been built so far. Floors are built only when
+## something first looks at them, which in play is as they scroll into view.
+func loaded_count() -> int:
+	return _rooms.size()
 
 
 ## Index into the layout list that room `k` was built from (-1 for the start).
@@ -139,9 +157,11 @@ func simulate_slide(cell: Vector2i, dir: Vector2i, broken: Dictionary = {}) -> D
 
 func _ensure(k: int) -> void:
 	while _rooms.size() <= k:
-		var pick := _pick_layout(_rooms.size())
+		var next := _rooms.size()
+		var pick := _pick_layout(next)
 		_picks.append(pick)
 		_rooms.append(_parse(_defs[pick], _rng.randf() < 0.5))
+		_traps.append(_roll_trap(next))
 
 
 ## Picks a layout for room `k`: harder layouts unlock as you climb, the
@@ -156,6 +176,17 @@ func _pick_layout(k: int) -> int:
 			break
 		pick = _rng.randi_range(easiest, hardest)
 	return pick
+
+
+## Decides whether room `k` is a trap floor, once, as it loads.
+func _roll_trap(k: int) -> bool:
+	var floor_number := k + 1
+	if floor_number <= SAFE_FLOORS:
+		return false
+	if floor_number % TRAP_EVERY == 0:
+		return true
+	var chance := TRAP_AGAIN_CHANCE if _traps[k - 1] else TRAP_CHANCE
+	return _rng.randf() < chance
 
 
 func _parse(lines: Array, mirror: bool) -> Array:
