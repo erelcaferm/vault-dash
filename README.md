@@ -85,6 +85,10 @@ Stats and trophies are saved. To add an achievement, add a line to `scripts/achi
 
 The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
 
+## Pause and new best
+
+The **II** button at the top pauses a run (Esc or P on a keyboard), and the game also pauses itself when you switch apps or take a call. The lava, the timer and any slide in progress freeze; tap or swipe to carry on. Passing your best floor in Endless shows **NEW BEST!** with a sound and a ring of gold.
+
 ## Revive
 
 When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
@@ -121,6 +125,7 @@ godot --headless --path . --script res://tests/test_chest.gd
 godot --headless --path . --script res://tests/test_achievements.gd
 godot --headless --path . --script res://tests/test_daily.gd
 godot --headless --path . --script res://tests/test_revive.gd
+godot --headless --path . --script res://tests/test_pause.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

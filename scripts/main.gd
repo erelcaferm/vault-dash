@@ -43,7 +43,7 @@ const REVIVE_COST_PER_FLOOR := 2
 const REVIVE_LAVA_GAP := 8.0     # tiles between you and the lava after a revive
 const REVIVE_GRACE := 1.5        # seconds the lava waits after a revive
 
-enum State { READY, PLAYING, DEAD, WON, CHEST }
+enum State { READY, PLAYING, DEAD, WON, CHEST, PAUSED }
 
 # One biome per five rooms. Swapping these colours is the seed of the
 # environment cosmetics.
@@ -134,6 +134,9 @@ var revived := false            # whether this run's revive is used
 var slide_start := Vector2i.ZERO # where the current or last slide began
 var lava_grace := 0.0
 var revive_button: Button
+var pause_button: Button
+var best_at_start := 0           # best floor before this run, for the "New best!" moment
+var new_best_shown := false
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
 
@@ -165,6 +168,8 @@ func reset() -> void:
 	slide_start = cell
 	revived = false
 	lava_grace = 0.0
+	best_at_start = best_floor
+	new_best_shown = false
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
 	queued_dir = Vector2i.ZERO
@@ -328,6 +333,9 @@ func _update_floor() -> void:
 		if f > best_floor:
 			best_floor = f
 			check_achievements()
+		if f > best_at_start and best_at_start > 0 and not new_best_shown and not daily_mode:
+			new_best_shown = true
+			_celebrate("NEW BEST!")
 		if daily_mode:
 			daily_best = maxi(daily_best, f)
 			if f >= DAILY_GOAL and not daily_claimed:
@@ -359,8 +367,43 @@ func _die(reason: String, cause: String) -> void:
 	shake = 0.35
 	_bank_run()
 	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
-	_show_message("%s\n\n+%d coins\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, best])
+	_show_message("%s\n\n+%d coin%s\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, "" if run_coins == 1 else "s", best])
 	_update_revive_button()
+
+
+## A big toast with a sound and a shower of gold, for moments worth noticing.
+func _celebrate(text: String) -> void:
+	_toast(text)
+	sfx.play("trophy")
+	vibrate(30)
+	for i in 8:
+		var angle := TAU * i / 8.0
+		bursts.append({"pos": _player_center() + Vector2.from_angle(angle) * TILE * 0.9, "t": 0.0, "color": COIN_COLOR})
+
+
+func pause() -> void:
+	if state != State.PLAYING:
+		return
+	# The slide is frozen, not stopped, so pausing can't be used to turn mid-slide.
+	state = State.PAUSED
+	pause_button.visible = false
+	_show_message("PAUSED\n\nFloor %d   ● %d\n\nTap to carry on" % [run_floor, run_coins])
+	# Only the settings show while paused; the shop and trophies wait for the menu.
+	menu_bar.visible = false
+
+
+func resume() -> void:
+	if state != State.PAUSED:
+		return
+	state = State.PLAYING
+	_hide_message()
+	pause_button.visible = true
+
+
+## Phones pause the game when you switch apps or get a call.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
+		pause()
 
 
 func revive_cost() -> int:
@@ -452,6 +495,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				_on_swipe(Vector2i.LEFT)
 			KEY_RIGHT, KEY_D:
 				_on_swipe(Vector2i.RIGHT)
+			KEY_ESCAPE, KEY_P:
+				if state == State.PLAYING:
+					pause()
+				else:
+					resume()
 			KEY_SPACE, KEY_ENTER:
 				_on_tap()
 			KEY_F2:
@@ -480,9 +528,14 @@ func _on_swipe(d: Vector2i) -> void:
 		State.DEAD, State.WON:
 			if state_time >= RESTART_DELAY:
 				reset()
+		State.PAUSED:
+			resume()
 
 
 func _on_tap() -> void:
+	if state == State.PAUSED:
+		resume()
+		return
 	if (state == State.DEAD or state == State.WON) and state_time >= RESTART_DELAY:
 		reset()
 
@@ -559,6 +612,19 @@ func _build_hud() -> void:
 		daily_mode = not daily_mode
 		reset())
 	_menu_button("TROPHIES", _open_achievements)
+
+	pause_button = Button.new()
+	pause_button.text = "II"
+	pause_button.flat = true
+	pause_button.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	pause_button.offset_left = -24
+	pause_button.offset_right = 24
+	pause_button.offset_top = 4
+	pause_button.offset_bottom = 44
+	pause_button.add_theme_font_size_override("font_size", 22)
+	pause_button.pressed.connect(pause)
+	pause_button.visible = false
+	hud.add_child(pause_button)
 
 	revive_button = Button.new()
 	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -664,6 +730,7 @@ func _update_hud() -> void:
 
 
 func _show_message(text: String) -> void:
+	pause_button.visible = false
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
@@ -672,6 +739,7 @@ func _show_message(text: String) -> void:
 
 
 func _hide_message() -> void:
+	pause_button.visible = state == State.PLAYING
 	message_label.visible = false
 	message_backdrop.visible = false
 	menu_bar.visible = false
@@ -855,6 +923,7 @@ func _on_chest_finished(reward: Dictionary) -> void:
 		reset()
 	else:
 		state = State.PLAYING
+		pause_button.visible = true
 		_update_hud()
 	_toast("+ " + Chest.describe(reward))
 
