@@ -696,7 +696,7 @@ static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size
 				var a := PI + PI * i / 8.0
 				pts.append(Vector2(x + cos(a) * w * 0.42, top - w * 0.05 + sin(a) * w * 0.38))
 			pts.append(Vector2(x + w * 0.42, top + w * 0.06))
-			for i in 6:
+			for i in 5:
 				pts.append(Vector2(x + w * (0.42 - (i + 1) * 0.14), top + w * (0.06 if i % 2 == 0 else -0.06)))
 			canvas.draw_colored_polygon(pts, c)
 		"slime_hat":
@@ -884,7 +884,10 @@ static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, di
 				var p := center - dir * tile * (0.5 + i * 0.45) + side * sin(time * 9.0 + i * 2.0) * base * 0.4
 				var flap := sin(time * 20.0 + i) * base * 0.12
 				var s := base * (0.25 - i * 0.03)
-				canvas.draw_colored_polygon(PackedVector2Array([p, p + Vector2(-s, -s * 0.5 - flap), p + Vector2(-s * 0.5, s * 0.1), p + Vector2(0, s * 0.3), p + Vector2(s * 0.5, s * 0.1), p + Vector2(s, -s * 0.5 - flap)]), Color(c, 0.95 - i * 0.18))
+				var bat := Color(c, 0.95 - i * 0.18)
+				for wing in [-1.0, 1.0]:
+					canvas.draw_colored_polygon(PackedVector2Array([p, p + Vector2(wing * s, -s * 0.5 - flap), p + Vector2(wing * s * 0.5, s * 0.15)]), bat)
+				canvas.draw_circle(p + Vector2(0, s * 0.05), s * 0.22, bat)
 		"sparks":
 			var c: Color = item.color
 			for i in 8:

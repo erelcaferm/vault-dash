@@ -28,6 +28,12 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Achievements and their rewards | `scripts/achievements.gd` |
 | Trophies screen | `scripts/achievements_screen.gd` |
 | Chest opening animation | `scripts/chest_screen.gd` |
+| Pets, their foods and how they're drawn | `scripts/pets.gd` |
+| Pet station (eggs, feeding) | `scripts/pet_station.gd` |
+| Crack the Vault minigame | `scripts/vault_game.gd` |
+| Daily gift | `scripts/daily_gift.gd` |
+| Shop preview window | `scripts/look_preview.gd` |
+| Bottom bar pill buttons | `scripts/pill_style.gd` |
 
 Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor. Plain walls stacked on top of each other only show a lit top edge on the top one, so a column reads as one block; cracked walls always keep their top edge.
 
@@ -56,9 +62,45 @@ Prices are set so the shop is a long-term goal: buying everything costs about 79
 - **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Smoke, Bubbles, Hearts, Autumn Leaves, Snowflakes, Sparkle, Paw Prints, Lightning and Fire cost 600–1500. Comet and Rainbow Ribbon only drop from chests as Legendaries, Gold Dust comes from the Goal Getter trophy, and Music Notes and Confetti come from levels 18 and 21.
 - **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum, Honey, Ocean, Ink and Plasma cost 750–1600. Molten Gold and Aurora only drop from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
 
+- **Pet lines:** each of the 8 pets has its own hat, trail, hero and wall skin, earned only by levelling that pet up (see Pets below). They show in the shop with the pet's name and the level that unlocks them.
+- **Variants:** 20 more hero colours, 10 hats, 10 trails, 12 wall skins and 10 lavas were added on 2026-10-19, bringing the shop to 192 items.
+
+**Preview:** tapping any item puts it on the preview window at the top of the shop, where your hero slides between two cracked walls above the lava wearing your whole look. Tap more items to try a full outfit; tapping an item you own takes it back off the preview. Leaving the shop clears the preview.
+
+**Daily deal and free coins:** under the preview, a grey pill holds an **AD: +50 coins** button (3 a day) and a **DEAL** button. Each day one item you don't own is 30% off; the deal button jumps to it and previews it. The deal is picked from the date, so it's the same all day.
+
 Every item id must be unique across all kinds, because owned and new items share one list (`test_chest.gd` checks this).
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
+
+## Daily gift
+
+The first time you open the game each day, a strip of 7 gifts shows: 25, 50, 75, 100, 125 and 150 coins, then a chest on day 7. You claim the next one. Missing a day never resets the strip, and after the chest it starts again at day 1.
+
+## Stats
+
+The Trophies screen has a **Stats** tab: runs played, time climbing, floors climbed, best floor, coins collected, cracked walls broken, deaths (and by what), chests, levels, missions and cosmetics owned.
+
+## Crack the Vault
+
+A timing minigame, opened from the vault icon at the top of the title screen. A needle sweeps round a vault dial; tap while it's on the glowing mark to click a tumbler. Each click flips the needle's direction, speeds it up by 1.4x and shrinks the next mark. Three tumblers open the vault. Prizes are 10, 25 and 60 coins for 1, 2 and 3 tumblers. You get 1 free try a day and 2 more for watching an ad. Tuning is at the top of `scripts/vault_game.gd`.
+
+## Pets
+
+Opened from the paw icon at the top of the title screen. Your first egg is free and later ones cost 1,500 coins; each egg hatches one of the pets you don't have yet, straight away (no timers). Eight pets, each with its own food:
+
+| Pet | Food | Lv 2 hat | Lv 3 trail | Lv 4 hero | Lv 5 walls |
+|---|---|---|---|---|---|
+| Kitty (cat) | Fish | Cat Ears | Cat Tail | Whiskers | Scratch Post |
+| Puppy (dog) | Bone | Dog Ears | Bones | Spotty | Doghouse |
+| Bricky (wall) | Pebble | Wall Hat | Blocks | Crack Face | Bricky |
+| Chick | Seeds | Eggshell | Feathers | Chickling | Nest |
+| Slimey | Jelly | Slime Blob | Goo | Goo | Slime |
+| Batty | Cherry | Bat Wings | Bats | Vamp | Cave |
+| Robo | Bolt | Antenna | Sparks | Cyborg | Metal Plate |
+| Drako (dragon) | Pepper | Dragon Horns | Embers | Scales | Dragon Scale |
+
+Tap **TAKE ALONG** to make a pet follow you up the tower and through levels. While a pet is with you, its food appears once in each level (LEVELS menu), always somewhere on the level's solution route, so a clean solve picks it up. Feeding takes 2, 3, 4 and then 5 food to reach levels 2 to 5. Each level unlocks that pet's next item, and it's marked NEW in the shop. Pets, levels, food and the equipped pet are saved. Names, foods and the feeding curve are in `scripts/pets.gd`.
 
 ## Chests
 
@@ -218,6 +260,9 @@ godot --headless --path . --script res://tests/test_missions.gd
 godot --headless --path . --script res://tests/test_powerups.gd
 godot --headless --path . --script res://tests/test_settings.gd
 godot --headless --path . --script res://tests/test_levels.gd
+godot --headless --path . --script res://tests/test_gift.gd
+godot --headless --path . --script res://tests/test_vault.gd
+godot --headless --path . --script res://tests/test_pets.gd
 ```
 
 The tests use their own save file, so they never touch your coins.
