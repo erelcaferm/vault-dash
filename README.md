@@ -147,6 +147,10 @@ Every sound is made from code at startup (`scripts/sfx.gd`), so there are no aud
 
 On phones, breaking a wall, dying and opening a chest give a short buzz. Settings turns these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
 
+## App icon
+
+`icon.png` (1024 × 1024) is drawn in code by `tools/make_icon.gd`, in the game's own style: the hero sliding up the tower past coins with the lava below. It's set as the project icon, which Godot uses for the Android launcher icon too. Change the drawing and rerun `xvfb-run godot --path . --script res://tools/make_icon.gd` (or run it from the editor on a desktop) to make a new one. Google Play also wants a 512 × 512 copy for the listing; any image editor can scale this one down.
+
 ## Exporting to Android
 
 `tools/export_presets.android.cfg` is a ready-made Android preset: package `com.erelcaferm.vaultdash`, arm64 and armv7, full screen, Vibrate on, and the tests and tools left out of the build. If you don't have an `export_presets.cfg` yet, copy it to the project folder under that name, then in Godot:
