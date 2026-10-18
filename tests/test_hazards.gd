@@ -66,10 +66,27 @@ func _initialize() -> void:
 				break
 	_expect(hits == 0, "blocks never walk onto a player standing still (%d did)" % hits)
 
+	# Lasers run between two plain walls, and never fire on someone standing in the beam.
+	_expect(hz.lasers.size() > 5, "lasers on some floors (got %d)" % hz.lasers.size())
+	for l in hz.lasers:
+		_expect_quiet(game.tower.get_tile(Vector2i(l.x0 - 1, l.y)) == TowerScript.WALL and game.tower.get_tile(Vector2i(l.x1 + 1, l.y)) == TowerScript.WALL, "a laser ends on a plain wall")
+		_expect_quiet(game.tower.room_of(l.y) + 1 >= Hazards.LASER_FROM_FLOOR, "no lasers on the first floors")
+	var laser: Dictionary = hz.lasers[0]
+	var fired := false
+	for i in 200:
+		hz.update(0.05, Vector2i(laser.x0, laser.y), 0)
+		fired = fired or hz.laser_hits(Vector2i(laser.x0, laser.y))
+	_expect(not fired, "a laser never fires on you standing in it")
+	var states := {}
+	for i in 200:
+		hz.update(0.05, Vector2i(-1, -1), 0)
+		states[hz.laser_state(laser)] = true
+	_expect(states.size() == 3, "lasers go off, warn and fire")
+
 	# A trap kills only while it's up.
 	var trap: Vector2i = hz.traps.keys()[0]
 	hz.time = 0.0
-	var states := {}
+	states = {}
 	for i in 60:
 		hz.time += Hazards.TRAP_CYCLE / 60.0
 		states[hz.trap_state(trap)] = true

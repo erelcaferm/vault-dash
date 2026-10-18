@@ -11,7 +11,12 @@ extends RefCounted
 ## (no wall next to them), so they can't catch you standing. They cycle
 ## down, warning, up; sliding over one while it's up kills you.
 ##
-## Both are rolled per floor from their own seed, so a run's hazards don't
+## Laser gates fire across a row between two walls. They switch off,
+## flicker as a warning, then fire; touching the beam while it's firing
+## kills you. A laser never fires while you're standing in its beam: it
+## stays off until you've left, then gives you the full off time.
+##
+## All are rolled per floor from their own seed, so a run's hazards don't
 ## change the rest of the tower. None appear in levels or the Daily Climb.
 
 const TowerScript := preload("res://scripts/tower.gd")
@@ -41,12 +46,22 @@ const TRAP_CYCLE := 3.0             # seconds for down, warning and up
 const TRAP_WARN_AT := 1.7           # spikes start to poke out
 const TRAP_UP_AT := 2.2             # and are deadly until the cycle ends
 
+const LASER_FROM_FLOOR := 20
+const LASER_CHANCE := 0.15
+const LASER_MAX_CHANCE := 0.35
+const LASER_MIN := 3                # beam length in tiles
+const LASER_MAX := 9
+const LASER_CYCLE := 3.6            # seconds for off, warning and firing
+const LASER_WARN_AT := 2.0
+const LASER_ON_AT := 2.5
+
 const DIRS := [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 
 var tower
 var enabled := true
 var movers: Array = []              # {room, cell, next, pos (tiles), dir}
 var traps := {}                     # cell -> phase offset (seconds), shared per room
+var lasers: Array = []              # {y, x0, x1 (beam tiles, inclusive), t (seconds into its cycle)}
 var time := 0.0
 var rolled := 0                     # floors below this have had their roll
 var rng := RandomNumberGenerator.new()
@@ -61,6 +76,7 @@ func setup(t, seed_value: int, on: bool) -> void:
 	rng.seed = seed_value
 	movers.clear()
 	traps.clear()
+	lasers.clear()
 	_paths.clear()
 	time = 0.0
 	rolled = 0
@@ -81,6 +97,8 @@ func roll(count: int) -> void:
 				_spawn_mover(k)
 		if f >= TRAP_FROM_FLOOR and not chest and rng.randf() < chance(f, TRAP_FROM_FLOOR, TRAP_CHANCE, TRAP_MAX_CHANCE):
 			_place_traps(k)
+		if f >= LASER_FROM_FLOOR and not chest and rng.randf() < chance(f, LASER_FROM_FLOOR, LASER_CHANCE, LASER_MAX_CHANCE):
+			_place_laser(k)
 
 
 static func chance(f: int, from: int, low: float, high: float) -> float:
@@ -212,11 +230,58 @@ func _place_traps(k: int) -> void:
 		spots.remove_at(j)
 
 
+## A laser across one row of room `k`: a run of open tiles with a plain
+## wall at each end (not a cracked one, which could crumble away), off the
+## room's top and bottom rows where the doors are.
+func _place_laser(k: int) -> void:
+	var runs: Array = []
+	for y in range(-(k + 1) * TowerScript.ROOM_H + 1, -k * TowerScript.ROOM_H - 1):
+		var x := 0
+		while x < tower.width:
+			if tower.get_tile(Vector2i(x, y)) == TowerScript.WALL or tower.get_tile(Vector2i(x, y)) == TowerScript.CRACKED:
+				x += 1
+				continue
+			var x0 := x
+			while x < tower.width and tower.get_tile(Vector2i(x, y)) != TowerScript.WALL and tower.get_tile(Vector2i(x, y)) != TowerScript.CRACKED:
+				x += 1
+			var length := x - x0
+			if length >= LASER_MIN and length <= LASER_MAX and tower.get_tile(Vector2i(x0 - 1, y)) == TowerScript.WALL \
+					and tower.get_tile(Vector2i(x, y)) == TowerScript.WALL:
+				runs.append([y, x0, x - 1])
+	if runs.is_empty():
+		return
+	var r: Array = runs[rng.randi_range(0, runs.size() - 1)]
+	lasers.append({"y": r[0], "x0": r[1], "x1": r[2], "t": rng.randf_range(0.0, LASER_WARN_AT)})
+
+
+func _in_beam(l: Dictionary, c: Vector2i) -> bool:
+	return c.y == l.y and c.x >= l.x0 and c.x <= l.x1
+
+
+## 0 off, 1 warning, 2 firing.
+func laser_state(l: Dictionary) -> int:
+	return 2 if l.t >= LASER_ON_AT else (1 if l.t >= LASER_WARN_AT else 0)
+
+
+## Whether a firing laser's beam covers `c`.
+func laser_hits(c: Vector2i) -> bool:
+	for l in lasers:
+		if laser_state(l) == 2 and _in_beam(l, c):
+			return true
+	return false
+
+
 ## Moves the blocks. `rest` is the tile you're standing on, or (-1, -1)
 ## while sliding; blocks never step onto it.
 func update(delta: float, rest: Vector2i, lowest_room: int) -> void:
 	time += delta
 	movers = movers.filter(func(m): return m.room >= lowest_room)
+	for l in lasers:
+		# Held off while you stand in the beam, so it can't fire on you.
+		if _in_beam(l, rest):
+			l.t = 0.0
+		else:
+			l.t = fposmod(l.t + delta, LASER_CYCLE)
 	for m in movers:
 		var step := MOVER_SPEED * delta
 		while step > 0.0:
@@ -282,6 +347,9 @@ func has_hazards(k: int) -> bool:
 	for c: Vector2i in traps:
 		if tower.room_of(c.y) == k:
 			return true
+	for l in lasers:
+		if tower.room_of(l.y) == k:
+			return true
 	return false
 
 
@@ -294,11 +362,42 @@ func draw(canvas: CanvasItem, tile: float, y0: int, y1: int, anim: float, theme:
 	for c: Vector2i in traps:
 		if c.y >= y0 and c.y <= y1:
 			_draw_trap(canvas, Rect2(Vector2(c) * tile, Vector2(tile, tile)), trap_state(c), anim)
+	for l in lasers:
+		if l.y >= y0 and l.y <= y1:
+			_draw_laser(canvas, l, tile, anim)
 	for m in movers:
 		var mid: Vector2 = (m.pos + Vector2(0.5, 0.5)) * tile
 		if mid.y >= (y0 - 1) * tile and mid.y <= (y1 + 1) * tile:
 			var look: String = theme.call(m.cell.y) if theme.is_valid() else ""
 			_draw_mover(canvas, mid, tile, m.dir, anim, look)
+
+
+func _draw_laser(canvas: CanvasItem, l: Dictionary, tile: float, anim: float) -> void:
+	var red := Color("ff3b6b")
+	var y: float = (l.y + 0.5) * tile
+	var a := Vector2(l.x0 * tile, y)
+	var b := Vector2((l.x1 + 1) * tile, y)
+	var state := laser_state(l)
+	match state:
+		0:
+			# Off: a faint dotted line shows where it will fire.
+			var x := a.x + 3.0
+			while x < b.x:
+				canvas.draw_line(Vector2(x, y), Vector2(minf(x + 3.0, b.x), y), Color(red, 0.3), 1.0)
+				x += 8.0
+		1:
+			canvas.draw_line(a, b, Color(red, 0.4 + 0.5 * absf(sin(anim * 25.0))), 2.0)
+		2:
+			canvas.draw_line(a, b, Color(red, 0.3), tile * 0.5)
+			canvas.draw_line(a, b, red, tile * 0.22)
+			canvas.draw_line(a, b, Color(1, 0.9, 0.95), tile * 0.08)
+	# The emitters, on the walls at each end.
+	for side in [-1.0, 1.0]:
+		var at: Vector2 = a if side < 0 else b
+		var box := Rect2(at + Vector2(-tile * 0.22 if side < 0 else 0.0, -tile * 0.28), Vector2(tile * 0.22, tile * 0.56))
+		canvas.draw_rect(box, Color("3a3d4a"))
+		canvas.draw_rect(box, Color(red, 0.5 + 0.5 * float(state)), false, 1.5)
+		canvas.draw_circle(at, tile * 0.08, red if state > 0 else Color(red, 0.4))
 
 
 func _draw_trap(canvas: CanvasItem, r: Rect2, state: int, anim: float) -> void:

@@ -520,6 +520,9 @@ func _advance() -> void:
 	if hazards.trap_state(cell) == 2 and hazard_grace <= 0.0:
 		_die("Spiked by a trap on floor %d", "trap")
 		return
+	if hazards.laser_hits(cell) and hazard_grace <= 0.0:
+		_die("Zapped by a laser on floor %d", "laser")
+		return
 	_update_floor()
 	var ahead: String = tower.get_tile(cell + move_dir)
 	if ahead == TowerScript.WALL:
@@ -2995,7 +2998,7 @@ func _level_lost(cause: String) -> void:
 	sfx.play("time_up" if cause == "time" else "death")
 	vibrate(150)
 	shake = 0.35
-	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!", "mover": "Hit by a moving block!", "trap": "Caught by a spike trap!"}.get(cause, "Out of time!") as String
+	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!", "mover": "Hit by a moving block!", "trap": "Caught by a spike trap!", "laser": "Zapped by a laser!"}.get(cause, "Out of time!") as String
 	_show_message("%s\n\n%s" % [tr(reason), tr("Swipe to try again")])
 
 

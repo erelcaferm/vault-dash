@@ -135,9 +135,9 @@ The **TROPHIES** button lists 32 achievements with your progress on each. A bann
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
 
-## Moving blocks and spike traps
+## Moving blocks, spike traps and lasers
 
-Two hazards on the endless tower, from `scripts/hazards.gd`. Neither appears in levels or the Daily Climb (so medal times stay fair), and both are rolled per floor from their own seed.
+Three hazards on the endless tower, from `scripts/hazards.gd`. None appear on their own in the Daily Climb (so medal times stay fair), and all are rolled per floor from their own seed. Blocks and traps can also be placed in levels (see below).
 
 **Moving blocks** (from floor 8, on 15% of floors rising to 50% by floor 150; two on some floors from floor 60). A spiky block with angry eyes and a red glow wanders its room one tile at a time, about 2.6 tiles a second. It goes straight, sometimes turns at a side opening, and turns or reverses when something is in the way. It can't leave its room or pass walls or cracked walls. Touching it ends the run (a shield saves you, as with spikes). It looks different in each background: a stone block, an ice cube, a mossy block, a crystal, a pufferfish, molten rock or a storm cloud, always with the spikes and red rim.
 
@@ -150,9 +150,11 @@ Fairness rules, so a block is an obstacle to time, never a wall:
 
 **Spike traps** (from floor 12, on 20% of floors rising to 45%). 2–4 dark plates with a red rim and spike tips just showing. They only go on open tiles with nothing solid on any side, so you can only slide over them, never stop on one. Every 3 seconds the spikes poke out and flash (warning), then shoot up; sliding over one while it's up kills you. All traps in a room share one timer.
 
+**Laser gates** (from floor 20, on 15% of floors rising to 35%). A beam across one row, between two plain walls (never a cracked wall, which could crumble), 3–9 tiles long, never on a room's door rows. Every 3.6 seconds it's off (a faint dotted line shows where it fires) for 2 seconds, flickers for half a second, then fires for 1.1 seconds; sliding into the beam while it's firing kills you. **It never fires while you're standing in its beam:** it stays off until you leave, then gives you the full off time.
+
 **In levels:** the level builder has two new tiles, **M** (a moving block starts here) and **T** (a spike trap). A trap must have open floor on all four sides, and a block needs at least two open sides, or the level can't be tested or shared. Share codes carry both. Levels 25–27 (Block Party, Trap Timing, Rush Hour) use them; par time allows 3 extra seconds per block or trap, up to 4.
 
-The first time you reach a floor with hazards, a tip says standing still is safe. `test_hazards.gd` checks the placement rules and that blocks never step onto a standing player. `test_hazard_climb.gd` has a patient player climb 80 floors along the solver's route with hazards on, waiting before each slide until it's clear; it must never die or wait more than 15 seconds (the longest wait is about 5).
+The first time you reach a floor with hazards, a tip says standing still is safe. `test_hazards.gd` checks the placement rules and that blocks never step onto a standing player. `test_hazard_climb.gd` has a patient player climb 80 floors (blocks, traps and lasers) along the solver's route with hazards on, waiting before each slide until it's clear; it must never die or wait more than 15 seconds (the longest wait is about 5).
 
 ## Power-ups
 

@@ -85,6 +85,7 @@ func _process(delta: float) -> bool:
 		if waited > MAX_WAIT:
 			printerr("FAIL: stuck for %.0f s on floor %d waiting for a clear slide" % [waited, game.run_floor])
 			var k: int = game.tower.room_of(game.cell.y)
+			printerr("  lasers: %s" % [game.hazards.lasers.filter(func(l): return absi(game.tower.room_of(l.y) - k) <= 1)])
 			printerr("  at %s sliding %s; blocks: %s" % [game.cell, route[0], game.hazards.movers.filter(func(m): return absi(m.room - k) <= 1).map(func(m): return [m.room, m.cell, m.dir])])
 			for y in range(-(k + 2) * 12, -(k - 1) * 12):
 				var row := ""
@@ -122,7 +123,7 @@ func _finish(code: int) -> bool:
 ## Plays the slide forward on a copy of the hazards and checks nothing hits.
 func _safe(dir: Vector2i, dt: float) -> bool:
 	var hz = game.hazards
-	if hz.movers.is_empty() and hz.traps.is_empty():
+	if hz.movers.is_empty() and hz.traps.is_empty() and hz.lasers.is_empty():
 		return true
 	var start: Vector2i = game.cell
 	var t: String = game.tower.get_tile(start + dir)
@@ -131,6 +132,7 @@ func _safe(dir: Vector2i, dt: float) -> bool:
 	var end: Vector2i = game.tower.simulate_slide(start, dir).end
 	var length := float((end - start).length())
 	var saved: Array = hz.movers.duplicate(true)
+	var saved_lasers: Array = hz.lasers.duplicate(true)
 	var saved_time: float = hz.time
 	var saved_rng: int = hz.rng.state
 	var ok := true
@@ -140,20 +142,23 @@ func _safe(dir: Vector2i, dt: float) -> bool:
 	for i in 400:
 		progress = minf(progress + game.SLIDE_SPEED * dt, length)
 		var resting := progress >= length
+		# Same order as the game: the slide moves (and checks each tile it
+		# enters), then the hazards update and blocks are checked.
+		while entered < floori(progress):
+			entered += 1
+			var c: Vector2i = start + dir * entered
+			if hz.trap_state(c) != 0 or _trap_soon(hz, c, dt) or _laser_soon(hz, c, dt):
+				ok = false
 		hz.update(dt, end if resting else Vector2i(-1, -1), 0)
 		var p := Vector2(start) + Vector2(dir) * progress
 		for m in hz.movers:
 			var d: Vector2 = (m.pos - p).abs()
 			if d.x < hz.HIT_SIZE + 0.15 and d.y < hz.HIT_SIZE + 0.15:
 				ok = false
-		while entered < floori(progress):
-			entered += 1
-			var c: Vector2i = start + dir * entered
-			if hz.trap_state(c) != 0 or _trap_soon(hz, c, dt):
-				ok = false
 		if not ok or (resting and i > 0 and progress >= length and entered >= floori(length)):
 			break
 	hz.movers = saved
+	hz.lasers = saved_lasers
 	hz.time = saved_time
 	hz.rng.state = saved_rng
 	return ok
@@ -167,3 +172,17 @@ func _trap_soon(hz, c: Vector2i, dt: float) -> bool:
 		up = up or hz.trap_state(c) != 0
 	hz.time = now
 	return up
+
+
+func _laser_soon(hz, c: Vector2i, dt: float) -> bool:
+	for l in hz.lasers:
+		if not hz._in_beam(l, c):
+			continue
+		var now: float = l.t
+		for k in [-2, -1, 0, 1, 2]:
+			l.t = fposmod(now + dt * k, hz.LASER_CYCLE)
+			if hz.laser_state(l) == 2:
+				l.t = now
+				return true
+		l.t = now
+	return false
