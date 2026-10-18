@@ -4,3 +4,4 @@
 *.translation
 export_presets.cfg
 export/
+__pycache__/

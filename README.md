@@ -55,7 +55,7 @@ To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with
 
 ## Chests
 
-A treasure chest waits on floors 30, 60, 90 and so on (always trap floors too), right where you land when you enter the room. Touching it pauses the run, including the lava, and opens a case: a strip of prizes spins past a marker, slows down and lands on your reward. Tap during the spin to skip it, and tap again to carry on climbing. The HUD shows which floor the next chest is on.
+A treasure chest waits on floors 30, 60, 90 and so on (always trap floors too), right where you land when you enter the room. Touching it saves it and the climb carries on. When the run ends (a death or a finish), saved chests open one after another, each as a case: a strip of prizes spins past a marker, slows down and lands on your reward ("CHEST 1 OF 3"). Tap during the spin to skip it, and tap again for the next chest; after the last one the end-of-run screen and the revive come back. The pause screen shows how many chests you're carrying. Saved chests are written to the save file, so closing the app mid-run doesn't lose them: they open on the next launch. The HUD shows which floor the next chest is on.
 
 | Rarity | Chance | Reward |
 |---|---|---|
@@ -79,7 +79,7 @@ The **TROPHIES** button lists 32 achievements with your progress on each. A bann
 - **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths (Ash lava), 10 spike deaths (Horns hat) and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
 - **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, grab 25 power-ups, and play 25 runs.
-- **Daily Climb:** play one (coins), hit the daily goal 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.
+- **Daily Climb:** play one (coins), reach the Daily Climb top 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.
 - **Missions:** finish 10 and 50 (Halo hat).
 - **Collecting:** own 5 hero colours.
 
@@ -101,7 +101,7 @@ Three missions show at the top of the menu, such as "Collect 15 coins in one run
 
 ## Daily Climb
 
-The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Your best run of the day is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
+The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. The tower is 20 floors high (`DAILY_TOP`): reaching the top ends the run and records your time, the fastest finish of the day is today's best time, and the first finish each day pays 100 coins. The HUD shows the floor out of 20 and a running clock. Today's best time (or best floor, before your first finish) is shown on the menu, and playing on days in a row builds a streak. Your best run of the day (the fastest finish, or the highest climb before you've finished) is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_TOP` and `DAILY_REWARD` in `scripts/main.gd`.
 
 ## Coin combos
 
@@ -146,7 +146,7 @@ In code, a Label or Button whose text is exactly an English key translates itsel
 
 Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, the chest tick and reveal, a click on every button, buying, a refusal buzz, levels (start, the last-5-seconds countdown, time up, level clear) and painting in the editor. To use a real recording instead, load it into `sounds` under the same name.
 
-**Music:** a 16-second chiptune loop in A minor (`sounds/music.wav`), written by `tools/make_music.gd` from the notes listed at its top; change them and rerun `godot --headless --path . --script res://tools/make_music.gd` for a new tune. It plays quietly behind menus, speeds up a little as the lava does, and has its own switch in Settings. To use a real track instead, drop it in `sounds/` and point `music.stream` at it in `sfx.gd`.
+**Music:** a 16-second chiptune loop in A minor (`sounds/music.wav`), written by `tools/make_music.gd` from the notes listed at its top; change them and rerun `godot --headless --path . --script res://tools/make_music.gd` for a new tune. It plays quietly behind menus, speeds up a little as the lava does, and has its own switch in Settings. Sound effects and music each have a volume slider next to their switch (saved, 0–100%); Settings is also reachable from the pause screen. To use a real track instead, drop it in `sounds/` and point `music.stream` at it in `sfx.gd`.
 
 On phones, breaking a wall, dying and opening a chest give a short buzz. Settings turns these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
 
@@ -199,4 +199,4 @@ godot --headless --path . --script res://tests/test_levels.gd
 
 The tests use their own save file, so they never touch your coins.
 
-`test_shop.gd` checks buying, equipping and saving. `test_achievements.gd` checks achievements unlock, pay out and save. `test_chest.gd` checks the chest odds, the hidden trap meter and bonus chests, that you never get an item you already own, that every layout has open floor where the chest goes, and that rewards are granted. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 102-floor tower, crossing three trap floors, following the solver's route, and opens every chest on the way. It then stands still and checks that the lava kills an idle player.
+`test_shop.gd` checks buying, equipping and saving. `test_achievements.gd` checks achievements unlock, pay out and save. `test_chest.gd` checks the chest odds, the hidden trap meter and bonus chests, that you never get an item you already own, that every layout has open floor where the chest goes, and that rewards are granted. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 102-floor tower, crossing three trap floors, following the solver's route, and picks up every chest on the way, then checks they open one by one at the end. It then stands still and checks that the lava kills an idle player.
