@@ -120,7 +120,17 @@ When you die, a **REVIVE** button offers one second chance per run for 50 coins 
 
 Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, and the chest tick and reveal. To use a real recording instead, load it into `sounds` under the same name.
 
-On phones, breaking a wall, dying and opening a chest give a short buzz. The **SOUND** and **VIBRATION** buttons at the bottom of the menu turn these on and off, and the choice is saved. For Android, tick **Vibrate** under Permissions in the export preset, or the phone won't buzz.
+On phones, breaking a wall, dying and opening a chest give a short buzz. The **SOUND** and **VIBRATION** buttons at the bottom of the menu turn these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
+
+## Exporting to Android
+
+`tools/export_presets.android.cfg` is a ready-made Android preset: package `com.erelcaferm.vaultdash`, arm64 and armv7, full screen, Vibrate on, and the tests and tools left out of the build. If you don't have an `export_presets.cfg` yet, copy it to the project folder under that name, then in Godot:
+
+1. **Editor > Manage Export Templates**: download the templates for your version.
+2. **Editor > Editor Settings > Export > Android**: set the Android SDK path and a debug keystore (Godot can make one).
+3. **Project > Export**, pick **Android**, and **Export Project** (or plug in a phone and press the Android button to run it there).
+
+`export_presets.cfg` stays out of git (see `.gitignore`), so your own preset never clashes with this one. Bump `version/code` for every Play Store upload.
 
 ## Changing the rooms
 
