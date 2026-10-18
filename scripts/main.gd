@@ -18,6 +18,17 @@ const LAVA_MAX_SPEED := 2.6
 const LAVA_MAX_GAP := 11.0       # the lava never falls further behind than this
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
+## The hidden trap meter: every trap floor you reach adds a random amount
+## between these to it. When it fills, a bonus chest appears BONUS_CHEST_AHEAD
+## floors later (BONUS_CHEST_PUSH more if that's already a chest floor). If you
+## die first, the bonus chest waits on floor CARRYOVER_CHEST_FLOOR next run.
+## The meter carries over between runs.
+const TRAP_METER_MIN := 0.5
+const TRAP_METER_MAX := 1.0
+const TRAP_METER_FULL := 5.0
+const BONUS_CHEST_AHEAD := 5
+const BONUS_CHEST_PUSH := 10
+const CARRYOVER_CHEST_FLOOR := 8
 
 enum State { READY, PLAYING, DEAD, WON, CHEST }
 
@@ -81,6 +92,10 @@ var chest_label: Label
 var chest_screen: Control
 var chest_rng := RandomNumberGenerator.new()
 var chests_taken := {}           # rooms whose chest was opened this run
+var bonus_chests := {}           # rooms with a bonus chest this run
+var trap_meter := 0.0            # saved; see TRAP_METER_FULL
+var bonus_chest_owed := false    # saved; a bonus chest you haven't opened yet
+var meter_rng := RandomNumberGenerator.new()
 var chest_return_state := State.PLAYING
 
 
@@ -111,6 +126,9 @@ func reset() -> void:
 	last_biome = 0
 	bursts.clear()
 	chests_taken.clear()
+	bonus_chests.clear()
+	if bonus_chest_owed:
+		bonus_chests[CARRYOVER_CHEST_FLOOR - 1] = true
 	state = State.READY
 	camera.position = _camera_target()
 	camera.reset_smoothing()
@@ -194,8 +212,11 @@ func _advance() -> void:
 		_break_wall(cell + move_dir)
 		_stop()
 	var k := tower.room_of(cell.y)
-	if tower.is_chest_floor(k) and not chests_taken.has(k) and cell == tower.chest_cell(k):
+	if has_chest(k) and not chests_taken.has(k) and cell == tower.chest_cell(k):
 		chests_taken[k] = true
+		if bonus_chests.has(k):
+			bonus_chest_owed = false
+			_save()
 		_stop()
 		_open_chest()
 
@@ -224,6 +245,10 @@ func _update_lava(delta: float) -> void:
 func _update_floor() -> void:
 	var f: int = tower.room_of(cell.y) + 1
 	if f > run_floor:
+		# A slide can carry you through more than one door at once.
+		for passed in range(run_floor + 1, f + 1):
+			if tower.is_trap(passed - 1):
+				add_trap_meter(passed, meter_rng.randf_range(TRAP_METER_MIN, TRAP_METER_MAX))
 		run_floor = f
 		_update_hud()
 		if tower.is_trap(f - 1):
@@ -408,6 +433,7 @@ func _build_hud() -> void:
 	chest_screen.setup()
 	chest_screen.finished.connect(_on_chest_finished)
 	chest_rng.randomize()
+	meter_rng.randomize()
 
 
 func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
@@ -428,6 +454,9 @@ func _update_hud() -> void:
 	var next := ceili(float(run_floor) / every) * every
 	if chests_taken.has(next - 1):
 		next += every
+	for k in bonus_chests:
+		if k + 1 >= run_floor and k + 1 < next and not chests_taken.has(k):
+			next = k + 1
 	chest_label.text = "Chest at floor %d" % next
 
 
@@ -445,6 +474,29 @@ func _hide_message() -> void:
 
 
 # --- Chests ----------------------------------------------------------------
+
+func has_chest(k: int) -> bool:
+	return tower.is_chest_floor(k) or bonus_chests.has(k)
+
+
+## Adds to the hidden trap meter for reaching trap floor `floor_number`. When
+## it fills, books a bonus chest a few floors ahead and returns that floor
+## number; otherwise returns 0.
+func add_trap_meter(floor_number: int, amount: float) -> int:
+	trap_meter += amount
+	if trap_meter < TRAP_METER_FULL:
+		_save()
+		return 0
+	trap_meter -= TRAP_METER_FULL
+	var target := floor_number + BONUS_CHEST_AHEAD
+	if tower.is_chest_floor(target - 1) or bonus_chests.has(target - 1):
+		target += BONUS_CHEST_PUSH
+	bonus_chests[target - 1] = true
+	bonus_chest_owed = true
+	_save()
+	_update_hud()
+	return target
+
 
 func _open_chest() -> void:
 	chest_return_state = state
@@ -531,6 +583,8 @@ func _load_save() -> void:
 		best_floor = cfg.get_value("progress", "best_floor", 0)
 		best_time = cfg.get_value("progress", "best_time", 0.0)
 		owned = cfg.get_value("shop", "owned", [])
+		trap_meter = cfg.get_value("secret", "meter", 0.0)
+		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
 		equipped_hero = cfg.get_value("shop", "hero", "white")
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 
@@ -543,6 +597,8 @@ func _save() -> void:
 	cfg.set_value("shop", "owned", owned)
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
+	cfg.set_value("secret", "meter", trap_meter)
+	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.save(save_path)
 
 
@@ -633,7 +689,7 @@ func _draw_player() -> void:
 
 func _draw_chests(y0: int, y1: int) -> void:
 	for k in range(maxi(tower.room_of(y1), 0), tower.room_of(y0) + 1):
-		if not tower.is_chest_floor(k) or chests_taken.has(k):
+		if not has_chest(k) or chests_taken.has(k):
 			continue
 		var mid := _tile_center(tower.chest_cell(k)) + Vector2(0, sin(anim_time * 3.0) * 2.0)
 		var w := TILE * 0.9

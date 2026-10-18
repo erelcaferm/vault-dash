@@ -47,11 +47,18 @@ func _process(_delta: float) -> bool:
 				game.chest_screen._gui_input(tap)   # second tap collects
 				chests += 1
 		elif game.state == game.State.WON:
-			var expected := floori(float(HEIGHT) / TowerScript.CHEST_EVERY)
-			if chests != expected:
-				printerr("FAIL: expected to open %d chests, opened %d" % [expected, chests])
+			# Every chest on the way, regular or bonus, must have been opened.
+			for k in HEIGHT:
+				if game.has_chest(k) and not game.chests_taken.has(k):
+					printerr("FAIL: the chest on floor %d was never opened" % (k + 1))
+					quit(1)
+					return false
+			if chests != game.chests_taken.size() or chests < floori(float(HEIGHT) / TowerScript.CHEST_EVERY):
+				printerr("FAIL: opened %d chests, expected %d" % [chests, game.chests_taken.size()])
 				quit(1)
-			print("PASS: climbed %d floors in %.1f s of game time with %d coins" % [HEIGHT, game.elapsed, game.run_coins])
+				return false
+			print("PASS: climbed %d floors in %.1f s of game time with %d coins, opening %d chests" % [
+				HEIGHT, game.elapsed, game.run_coins, chests])
 			game.state_time = 1.0
 			game.test_room_limit = -1
 			game._on_tap()

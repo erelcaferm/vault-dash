@@ -1,5 +1,5 @@
 extends SceneTree
-## Checks chest odds, rewards, placement and granting.
+## Checks chest odds, rewards, placement, granting and the hidden trap meter.
 ## Run: godot --headless --path . --script res://tests/test_chest.gd
 
 const Chest := preload("res://scripts/chest.gd")
@@ -60,6 +60,33 @@ func _initialize() -> void:
 	_expect(not game.buy("hero", neon), "chest-only items can't be bought")
 	game.grant({"rarity": Chest.RARITIES[3], "kind": "hero", "coins": 0, "item": neon})
 	_expect(game.owns(neon) and game.equipped_hero == "neon", "item rewards are unlocked and equipped")
+
+	# The hidden trap meter.
+	game.trap_meter = 0.0
+	game.bonus_chests.clear()
+	game.bonus_chest_owed = false
+	var full: float = game.TRAP_METER_FULL
+	_expect(game.add_trap_meter(12, full - 0.5) == 0, "meter below full books nothing")
+	_expect(game.add_trap_meter(14, 0.75) == 19, "full meter books a chest 5 floors ahead")
+	_expect(is_equal_approx(game.trap_meter, 0.25), "overflow carries into the next fill")
+	_expect(game.has_chest(18) and game.bonus_chest_owed, "bonus chest is on floor 19 and owed")
+	game.trap_meter = full
+	_expect(game.add_trap_meter(25, 0.0) == 40, "a chest floor (30) pushes the bonus 10 floors later")
+
+	# Dying before the bonus chest moves it to floor 8 of the next run.
+	game.bonus_chests.clear()
+	game.bonus_chest_owed = true
+	game.reset()
+	_expect(game.has_chest(game.CARRYOVER_CHEST_FLOOR - 1), "owed chest waits on floor 8 next run")
+	game._save()
+	var meter: float = game.trap_meter
+	game.queue_free()
+	var again = load("res://scenes/main.tscn").instantiate()
+	again.save_path = SAVE
+	root.add_child(again)
+	await process_frame
+	_expect(again.bonus_chest_owed and again.has_chest(7), "owed chest survives closing the game")
+	_expect(is_equal_approx(again.trap_meter, meter), "meter survives closing the game")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 
 	if failures == 0:
