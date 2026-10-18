@@ -38,6 +38,36 @@ const HERO := [
 	{"id": "tiger", "name": "Tiger", "price": 5500, "shape": "cat", "stripes": true, "color": Color("ff9a1f")},
 	{"id": "midnight", "name": "Midnight Cat", "price": -1, "chest_only": true, "shape": "cat", "color": Color("1b1b24"),
 		"eyes": Color("7dff6b"), "glow": Color(0.5, 1.0, 0.4, 0.25)},
+	# More colours.
+	{"id": "coral", "name": "Coral", "price": 350, "color": Color("ff7f6e")},
+	{"id": "peach", "name": "Peach", "price": 350, "color": Color("ffc8a2")},
+	{"id": "sand", "name": "Sand", "price": 350, "color": Color("e2c99f")},
+	{"id": "lime", "name": "Lime", "price": 400, "color": Color("a6e22e")},
+	{"id": "teal", "name": "Teal", "price": 400, "color": Color("1fa3a3")},
+	{"id": "ice", "name": "Ice", "price": 450, "color": Color("c9f1ff")},
+	{"id": "lavender", "name": "Lavender", "price": 450, "color": Color("c3a6ff")},
+	{"id": "rose", "name": "Rose", "price": 450, "color": Color("ff9ebb")},
+	{"id": "cherry_red", "name": "Cherry", "price": 500, "color": Color("c1121f")},
+	{"id": "forest", "name": "Forest", "price": 500, "color": Color("2d6a4f")},
+	{"id": "navy", "name": "Navy", "price": 500, "color": Color("23395d")},
+	{"id": "plum", "name": "Plum", "price": 550, "color": Color("7b2d6b")},
+	{"id": "maroon", "name": "Maroon", "price": 550, "color": Color("6d1a2a")},
+	{"id": "olive", "name": "Olive", "price": 550, "color": Color("7d8a2e")},
+	{"id": "slate", "name": "Slate", "price": 600, "color": Color("5c677d")},
+	{"id": "charcoal", "name": "Charcoal", "price": 600, "color": Color("33363d")},
+	{"id": "silver", "name": "Silver", "price": 1800, "color": Color("c8ccd4"), "glow": Color(0.9, 0.92, 1.0, 0.3)},
+	{"id": "rose_gold", "name": "Rose Gold", "price": 2200, "color": Color("e8a598"), "glow": Color(1.0, 0.75, 0.65, 0.35)},
+	{"id": "toxic", "name": "Toxic", "price": 2800, "color": Color("b6ff3b"), "glow": Color(0.6, 1.0, 0.1, 0.4)},
+	{"id": "inferno", "name": "Inferno", "price": -1, "chest_only": true, "color": Color("ff3d00"), "glow": Color(1.0, 0.25, 0.0, 0.5)},
+	# Pet lines: unlocked by levelling that pet up (pets.gd).
+	{"id": "whiskers", "name": "Whiskers", "price": -1, "pet": "cat", "pet_level": 4, "shape": "whiskers", "color": Color("f6b26b")},
+	{"id": "spotty", "name": "Spotty", "price": -1, "pet": "dog", "pet_level": 4, "shape": "spotty", "color": Color("f4f1de")},
+	{"id": "crackface", "name": "Crack Face", "price": -1, "pet": "wall", "pet_level": 4, "shape": "crackface", "color": Color("8a8f9c")},
+	{"id": "chickling", "name": "Chickling", "price": -1, "pet": "chick", "pet_level": 4, "shape": "chick", "color": Color("ffd84d")},
+	{"id": "goo", "name": "Goo", "price": -1, "pet": "slime", "pet_level": 4, "shape": "goo", "color": Color(0.43, 0.86, 0.35, 0.8)},
+	{"id": "vamp", "name": "Vamp", "price": -1, "pet": "bat", "pet_level": 4, "shape": "vamp", "color": Color("c9b8e8")},
+	{"id": "cyborg", "name": "Cyborg", "price": -1, "pet": "robo", "pet_level": 4, "shape": "cyborg", "color": Color("ffd0b0")},
+	{"id": "scales", "name": "Scales", "price": -1, "pet": "dragon", "pet_level": 4, "shape": "scales", "color": Color("e04a3a")},
 ]
 
 ## Cracked-wall skins. `style` picks the pattern drawn on top of the block.
@@ -86,6 +116,46 @@ const WALLS := [
 		"base": Color("e63946"), "top": Color("ff5a66"), "detail": Color("b02232")},
 	{"id": "circuit", "name": "Circuit", "price": 1600, "style": "circuit",
 		"base": Color("0f3d2a"), "top": Color("17573c"), "detail": Color("d4af37")},
+	{"id": "sandstone", "name": "Sandstone", "price": 450, "style": "crack",
+		"base": Color("d8b47a"), "top": Color("ecd09a"), "detail": Color("9c7a45")},
+	{"id": "birch", "name": "Birch", "price": 550, "style": "planks",
+		"base": Color("e8dcc0"), "top": Color("f5ecd6"), "detail": Color("9c8a6a")},
+	{"id": "dark_wood", "name": "Dark Wood", "price": 650, "style": "planks",
+		"base": Color("4a2c18"), "top": Color("6b4228"), "detail": Color("26160b")},
+	{"id": "ice_bricks", "name": "Ice Bricks", "price": 800, "style": "bricks",
+		"base": Color("9fd8f2"), "top": Color("d4f1ff"), "detail": Color("ffffff")},
+	{"id": "mossy_cobble", "name": "Mossy Cobble", "price": 700, "style": "cobble",
+		"base": Color("5f6b58"), "top": Color("7e8f6a"), "detail": Color("3b4535")},
+	{"id": "mint_candy", "name": "Mint Candy", "price": 900, "style": "candy",
+		"base": Color("f0fff8"), "top": Color("ffffff"), "detail": Color("2ec4a0")},
+	{"id": "ruby", "name": "Ruby", "price": 1300, "style": "crystal",
+		"base": Color("8c1027"), "top": Color("e63950"), "detail": Color("ffb3c1")},
+	{"id": "emerald", "name": "Emerald", "price": 1300, "style": "crystal",
+		"base": Color("0f5c3a"), "top": Color("2ecc71"), "detail": Color("b8ffd8")},
+	{"id": "pink_neon", "name": "Pink Neon", "price": 1500, "style": "neon",
+		"base": Color("1f0a1a"), "top": Color("3d1433"), "detail": Color("ff4fd8")},
+	{"id": "green_neon", "name": "Green Neon", "price": 1500, "style": "neon",
+		"base": Color("08180c"), "top": Color("12321a"), "detail": Color("4dff6a")},
+	{"id": "blue_blocks", "name": "Blue Blocks", "price": 1200, "style": "studs",
+		"base": Color("2f6fd8"), "top": Color("4f8af0"), "detail": Color("1d4a99")},
+	{"id": "silver_bars", "name": "Silver Bars", "price": 2500, "style": "bars",
+		"base": Color("a7adb8"), "top": Color("dfe3ea"), "detail": Color("6b717c")},
+	{"id": "scratch_post", "name": "Scratch Post", "price": -1, "pet": "cat", "pet_level": 5, "style": "scratch",
+		"base": Color("c9a97a"), "top": Color("ddc093"), "detail": Color("7a5c36")},
+	{"id": "doghouse", "name": "Doghouse", "price": -1, "pet": "dog", "pet_level": 5, "style": "doghouse",
+		"base": Color("b5523b"), "top": Color("8a3a28"), "detail": Color("2a1810")},
+	{"id": "bricky_wall", "name": "Bricky", "price": -1, "pet": "wall", "pet_level": 5, "style": "bricky",
+		"base": Color("8a8f9c"), "top": Color("a9aebb"), "detail": Color("4f5360")},
+	{"id": "nest", "name": "Nest", "price": -1, "pet": "chick", "pet_level": 5, "style": "nest",
+		"base": Color("b48a4e"), "top": Color("d4aa6a"), "detail": Color("7a5a2e")},
+	{"id": "slime_wall", "name": "Slime", "price": -1, "pet": "slime", "pet_level": 5, "style": "slime",
+		"base": Color("3d6b35"), "top": Color("6fdc5a"), "detail": Color("a8ff8f")},
+	{"id": "cave", "name": "Cave", "price": -1, "pet": "bat", "pet_level": 5, "style": "cave",
+		"base": Color("2a2433"), "top": Color("3d3449"), "detail": Color("6b5a80")},
+	{"id": "metal_plate", "name": "Metal Plate", "price": -1, "pet": "robo", "pet_level": 5, "style": "plate",
+		"base": Color("6b7480"), "top": Color("8d96a3"), "detail": Color("c3cad3")},
+	{"id": "dragon_scale", "name": "Dragon Scale", "price": -1, "pet": "dragon", "pet_level": 5, "style": "dscale",
+		"base": Color("8c2a1e"), "top": Color("b8402e"), "detail": Color("ffb36b")},
 ]
 
 ## Trails left behind the hero while sliding. `style` picks how it's drawn.
@@ -107,6 +177,24 @@ const TRAILS := [
 	{"id": "snowflakes", "name": "Snowflakes", "price": 1000, "style": "snowflakes", "color": Color("e8f6ff")},
 	{"id": "paws", "name": "Paw Prints", "price": 1200, "style": "paws", "color": Color("ffd0e0")},
 	{"id": "ribbon", "name": "Rainbow Ribbon", "price": -1, "chest_only": true, "style": "ribbon"},
+	{"id": "mint_bubbles", "name": "Mint Bubbles", "price": 750, "style": "bubbles", "color": Color("8fffd0")},
+	{"id": "pink_bubbles", "name": "Pink Bubbles", "price": 750, "style": "bubbles", "color": Color("ffa8d9")},
+	{"id": "ruby_sparkle", "name": "Ruby Sparkle", "price": 1000, "style": "sparkle", "color": Color("ff4d6d")},
+	{"id": "ice_sparkle", "name": "Ice Sparkle", "price": 1000, "style": "sparkle", "color": Color("bff4ff")},
+	{"id": "toxic_smoke", "name": "Toxic Smoke", "price": 700, "style": "smoke", "color": Color("9cff57")},
+	{"id": "shadow_smoke", "name": "Shadow Smoke", "price": 700, "style": "smoke", "color": Color("3a3445")},
+	{"id": "blue_hearts", "name": "Blue Hearts", "price": 900, "style": "hearts", "color": Color("4cc9f0")},
+	{"id": "gold_hearts", "name": "Gold Hearts", "price": 1100, "style": "hearts", "color": Color("ffd23f")},
+	{"id": "red_lightning", "name": "Red Lightning", "price": 1400, "style": "zap", "color": Color("ff5a5a")},
+	{"id": "green_lightning", "name": "Green Lightning", "price": 1400, "style": "zap", "color": Color("6bff8a")},
+	{"id": "cat_tail", "name": "Cat Tail", "price": -1, "pet": "cat", "pet_level": 3, "style": "cat_tail", "color": Color("f08c3a")},
+	{"id": "bones", "name": "Bones", "price": -1, "pet": "dog", "pet_level": 3, "style": "bones", "color": Color("f4f1de")},
+	{"id": "blocks", "name": "Blocks", "price": -1, "pet": "wall", "pet_level": 3, "style": "blocks", "color": Color("8a8f9c")},
+	{"id": "feathers", "name": "Feathers", "price": -1, "pet": "chick", "pet_level": 3, "style": "feathers", "color": Color("ffe27a")},
+	{"id": "goo_trail", "name": "Goo", "price": -1, "pet": "slime", "pet_level": 3, "style": "goo", "color": Color("6fdc5a")},
+	{"id": "bats", "name": "Bats", "price": -1, "pet": "bat", "pet_level": 3, "style": "bats", "color": Color("6b4a9c")},
+	{"id": "sparks", "name": "Sparks", "price": -1, "pet": "robo", "pet_level": 3, "style": "sparks", "color": Color("ffd23f")},
+	{"id": "embers", "name": "Embers", "price": -1, "pet": "dragon", "pet_level": 3, "style": "embers", "color": Color("ff7b1c")},
 ]
 
 ## Hats worn on top of the hero. `style` picks how it's drawn.
@@ -129,6 +217,24 @@ const HATS := [
 	{"id": "viking", "name": "Viking", "price": 1500, "style": "viking", "color": Color("8d99ae")},
 	{"id": "pirate", "name": "Pirate", "price": 1800, "style": "pirate", "color": Color("1d1d24")},
 	{"id": "propeller", "name": "Propeller", "price": 2200, "style": "propeller", "color": Color("4361ee")},
+	{"id": "green_cap", "name": "Green Cap", "price": 400, "style": "cap", "color": Color("40a352")},
+	{"id": "pink_beanie", "name": "Pink Beanie", "price": 600, "style": "beanie", "color": Color("ff70a6")},
+	{"id": "blue_bow", "name": "Blue Bow", "price": 500, "style": "bow", "color": Color("4cc9f0")},
+	{"id": "beret", "name": "Beret", "price": 800, "style": "beret", "color": Color("c1121f")},
+	{"id": "headband", "name": "Headband", "price": 500, "style": "headband", "color": Color("ff5a5a")},
+	{"id": "cowboy", "name": "Cowboy", "price": 1600, "style": "cowboy", "color": Color("8a5a2e")},
+	{"id": "tiara", "name": "Tiara", "price": 1900, "style": "tiara", "color": Color("dfe3ea")},
+	{"id": "mohawk", "name": "Mohawk", "price": 1200, "style": "mohawk", "color": Color("ff3dbb")},
+	{"id": "santa", "name": "Santa Hat", "price": 1300, "style": "santa", "color": Color("e63946")},
+	{"id": "white_top_hat", "name": "White Top Hat", "price": 1600, "style": "top_hat", "color": Color("f4f1de")},
+	{"id": "cat_ears", "name": "Cat Ears", "price": -1, "pet": "cat", "pet_level": 2, "style": "cat_ears", "color": Color("f08c3a")},
+	{"id": "dog_ears", "name": "Dog Ears", "price": -1, "pet": "dog", "pet_level": 2, "style": "dog_ears", "color": Color("8a5a36")},
+	{"id": "wall_hat", "name": "Wall Hat", "price": -1, "pet": "wall", "pet_level": 2, "style": "wall_hat", "color": Color("8a8f9c")},
+	{"id": "eggshell", "name": "Eggshell", "price": -1, "pet": "chick", "pet_level": 2, "style": "eggshell", "color": Color("fff6e0")},
+	{"id": "slime_hat", "name": "Slime Blob", "price": -1, "pet": "slime", "pet_level": 2, "style": "slime_hat", "color": Color("6fdc5a")},
+	{"id": "bat_wings", "name": "Bat Wings", "price": -1, "pet": "bat", "pet_level": 2, "style": "bat_wings", "color": Color("6b4a9c")},
+	{"id": "antenna", "name": "Antenna", "price": -1, "pet": "robo", "pet_level": 2, "style": "antenna", "color": Color("9aa5b1")},
+	{"id": "dragon_horns", "name": "Dragon Horns", "price": -1, "pet": "dragon", "pet_level": 2, "style": "dragon_horns", "color": Color("ffe0a0")},
 ]
 
 ## What rises from below. `color` fills it, `glow` lines the surface, and
@@ -145,6 +251,16 @@ const LAVA := [
 	{"id": "honey", "name": "Honey", "price": 1100, "color": Color("e09f1f"), "glow": Color("ffd46b")},
 	{"id": "ink", "name": "Ink", "price": 1400, "color": Color("14121c"), "glow": Color("7b5cff"), "bubbles": Color("a28bff")},
 	{"id": "aurora", "name": "Aurora", "price": -1, "chest_only": true, "color": Color("0f2a3d"), "glow": Color("6bffcf"), "bubbles": Color("c38bff")},
+	{"id": "lime_lava", "name": "Lime", "price": 800, "color": Color("8fd400"), "glow": Color("e0ff8a")},
+	{"id": "cherry_lava", "name": "Cherry", "price": 850, "color": Color("b5172f"), "glow": Color("ff6b81"), "bubbles": Color("ff9aa8")},
+	{"id": "blueberry", "name": "Blueberry", "price": 900, "color": Color("3a3fa8"), "glow": Color("8a8fff"), "bubbles": Color("b8bbff")},
+	{"id": "mint_lava", "name": "Mint", "price": 900, "color": Color("3ccf9a"), "glow": Color("c2ffe8")},
+	{"id": "grape", "name": "Grape", "price": 950, "color": Color("6a2c91"), "glow": Color("c58bff"), "bubbles": Color("e0bfff")},
+	{"id": "caramel", "name": "Caramel", "price": 1000, "color": Color("b8742a"), "glow": Color("f2b66b")},
+	{"id": "lemonade", "name": "Lemonade", "price": 1000, "color": Color("f5d63d"), "glow": Color("fff7b0"), "bubbles": Color("ffffff")},
+	{"id": "cola", "name": "Cola", "price": 1100, "color": Color("3a1d0e"), "glow": Color("8a4b2a"), "bubbles": Color("d9b38c")},
+	{"id": "tar", "name": "Tar", "price": 1200, "color": Color("111114"), "glow": Color("4a4a55"), "bubbles": Color("5a5a66")},
+	{"id": "frost", "name": "Frost", "price": 1500, "color": Color("7fc8ff"), "glow": Color("ffffff"), "bubbles": Color("e8f8ff")},
 ]
 
 ## How fast the rainbow hero cycles through every colour, in full cycles per
@@ -263,6 +379,9 @@ static func draw_hero_item(canvas: CanvasItem, item: Dictionary, center: Vector2
 	canvas.draw_rect(r, color)
 	if dark:
 		canvas.draw_rect(r, Color(1, 1, 1, 0.55), false, 1.5)
+	if shape in ["whiskers", "spotty", "crackface", "chick", "goo", "vamp", "cyborg", "scales"]:
+		_draw_pet_face(canvas, shape, r, color, look, time, blink)
+		return
 
 	match shape:
 		"cat":
@@ -348,6 +467,79 @@ static func draw_hero_item(canvas: CanvasItem, item: Dictionary, center: Vector2
 			for c in [r.position + Vector2(w * 0.1, h * 0.1), Vector2(r.end.x - w * 0.1, top + h * 0.1),
 					Vector2(r.position.x + w * 0.1, r.end.y - h * 0.1), r.end - Vector2(w * 0.1, h * 0.1)]:
 				canvas.draw_circle(c, u * 0.04, color.darkened(0.3))
+
+
+## The pet-line hero skins: a plain hero with a pet's features.
+static func _draw_pet_face(canvas: CanvasItem, shape: String, r: Rect2, color: Color, look: Vector2, time: float, blink: bool) -> void:
+	var w := r.size.x
+	var h := r.size.y
+	var u := minf(w, h)
+	var center := r.get_center()
+	var x := center.x
+	var top := r.position.y
+	var line := Color("1d2030")
+	var eye_l := center + Vector2(-w * 0.2, -h * 0.1) + look
+	var eye_r := center + Vector2(w * 0.2, -h * 0.1) + look
+	match shape:
+		"whiskers":
+			_face_eyes(canvas, eye_l, eye_r, u, line, blink, true)
+			var nose := center + Vector2(0, h * 0.1)
+			canvas.draw_circle(nose, u * 0.05, Color("ff7f9f"))
+			for side in [-1.0, 1.0]:
+				for i in 3:
+					var from := nose + Vector2(side * u * 0.1, (i - 1) * u * 0.05)
+					canvas.draw_line(from, from + Vector2(side * u * 0.5, (i - 1) * u * 0.1), Color(line, 0.7), 1.0)
+		"spotty":
+			for spot in [Vector2(-0.3, -0.3), Vector2(0.28, 0.25), Vector2(-0.15, 0.3), Vector2(0.32, -0.32)]:
+				canvas.draw_circle(center + spot * u, u * 0.09, Color("1d2030"))
+			for side in [-1.0, 1.0]:
+				canvas.draw_rect(Rect2(Vector2(x + side * w * 0.5 - (u * 0.18 if side > 0 else 0.0), top), Vector2(u * 0.18, h * 0.5)), Color("5a3a24"))
+			_face_eyes(canvas, eye_l, eye_r, u, line, blink, false)
+			canvas.draw_circle(center + Vector2(0, h * 0.15), u * 0.07, line)
+			if fposmod(time, 2.0) < 1.0:
+				canvas.draw_rect(Rect2(center + Vector2(-u * 0.05, h * 0.2), Vector2(u * 0.1, u * 0.12)), Color("ff7f9f"))
+		"crackface":
+			# The crack is the face: two chips for eyes and a jagged mouth.
+			canvas.draw_rect(Rect2(r.position, Vector2(w, h * 0.13)), color.lightened(0.2))
+			if blink:
+				canvas.draw_line(eye_l - Vector2(u * 0.08, 0), eye_l + Vector2(u * 0.08, 0), line, 2.0)
+				canvas.draw_line(eye_r - Vector2(u * 0.08, 0), eye_r + Vector2(u * 0.08, 0), line, 2.0)
+			else:
+				for e in [eye_l, eye_r]:
+					canvas.draw_colored_polygon(PackedVector2Array([e + Vector2(-u * 0.08, -u * 0.05), e + Vector2(u * 0.08, -u * 0.07), e + Vector2(u * 0.02, u * 0.07)]), line)
+			canvas.draw_polyline(PackedVector2Array([center + Vector2(-u * 0.28, u * 0.18), center + Vector2(-u * 0.12, u * 0.26), center + Vector2(0, u * 0.16), center + Vector2(u * 0.14, u * 0.27), center + Vector2(u * 0.28, u * 0.17)]), line, 2.0)
+		"chick":
+			_face_eyes(canvas, eye_l, eye_r, u, line, blink, false)
+			canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-u * 0.12, u * 0.04), center + Vector2(u * 0.12, u * 0.04), center + Vector2(0, u * 0.2)]), Color("ff8c1a"))
+			for i in 3:
+				canvas.draw_line(Vector2(x, top), Vector2(x + (i - 1) * u * 0.12, top - u * 0.25), color.darkened(0.15), 2.0)
+		"goo":
+			var drip := fposmod(time * 0.8, 1.0)
+			canvas.draw_line(Vector2(x + w * 0.25, r.end.y), Vector2(x + w * 0.25, r.end.y + u * 0.25 * drip), color, u * 0.1)
+			canvas.draw_circle(Vector2(x + w * 0.25, r.end.y + u * 0.25 * drip), u * 0.07, color)
+			canvas.draw_circle(r.position + Vector2(w * 0.25, h * 0.22), u * 0.08, Color(1, 1, 1, 0.55))
+			_face_eyes(canvas, eye_l, eye_r, u, line, blink, false)
+		"vamp":
+			canvas.draw_colored_polygon(PackedVector2Array([r.position, Vector2(x, top + h * 0.22), Vector2(r.end.x, top), Vector2(r.end.x, top + h * 0.1), Vector2(x, top + h * 0.3), Vector2(r.position.x, top + h * 0.1)]), Color("2b1d3d"))
+			_face_eyes(canvas, eye_l, eye_r, u, Color("c1121f"), blink, false)
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(side * u * 0.12, u * 0.15), center + Vector2(side * u * 0.04, u * 0.15), center + Vector2(side * u * 0.08, u * 0.28)]), Color.WHITE)
+		"cyborg":
+			canvas.draw_rect(Rect2(Vector2(x, top), Vector2(w * 0.5, h)), Color("8d96a3"))
+			canvas.draw_line(Vector2(x, top), Vector2(x, r.end.y), Color("5c6470"), 1.5)
+			_face_eyes(canvas, eye_l, eye_l, u, line, blink, false)
+			var glow := 0.6 + 0.4 * sin(time * 5.0)
+			canvas.draw_circle(eye_r, u * 0.12, Color(1, 0.15, 0.15, 0.35 * glow))
+			canvas.draw_circle(eye_r, u * 0.07, Color(1, 0.2, 0.2, glow))
+		"scales":
+			for row in 3:
+				for col in 3:
+					var p := r.position + Vector2(w * (0.18 + col * 0.32 + (0.16 if row % 2 == 1 else 0.0)), h * (0.45 + row * 0.2))
+					if p.x < r.end.x - 2:
+						canvas.draw_arc(p, u * 0.11, 0, PI, 6, color.darkened(0.3), 1.5)
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x + side * w * 0.2, top), Vector2(x + side * w * 0.32, top - u * 0.28), Vector2(x + side * w * 0.42, top)]), Color("ffe0a0"))
+			_face_eyes(canvas, eye_l, eye_r, u, Color("ffd23f"), blink, true)
 
 
 static func _face_eyes(canvas: CanvasItem, l: Vector2, r: Vector2, u: float, color: Color, blink: bool, slit: bool) -> void:
@@ -458,6 +650,73 @@ static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size
 			canvas.draw_line(Vector2(x - w * 0.55, top - w * 0.03), Vector2(x + w * 0.55, top - w * 0.03), Color("ffd23f"), 1.5)
 			canvas.draw_circle(Vector2(x, top - w * 0.2), w * 0.07, Color.WHITE)
 			canvas.draw_line(Vector2(x - w * 0.09, top - w * 0.08), Vector2(x + w * 0.09, top - w * 0.12), Color.WHITE, 1.5)
+		"beret":
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.55, top + 1), Vector2(x - w * 0.4, top - w * 0.25), Vector2(x + w * 0.2, top - w * 0.32), Vector2(x + w * 0.5, top - w * 0.12), Vector2(x + w * 0.45, top + 1)]), c)
+			canvas.draw_line(Vector2(x - w * 0.05, top - w * 0.32), Vector2(x, top - w * 0.42), c.darkened(0.3), 2.0)
+		"headband":
+			canvas.draw_rect(Rect2(x - w * 0.5, top + w * 0.06, w, w * 0.12), c)
+			canvas.draw_line(Vector2(x - w * 0.5, top + w * 0.12), Vector2(x - w * 0.75, top + w * 0.3 + sin(time * 6.0) * w * 0.05), c, w * 0.08)
+		"cowboy":
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.75, top - w * 0.12), Vector2(x - w * 0.6, top + w * 0.02), Vector2(x + w * 0.6, top + w * 0.02), Vector2(x + w * 0.75, top - w * 0.12), Vector2(x + w * 0.4, top - w * 0.05), Vector2(x - w * 0.4, top - w * 0.05)]), c)
+			canvas.draw_rect(Rect2(x - w * 0.35, top - w * 0.45, w * 0.7, w * 0.42), c)
+			canvas.draw_line(Vector2(x, top - w * 0.45), Vector2(x, top - w * 0.3), c.darkened(0.3), 2.0)
+			canvas.draw_rect(Rect2(x - w * 0.35, top - w * 0.14, w * 0.7, w * 0.07), Color("2a1810"))
+		"tiara":
+			canvas.draw_polyline(PackedVector2Array([Vector2(x - w * 0.4, top), Vector2(x - w * 0.25, top - w * 0.15), Vector2(x - w * 0.12, top - w * 0.05), Vector2(x, top - w * 0.3), Vector2(x + w * 0.12, top - w * 0.05), Vector2(x + w * 0.25, top - w * 0.15), Vector2(x + w * 0.4, top)]), c, 2.0)
+			canvas.draw_circle(Vector2(x, top - w * 0.2), w * 0.06, Color("4cc9f0"))
+			_sparkle(canvas, Vector2(x + w * 0.3, top - w * 0.3), w * 0.08 * (0.6 + 0.4 * sin(time * 5.0)), Color.WHITE)
+		"mohawk":
+			for i in 5:
+				var px := x + (i - 2) * w * 0.12
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(px - w * 0.07, top + 1), Vector2(px, top - w * (0.35 + 0.08 * (2 - absi(i - 2)))), Vector2(px + w * 0.07, top + 1)]), c)
+		"santa":
+			var tip := Vector2(x + w * 0.55, top - w * 0.15 + sin(time * 3.0) * w * 0.04)
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.45, top), Vector2(x, top - w * 0.55), tip, Vector2(x + w * 0.45, top)]), c)
+			canvas.draw_rect(Rect2(x - w * 0.55, top - w * 0.1, w * 1.1, w * 0.16), Color.WHITE)
+			canvas.draw_circle(tip, w * 0.1, Color.WHITE)
+		"cat_ears":
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x + side * w * 0.48, top + 1), Vector2(x + side * w * 0.38, top - w * 0.36), Vector2(x + side * w * 0.1, top + 1)]), c)
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x + side * w * 0.4, top), Vector2(x + side * w * 0.36, top - w * 0.24), Vector2(x + side * w * 0.18, top)]), Color("ff9fb8"))
+			canvas.draw_rect(Rect2(x - w * 0.5, top - w * 0.02, w, w * 0.06), c.darkened(0.2))
+		"dog_ears":
+			var flap := sin(time * 4.0) * w * 0.03
+			for side in [-1.0, 1.0]:
+				var px: float = x + side * w * 0.5
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(px - side * w * 0.15, top - w * 0.06), Vector2(px + side * w * 0.12, top - w * 0.02), Vector2(px + side * w * 0.14, top + w * 0.45 + flap), Vector2(px - side * w * 0.02, top + w * 0.5 + flap)]), c)
+		"wall_hat":
+			var block := Rect2(x - w * 0.42, top - w * 0.5, w * 0.84, w * 0.5)
+			canvas.draw_rect(block, c)
+			canvas.draw_rect(Rect2(block.position, Vector2(block.size.x, w * 0.08)), c.lightened(0.25))
+			canvas.draw_line(block.position + Vector2(0, block.size.y * 0.55), block.position + Vector2(block.size.x, block.size.y * 0.55), c.darkened(0.3), 1.0)
+			canvas.draw_line(block.position + Vector2(block.size.x * 0.5, w * 0.08), block.position + Vector2(block.size.x * 0.5, block.size.y * 0.55), c.darkened(0.3), 1.0)
+		"eggshell":
+			var pts := PackedVector2Array([Vector2(x - w * 0.42, top + w * 0.06)])
+			for i in 9:
+				var a := PI + PI * i / 8.0
+				pts.append(Vector2(x + cos(a) * w * 0.42, top - w * 0.05 + sin(a) * w * 0.38))
+			pts.append(Vector2(x + w * 0.42, top + w * 0.06))
+			for i in 6:
+				pts.append(Vector2(x + w * (0.42 - (i + 1) * 0.14), top + w * (0.06 if i % 2 == 0 else -0.06)))
+			canvas.draw_colored_polygon(pts, c)
+		"slime_hat":
+			var wob := sin(time * 4.0) * w * 0.04
+			canvas.draw_circle(Vector2(x, top - w * 0.12), w * (0.32 + wob / w), Color(c, 0.9))
+			canvas.draw_rect(Rect2(x - w * 0.45, top - w * 0.12, w * 0.9, w * 0.16), Color(c, 0.9))
+			canvas.draw_line(Vector2(x - w * 0.3, top), Vector2(x - w * 0.3, top + w * 0.18 + wob), Color(c, 0.9), w * 0.1)
+			canvas.draw_circle(Vector2(x - w * 0.12, top - w * 0.24), w * 0.06, Color(1, 1, 1, 0.6))
+		"bat_wings":
+			var flap := sin(time * 8.0) * w * 0.08
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x + side * w * 0.2, top + w * 0.05), Vector2(x + side * w * 0.75, top - w * 0.35 - flap), Vector2(x + side * w * 0.65, top - w * 0.05), Vector2(x + side * w * 0.5, top + w * 0.02)]), c)
+		"antenna":
+			for side in [-1.0, 1.0]:
+				var tip := Vector2(x + side * w * 0.3, top - w * 0.45 + sin(time * 5.0 + side) * w * 0.03)
+				canvas.draw_line(Vector2(x + side * w * 0.2, top), tip, c, 2.0)
+				canvas.draw_circle(tip, w * 0.08, Color("39f0ff") if fposmod(time + side * 0.25, 1.0) < 0.5 else c)
+		"dragon_horns":
+			for side in [-1.0, 1.0]:
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x + side * w * 0.15, top + 1), Vector2(x + side * w * 0.42, top - w * 0.2), Vector2(x + side * w * 0.6, top - w * 0.5), Vector2(x + side * w * 0.38, top + 1)]), c)
 		"propeller":
 			canvas.draw_arc(Vector2(x, top + w * 0.05), w * 0.42, PI, TAU, 16, c, w * 0.18)
 			canvas.draw_rect(Rect2(x - w * 0.48, top - w * 0.04, w * 0.96, w * 0.08), Color("ffd23f"))
@@ -580,6 +839,63 @@ static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, di
 				canvas.draw_circle(p, s * 1.3, col)
 				for k in 3:
 					canvas.draw_circle(p - dir * s * 1.8 + side * s * (k - 1) * 1.2, s * 0.6, col)
+		"cat_tail":
+			var c: Color = item.color
+			var points := PackedVector2Array()
+			for i in 8:
+				var t := i / 7.0
+				points.append(center - dir * tile * (0.4 + t * 0.9) + side * sin(time * 8.0 - t * 4.0) * base * 0.35 * t)
+			canvas.draw_polyline(points, c, base * 0.18)
+			canvas.draw_circle(points[points.size() - 1], base * 0.1, c.lightened(0.3))
+		"bones":
+			for i in 4:
+				var p := center - dir * tile * (0.5 + i * 0.4) + side * sin(time * 6.0 + i) * base * 0.2
+				var a := Vector2.from_angle(time * 3.0 + i) * base * 0.2
+				var col := Color(item.color, 0.95 - i * 0.2)
+				canvas.draw_line(p - a, p + a, col, base * 0.08)
+				canvas.draw_circle(p - a, base * 0.07, col)
+				canvas.draw_circle(p + a, base * 0.07, col)
+		"blocks":
+			var c: Color = item.color
+			for i in 5:
+				var s := base * (0.32 - i * 0.04)
+				var p := center - dir * tile * (0.45 + i * 0.3)
+				canvas.draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), Color(c, 0.95 - i * 0.16))
+				canvas.draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s * 0.2)), Color(c.lightened(0.25), 0.95 - i * 0.16))
+		"feathers":
+			var c: Color = item.color
+			for i in 5:
+				var p := center - dir * tile * (0.45 + i * 0.32) + side * sin(time * 5.0 + i * 1.7) * base * 0.4
+				var a := Vector2.from_angle(sin(time * 3.0 + i) * 0.8 + 0.6) * base * 0.22
+				canvas.draw_line(p - a, p + a, Color(c, 0.95 - i * 0.17), base * 0.1)
+				canvas.draw_line(p - a, p + a, Color(1, 1, 1, 0.5 - i * 0.09), 1.0)
+		"goo":
+			var c: Color = item.color
+			var points := PackedVector2Array()
+			for i in 8:
+				points.append(center - dir * tile * (0.3 + i * 0.18))
+			canvas.draw_polyline(points, Color(c, 0.6), base * 0.35)
+			for i in 3:
+				var p := center - dir * tile * (0.6 + i * 0.4) + side * base * 0.2
+				canvas.draw_circle(p + Vector2(0, fposmod(time * 2.0 + i * 0.3, 1.0) * base * 0.4), base * 0.08, Color(c, 0.8))
+		"bats":
+			var c: Color = item.color
+			for i in 4:
+				var p := center - dir * tile * (0.5 + i * 0.45) + side * sin(time * 9.0 + i * 2.0) * base * 0.4
+				var flap := sin(time * 20.0 + i) * base * 0.12
+				var s := base * (0.25 - i * 0.03)
+				canvas.draw_colored_polygon(PackedVector2Array([p, p + Vector2(-s, -s * 0.5 - flap), p + Vector2(-s * 0.5, s * 0.1), p + Vector2(0, s * 0.3), p + Vector2(s * 0.5, s * 0.1), p + Vector2(s, -s * 0.5 - flap)]), Color(c, 0.95 - i * 0.18))
+		"sparks":
+			var c: Color = item.color
+			for i in 8:
+				var life := fposmod(time * 3.0 + i * 0.13, 1.0)
+				var p := center - dir * tile * (0.4 + life * 1.2) + side * float(i % 2 * 2 - 1) * base * life * 0.5
+				canvas.draw_line(p, p - dir * base * 0.2 + side * base * 0.1, Color(c, 1.0 - life), 2.0)
+		"embers":
+			for i in 9:
+				var life := fposmod(time * 1.5 + i * 0.11, 1.0)
+				var p := center - dir * tile * (0.35 + i * 0.18) + Vector2(0, -life * base * 0.6) + side * sin(time * 7.0 + i) * base * 0.25
+				canvas.draw_circle(p, base * (0.1 - life * 0.06), Color("ffd23f").lerp(Color("ff3d00"), life) * Color(1, 1, 1, 1.0 - life * 0.8))
 		"ribbon":
 			for band in 3:
 				var points := PackedVector2Array()
@@ -751,6 +1067,48 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			canvas.draw_circle(p + Vector2(w * 0.7, h * 0.78), w * 0.05, detail)
 			var led := 0.4 + 0.6 * float(fposmod(time + p.x * 0.01, 1.2) < 0.6)
 			canvas.draw_circle(p + Vector2(w * 0.22, h * 0.22), w * 0.06, Color(0.3, 1.0, 0.4, led))
+		"scratch":
+			for i in 3:
+				canvas.draw_line(p + Vector2(w * (0.25 + i * 0.22), h * 0.3), p + Vector2(w * (0.15 + i * 0.22), h * 0.8), detail, 2.0)
+			canvas.draw_line(p + Vector2(0, h * 0.2), p + Vector2(w, h * 0.2), Color(detail, 0.5), 1.0)
+		"doghouse":
+			if roof:
+				canvas.draw_colored_polygon(PackedVector2Array([p + Vector2(-1, h * 0.3), p + Vector2(w * 0.5, 0), p + Vector2(w + 1, h * 0.3)]), top)
+			canvas.draw_rect(Rect2(p + Vector2(w * 0.32, h * 0.5), Vector2(w * 0.36, h * 0.5)), detail)
+			canvas.draw_circle(p + Vector2(w * 0.5, h * 0.5), w * 0.18, detail)
+		"bricky":
+			canvas.draw_line(p + Vector2(0, h * 0.5), p + Vector2(w, h * 0.5), detail, 1.0)
+			canvas.draw_line(p + Vector2(w * 0.5, h * 0.13), p + Vector2(w * 0.5, h * 0.5), detail, 1.0)
+			canvas.draw_circle(mid + Vector2(-w * 0.18, h * 0.12), w * 0.05, Color("1d2030"))
+			canvas.draw_circle(mid + Vector2(w * 0.18, h * 0.12), w * 0.05, Color("1d2030"))
+			canvas.draw_arc(mid + Vector2(0, h * 0.2), w * 0.12, 0.3, PI - 0.3, 6, Color("1d2030"), 1.5)
+		"nest":
+			for i in 6:
+				var y := p.y + h * (0.2 + i * 0.13)
+				canvas.draw_line(Vector2(p.x, y + (i % 2) * 3.0), Vector2(r.end.x, y - (i % 2) * 3.0), Color(detail if i % 2 == 0 else top, 0.9), 1.5)
+			canvas.draw_circle(mid + Vector2(w * 0.15, -h * 0.1), w * 0.12, Color("fff6e0"))
+		"slime":
+			if roof:
+				canvas.draw_rect(Rect2(p, Vector2(w, h * 0.22)), top)
+				for i in 3:
+					var drip := h * (0.15 + 0.075 * sin(time * 2.0 + i * 2.0 + p.x) + 0.1 * (i % 2))
+					canvas.draw_line(Vector2(p.x + w * (0.2 + i * 0.3), p.y + h * 0.2), Vector2(p.x + w * (0.2 + i * 0.3), p.y + h * 0.2 + drip), top, w * 0.1)
+			canvas.draw_circle(mid + Vector2(w * 0.15, h * 0.2), w * 0.07, Color(detail, 0.6))
+		"cave":
+			for i in 3:
+				var x0 := p.x + w * (0.12 + i * 0.32)
+				canvas.draw_colored_polygon(PackedVector2Array([Vector2(x0, p.y + h * 0.13), Vector2(x0 + w * 0.2, p.y + h * 0.13), Vector2(x0 + w * 0.1, p.y + h * (0.45 + 0.1 * (i % 2)))]), detail)
+			canvas.draw_circle(mid + Vector2(-w * 0.1, h * 0.25), w * 0.04, Color(0.8, 1.0, 0.6, 0.4 + 0.4 * sin(time * 3.0 + p.x)))
+		"plate":
+			canvas.draw_rect(r.grow(-2), Color(detail, 0.35), false, 1.0)
+			for c in [p + Vector2(w * 0.15, h * 0.25), p + Vector2(w * 0.85, h * 0.25), p + Vector2(w * 0.15, h * 0.85), p + Vector2(w * 0.85, h * 0.85)]:
+				canvas.draw_circle(c, w * 0.05, detail)
+			canvas.draw_line(p + Vector2(w * 0.3, h * 0.55), p + Vector2(w * 0.7, h * 0.55), Color(0, 0, 0, 0.3), 1.5)
+		"dscale":
+			for row in 3:
+				for col in 3:
+					var c := p + Vector2(w * (0.17 + col * 0.33 - (0.16 if row % 2 == 1 else 0.0)), h * (0.35 + row * 0.24))
+					canvas.draw_arc(c, w * 0.16, 0.2, PI - 0.2, 6, detail, 1.5)
 		"bars":
 			for i in 2:
 				var bar := Rect2(p + Vector2(w * 0.1, h * (0.2 + i * 0.4)), Vector2(w * 0.8, h * 0.32))

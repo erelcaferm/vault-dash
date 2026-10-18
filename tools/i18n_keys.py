@@ -22,11 +22,11 @@ CALLS = [r"\btr", r"TranslationServer\.translate", r"_label", r"_menu_button", r
          r"_celebrate", r"_die", r"_plain_label"]
 # Data fields that are shown to the player.
 FIELDS = ["name", "desc", "text", "one"]
-SKIP = {"✓", "● %d  -%d%%", "", "%d%%", "II", "● %d/%d", "★ %d/%d", "✕", "-", "+", "%d/%d", "%d / %d", "● %d", "%s\\n%s", "%s\\n%s\\n%s", "+ ", "\\n",
+SKIP = {"%s   %s", "? ? ?   ", "✓", "● %d  -%d%%", "", "%d%%", "II", "● %d/%d", "★ %d/%d", "✕", "-", "+", "%d/%d", "%d / %d", "● %d", "%s\\n%s", "%s\\n%s\\n%s", "+ ", "\\n",
         # Language names are always shown in their own language.
         "English", "Español", "Français", "Deutsch", "Türkçe", "Русский", "简体中文", "繁體中文"}
 # Shown, but only reachable through an expression the patterns above miss.
-EXTRA = ["VAULT", "Trophies", 'Runs played', 'Time climbing', 'Floors climbed', 'Best floor', 'Coins collected', 'Cracked walls broken', 'Trap floors passed', 'Power-ups grabbed', 'Chests opened', 'Legendaries found', 'Deaths', '  by lava', '  by spikes', '  by fake floors', 'Revives', 'Daily Climbs played', 'Daily gold medals', 'Levels cleared', 'Level stars', 'Missions finished', 'Cosmetics owned', "Bronze medal", "Silver medal", "Gold medal", "Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
+EXTRA = ["Stats", "Fish", "Bone", "Pebble", "Seeds", "Jelly", "Bolt", "Pepper", "PETS", "VAULT", "Trophies", 'Runs played', 'Time climbing', 'Floors climbed', 'Best floor', 'Coins collected', 'Cracked walls broken', 'Trap floors passed', 'Power-ups grabbed', 'Chests opened', 'Legendaries found', 'Deaths', '  by lava', '  by spikes', '  by fake floors', 'Revives', 'Daily Climbs played', 'Daily gold medals', 'Levels cleared', 'Level stars', 'Missions finished', 'Cosmetics owned', "Bronze medal", "Silver medal", "Gold medal", "Off", "Spiked!", "The floor gave way!", "Place one start", "Place an exit", "Sure?"]
 
 
 def unescape(s):

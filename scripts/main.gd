@@ -16,6 +16,8 @@ const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const DailyGift := preload("res://scripts/daily_gift.gd")
 const VaultGame := preload("res://scripts/vault_game.gd")
+const Pets := preload("res://scripts/pets.gd")
+const PetStation := preload("res://scripts/pet_station.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
@@ -177,6 +179,16 @@ var unlocked: Array = []         # saved ids of unlocked achievements
 var achievements_screen: Control
 var daily_gift: Control
 var vault_game: Control
+var pet_station: Control
+var pets_button: Button
+var pets: Dictionary = {}           # pet id -> {"level": int, "fed": int} for hatched pets
+var pet_food: Dictionary = {}       # food id -> how many you have
+var equipped_pet := ""
+var eggs_hatched := 0
+var pet_pos := Vector2.ZERO         # where the following pet is drawn
+var pet_facing := 1.0
+var food_cell := Vector2i(-1, -1)   # this level's food for the equipped pet, if any
+var pet_rng := RandomNumberGenerator.new()
 var vault_button: Button
 var vault_day := ""                # the day the vault counts below are for
 var vault_free_used := 0
@@ -320,6 +332,8 @@ func reset() -> void:
 	revived = false
 	doubled = false
 	stats_banked = Vector2i.ZERO
+	pet_pos = _tile_center(cell) + Vector2(-TILE * 0.85, TILE * 0.1)
+	_place_food()
 	lava_grace = 0.0
 	best_at_start = best_floor
 	daily_best_at_start = daily_best
@@ -387,8 +401,9 @@ func _process(delta: float) -> void:
 	rainbow_phase += delta * (Skins.RAINBOW_SLIDE_SPEED if moving else Skins.RAINBOW_IDLE_SPEED)
 	state_time += delta
 	_update_shop_glow()
+	_update_pet(delta)
 	if state == State.READY and not (shop.visible or achievements_screen.visible or settings_screen.visible \
-			or levels_screen.visible or level_editor.visible or vault_game.visible):
+			or levels_screen.visible or level_editor.visible or vault_game.visible or pet_station.visible):
 		_maybe_show_gift()
 	if state == State.PLAYING:
 		elapsed += delta
@@ -461,6 +476,8 @@ func _advance() -> void:
 	var t: String = tower.get_tile(cell)
 	if powerups.has(cell):
 		_take_powerup(cell)
+	if cell == food_cell:
+		_take_food()
 	if t == TowerScript.COIN:
 		slide_coins += 1
 		_collect_coin(cell)
@@ -1057,7 +1074,8 @@ func _bank_run() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible \
-			or levels_screen.visible or level_editor.visible or daily_gift.visible or vault_game.visible:
+			or levels_screen.visible or level_editor.visible or daily_gift.visible or vault_game.visible \
+			or pet_station.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -1331,6 +1349,7 @@ func _build_hud() -> void:
 	gear_button.pressed.connect(_open_settings)
 	hud.add_child(gear_button)
 	vault_button = _top_icon(gear_button.get_parent(), -64, "VAULT", _draw_vault_icon, func(): vault_game.open())
+	pets_button = _top_icon(gear_button.get_parent(), 64, "PETS", _draw_paw_icon, func(): pet_station.open())
 
 	banner = PanelContainer.new()
 	var banner_style := StyleBoxFlat.new()
@@ -1380,6 +1399,12 @@ func _build_hud() -> void:
 	hud.add_child(achievements_screen)
 	achievements_screen.setup(self)
 	achievements_screen.closed.connect(func(): achievements_screen.visible = false)
+	pet_station = PetStation.new()
+	hud.add_child(pet_station)
+	pet_station.setup(self)
+	pet_station.closed.connect(func():
+		pet_station.visible = false
+		reset())
 	vault_game = VaultGame.new()
 	hud.add_child(vault_game)
 	vault_game.setup(self)
@@ -1435,7 +1460,7 @@ func _apply_safe_area() -> void:
 	safe_root.offset_right = -inset[2]
 	safe_root.offset_bottom = -inset[3]
 	# Full-screen menus keep their background edge to edge.
-	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen, daily_gift, vault_game]:
+	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen, daily_gift, vault_game, pet_station]:
 		var bg: Control = screen.get_child(0)
 		if bg is ColorRect:
 			bg.offset_left = -inset[0]
@@ -1590,6 +1615,133 @@ func _top_icon(parent: Node, x: float, caption: String, drawer: Callable, action
 func _show_top_buttons(on: bool) -> void:
 	gear_button.visible = on
 	vault_button.visible = on and not is_level() and state != State.PAUSED
+	pets_button.visible = vault_button.visible
+
+
+func _draw_paw_icon(b: Button) -> void:
+	var c := Vector2(b.size.x * 0.5, 20)
+	var color := Color(1, 1, 1, 0.9)
+	b.draw_circle(c + Vector2(0, 3), 6, color)
+	for i in 4:
+		b.draw_circle(c + Vector2.from_angle(PI + PI * (i + 0.5) / 4.0) * 9.5 + Vector2(0, 2), 2.8, color)
+	if _pet_can_feed():
+		b.draw_circle(c + Vector2(11, -10), 3.5, Color("ff4d4d"))
+
+
+# --- Pets ------------------------------------------------------------------
+
+func egg_price() -> int:
+	return 0 if eggs_hatched == 0 else Pets.EGG_PRICE
+
+
+func pets_left_to_hatch() -> Array:
+	return Pets.LIST.filter(func(p): return not pets.has(p.id))
+
+
+## Buys and hatches an egg: a random pet you don't have yet, straight away.
+## The first egg is free. Returns the pet, or {} if you can't.
+func hatch_egg() -> Dictionary:
+	var left := pets_left_to_hatch()
+	if left.is_empty() or total_coins < egg_price():
+		return {}
+	total_coins -= egg_price()
+	var pet: Dictionary = left[pet_rng.randi_range(0, left.size() - 1)]
+	pets[pet.id] = {"level": 1, "fed": 0}
+	eggs_hatched += 1
+	if equipped_pet == "":
+		equipped_pet = pet.id
+	add_stat("pets_hatched")
+	_save()
+	return pet
+
+
+## Feeds one of the pet's food to it. Returns the level it reached when
+## that feed levelled it up, 0 if it just ate, or -1 if it couldn't.
+func feed_pet(id: String) -> int:
+	if not pets.has(id):
+		return -1
+	var pet := Pets.find(id)
+	var state_: Dictionary = pets[id]
+	if state_.level >= Pets.MAX_LEVEL or pet_food.get(pet.food, 0) <= 0:
+		return -1
+	pet_food[pet.food] -= 1
+	state_.fed += 1
+	var levelled := 0
+	if state_.fed >= Pets.feeds_to_next(state_.level):
+		state_.fed = 0
+		state_.level += 1
+		levelled = state_.level
+		_unlock_pet_rewards(id)
+	_save()
+	return levelled
+
+
+## Gives every piece of the pet's line it has reached the level for.
+func _unlock_pet_rewards(id: String) -> void:
+	for kind in ["hero", "hat", "walls", "trail", "lava"]:
+		for item in Skins.list(kind):
+			if item.get("pet", "") == id and pets[id].level >= item.pet_level and not owned.has(item.id):
+				owned.append(item.id)
+				mark_new(item.id)
+
+
+func _pet_can_feed() -> bool:
+	for id in pets:
+		if pets[id].level < Pets.MAX_LEVEL and pet_food.get(Pets.find(id).food, 0) > 0:
+			return true
+	return false
+
+
+## Puts the equipped pet's food somewhere along the level's quickest route,
+## so it can always be reached.
+func _place_food() -> void:
+	food_cell = Vector2i(-1, -1)
+	if equipped_pet == "" or not is_level():
+		return
+	var solver = Solver.new(tower)
+	solver.max_states = 20000
+	solver.run()
+	if solver.solution.is_empty():
+		return
+	var cells: Array = []
+	var at: Vector2i = tower.start
+	var broken := {}
+	for dir: Vector2i in solver.solution:
+		var r: Dictionary = tower.simulate_slide(at, dir, broken)
+		var c := at
+		while c != r.end:
+			c += dir
+			if tower.get_tile(c) == TowerScript.EMPTY:
+				cells.append(c)
+		if r.won:
+			break
+		if r.broke != null:
+			broken = broken.duplicate()
+			broken[r.broke] = true
+		at = r.end
+	if not cells.is_empty():
+		food_cell = cells[pet_rng.randi_range(0, cells.size() - 1)]
+
+
+func _take_food() -> void:
+	var food: String = Pets.find(equipped_pet).food
+	pet_food[food] = pet_food.get(food, 0) + 1
+	food_cell = Vector2i(-1, -1)
+	sfx.play("reward")
+	_toast(tr("+1 %s for %s") % [tr(Pets.find(equipped_pet).food_name), tr(Pets.find(equipped_pet).name)])
+	_save()
+
+
+func _update_pet(delta: float) -> void:
+	if equipped_pet == "":
+		return
+	var p := _player_center()
+	if move_dir.x != 0:
+		pet_facing = float(move_dir.x)
+	var target := p + Vector2(-pet_facing * TILE * 0.85, TILE * 0.1)
+	pet_pos = pet_pos.lerp(target, 1.0 - exp(-delta * 7.0))
+	# Never fall more than a tile and a half behind, even on long slides.
+	pet_pos = target + (pet_pos - target).limit_length(TILE * 1.5)
 
 
 func _draw_vault_icon(b: Button) -> void:
@@ -2177,7 +2329,8 @@ func owns(item: Dictionary) -> bool:
 
 
 func buy(kind: String, item: Dictionary) -> bool:
-	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or total_coins < price(item):
+	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or item.has("pet") \
+			or total_coins < price(item):
 		return false
 	total_coins -= price(item)
 	sfx.play("buy")
@@ -2233,6 +2386,10 @@ func _load_save() -> void:
 		deal_id = cfg.get_value("shop", "deal_id", "")
 		gift_day = cfg.get_value("gift", "day", 0)
 		vault_day = cfg.get_value("vault", "day", "")
+		pets = cfg.get_value("pets", "hatched", {})
+		pet_food = cfg.get_value("pets", "food", {})
+		equipped_pet = cfg.get_value("pets", "equipped", "")
+		eggs_hatched = cfg.get_value("pets", "eggs", 0)
 		vault_free_used = cfg.get_value("vault", "free_used", 0)
 		vault_ads_used = cfg.get_value("vault", "ads_used", 0)
 		gift_date = cfg.get_value("gift", "date", "")
@@ -2284,6 +2441,10 @@ func _save() -> void:
 	cfg.set_value("shop", "deal_id", deal_id)
 	cfg.set_value("gift", "day", gift_day)
 	cfg.set_value("vault", "day", vault_day)
+	cfg.set_value("pets", "hatched", pets)
+	cfg.set_value("pets", "food", pet_food)
+	cfg.set_value("pets", "equipped", equipped_pet)
+	cfg.set_value("pets", "eggs", eggs_hatched)
 	cfg.set_value("vault", "free_used", vault_free_used)
 	cfg.set_value("vault", "ads_used", vault_ads_used)
 	cfg.set_value("gift", "date", gift_date)
@@ -2355,6 +2516,10 @@ func _draw() -> void:
 	_draw_best_marker(top, bottom)
 	_draw_hints()
 	_draw_ghost()
+	if food_cell.x >= 0:
+		Pets.draw_food(self, Pets.find(equipped_pet).food, _tile_center(food_cell), TILE * 0.8, anim_time)
+	if equipped_pet != "" and state != State.CHEST:
+		Pets.draw_pet(self, Pets.find(equipped_pet), pet_pos, TILE * 0.55, anim_time, Vector2(pet_facing, 0))
 	_draw_player()
 	for b in bursts:
 		var k: float = b.t / 0.35
