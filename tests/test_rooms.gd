@@ -79,6 +79,8 @@ func _check_traps() -> void:
 	var traps := 0
 	var after_trap := 0
 	var back_to_back := 0
+	var late_floors := 0
+	var late_traps := 0
 	for seed_value in 300:
 		tower = TowerScript.new()
 		tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
@@ -93,6 +95,12 @@ func _check_traps() -> void:
 				failures += 1
 			if f <= TowerScript.SAFE_FLOORS or f % TowerScript.TRAP_EVERY == 0:
 				continue
+			if f >= TowerScript.TRAP_MAX_FLOOR:
+				late_floors += 1
+				if trap:
+					late_traps += 1
+			if f >= TowerScript.TRAP_STEP_FLOORS:
+				continue
 			if tower.is_trap(k - 1):
 				after_trap += 1
 				if trap:
@@ -103,7 +111,22 @@ func _check_traps() -> void:
 					traps += 1
 	var rate := traps * 100.0 / floors
 	var again := back_to_back * 100.0 / maxi(after_trap, 1)
-	print("random trap floors: %.1f%% normally, %.1f%% right after a trap floor" % [rate, again])
+	var late := late_traps * 100.0 / late_floors
+	print("random trap floors before floor %d: %.1f%% normally, %.1f%% right after a trap floor; from floor %d: %.1f%%" % [
+		TowerScript.TRAP_STEP_FLOORS, rate, again, TowerScript.TRAP_MAX_FLOOR, late])
+	if absf(late - TowerScript.TRAP_MAX_CHANCE * 100) > 2.0:
+		printerr("FAIL: trap chance from floor %d is %.1f%%, want %.0f%%" % [TowerScript.TRAP_MAX_FLOOR, late, TowerScript.TRAP_MAX_CHANCE * 100])
+		failures += 1
+	var last := 0.0
+	for f in range(1, 260):
+		var c: float = TowerScript.trap_chance(f, false)
+		if c < last:
+			printerr("FAIL: trap chance drops at floor %d" % f)
+			failures += 1
+		if f % TowerScript.TRAP_STEP_FLOORS != 0 and c != last and f > 1:
+			printerr("FAIL: trap chance changes at floor %d, not on a step of %d" % [f, TowerScript.TRAP_STEP_FLOORS])
+			failures += 1
+		last = c
 	if absf(rate - TowerScript.TRAP_CHANCE * 100) > 1.0:
 		printerr("FAIL: trap chance is %.1f%%, want %.1f%%" % [rate, TowerScript.TRAP_CHANCE * 100])
 		failures += 1

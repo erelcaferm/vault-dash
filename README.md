@@ -35,7 +35,7 @@ Every run builds a new endless tower. After the start room, each floor picks one
 - A layout doesn't come back within 12 floors.
 - Layouts are randomly mirrored left to right.
 
-**Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor has a 6% chance (only 1% straight after another trap floor). Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
+**Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor rolls for one. The chance starts at 6% (only 1% straight after another trap floor) and steps up every 25 floors until it reaches 80% at floor 200. Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
 
 The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Temple. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
 

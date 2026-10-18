@@ -25,11 +25,16 @@ const FAKE_COIN := "F"
 
 ## Trap floors, where fake floor gives way. Every TRAP_EVERY-th floor is
 ## always a trap floor. Other floors past the first SAFE_FLOORS roll for one
-## as they load, with a much smaller chance right after another trap floor.
+## as they load. The chance starts at TRAP_CHANCE (TRAP_AGAIN_CHANCE right
+## after another trap floor) and steps up every TRAP_STEP_FLOORS floors until
+## both reach TRAP_MAX_CHANCE at floor TRAP_MAX_FLOOR.
 const TRAP_EVERY := 30
 const SAFE_FLOORS := 5
 const TRAP_CHANCE := 0.06
 const TRAP_AGAIN_CHANCE := 0.01
+const TRAP_STEP_FLOORS := 25
+const TRAP_MAX_FLOOR := 200
+const TRAP_MAX_CHANCE := 0.8
 ## Every this-many floors has a treasure chest.
 const CHEST_EVERY := 30
 ## Layouts unlocked at the start, and how many more unlock per floor climbed.
@@ -185,8 +190,14 @@ func _roll_trap(k: int) -> bool:
 		return false
 	if floor_number % TRAP_EVERY == 0:
 		return true
-	var chance := TRAP_AGAIN_CHANCE if _traps[k - 1] else TRAP_CHANCE
-	return _rng.randf() < chance
+	return _rng.randf() < trap_chance(floor_number, _traps[k - 1])
+
+
+## The chance that `floor_number` is a trap floor, before the fixed rules.
+static func trap_chance(floor_number: int, after_trap: bool) -> float:
+	var steps := floori(float(TRAP_MAX_FLOOR) / TRAP_STEP_FLOORS)
+	var t := minf(floori(float(floor_number) / TRAP_STEP_FLOORS), steps) / float(steps)
+	return lerpf(TRAP_AGAIN_CHANCE if after_trap else TRAP_CHANCE, TRAP_MAX_CHANCE, t)
 
 
 func _parse(lines: Array, mirror: bool) -> Array:
