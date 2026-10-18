@@ -27,6 +27,12 @@ func _draw() -> void:
 		var color := Skins.hero_color(hero, _time * Skins.RAINBOW_SLIDE_SPEED) if not hero.is_empty() else Color.WHITE
 		Skins.draw_trail(self, item, p, Vector2.RIGHT, hs, color, _time)
 		Skins.draw_hero(self, p, hs, color, Vector2(2, 0))
+	elif kind == "hat":
+		var hs := Vector2(s, s) * 0.55
+		var p := c + Vector2(0, s * 0.18)
+		var color := Skins.hero_color(hero, _time * Skins.RAINBOW_IDLE_SPEED) if not hero.is_empty() else Color.WHITE
+		Skins.draw_hero(self, p, hs, color)
+		Skins.draw_hat(self, item, p, hs, _time)
 	elif kind == "lava":
 		var r := Rect2(c - Vector2(s, s) * 0.5, Vector2(s, s))
 		draw_rect(r, Color(0.1, 0.1, 0.16))

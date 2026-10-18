@@ -25,7 +25,7 @@ const LIST := [
 	{"id": "persistent", "name": "Persistent", "desc": "Die 5 times", "stat": "deaths", "goal": 5, "coins": 25},
 	{"id": "never_give_up", "name": "Never Give Up", "desc": "Die 50 times", "stat": "deaths", "goal": 50, "item": ["hero", "ghost"]},
 	{"id": "hot_feet", "name": "Hot Feet", "desc": "Get caught by the lava 10 times", "stat": "deaths_lava", "goal": 10, "item": ["lava", "ash"]},
-	{"id": "pincushion", "name": "Pincushion", "desc": "Land on spikes 10 times", "stat": "deaths_spikes", "goal": 10, "coins": 50},
+	{"id": "pincushion", "name": "Pincushion", "desc": "Land on spikes 10 times", "stat": "deaths_spikes", "goal": 10, "item": ["hat", "horns"]},
 	{"id": "gravity", "name": "Gravity Wins", "desc": "Fall through a fake floor 5 times", "stat": "deaths_fake", "goal": 5, "coins": 50},
 	# Chests
 	{"id": "lucky", "name": "Lucky", "desc": "Open your first chest", "stat": "chests_opened", "goal": 1, "coins": 25},
@@ -45,7 +45,7 @@ const LIST := [
 	{"id": "devoted", "name": "Devoted", "desc": "Play the Daily Climb on 30 days", "stat": "daily_days", "goal": 30, "coins": 300},
 	# Missions
 	{"id": "busy_bee", "name": "Busy Bee", "desc": "Finish 10 missions", "stat": "missions_done", "goal": 10, "coins": 100},
-	{"id": "mission_master", "name": "Mission Master", "desc": "Finish 50 missions", "stat": "missions_done", "goal": 50, "coins": 400},
+	{"id": "mission_master", "name": "Mission Master", "desc": "Finish 50 missions", "stat": "missions_done", "goal": 50, "item": ["hat", "halo"]},
 	# Collecting
 	{"id": "fashionista", "name": "Fashionista", "desc": "Own 5 hero colours", "stat": "heroes_owned", "goal": 5, "coins": 100},
 ]
@@ -62,4 +62,4 @@ static func reward_text(a: Dictionary) -> String:
 	if a.has("coins"):
 		return "%d coins" % a.coins
 	var item := Skins.find(Skins.list(a.item[0]), a.item[1])
-	return "%s: %s" % ["Trail" if a.item[0] == "trail" else "Skin", item.name]
+	return "%s: %s" % [Skins.kind_name(a.item[0]).capitalize(), item.name]

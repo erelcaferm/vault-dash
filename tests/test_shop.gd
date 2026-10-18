@@ -42,6 +42,11 @@ func _initialize() -> void:
 	game._open_shop()
 	game.shop._show_tab("trail")
 	_expect(game.shop._grid.get_child_count() == Skins.TRAILS.size(), "the Trails tab lists every trail")
+	var crown := Skins.find(Skins.HATS, "crown")
+	var cap := Skins.find(Skins.HATS, "cap")
+	_expect(game.owns(Skins.find(Skins.HATS, "no_hat")) and not game.buy("hat", crown), "no hat is free, the crown can't be bought")
+	game.total_coins += cap.price
+	_expect(game.buy("hat", cap) and game.equipped_hat == "cap", "buys and equips a hat")
 	var acid := Skins.find(Skins.LAVA, "acid")
 	game.total_coins += acid.price
 	_expect(game.buy("lava", acid) and game.equipped_lava == "acid", "buys and equips a lava skin")
@@ -54,7 +59,7 @@ func _initialize() -> void:
 	await process_frame
 	_expect(reloaded.total_coins == 5, "coins survive a restart")
 	_expect(reloaded.owns(rainbow) and reloaded.owns(glass), "purchases survive a restart")
-	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass" and reloaded.equipped_trail == "fire" and reloaded.equipped_lava == "acid", "equipped items survive a restart")
+	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass" and reloaded.equipped_trail == "fire" and reloaded.equipped_lava == "acid" and reloaded.equipped_hat == "cap", "equipped items survive a restart")
 
 	var red := Skins.hero_color(rainbow, 0.0)
 	var later := Skins.hero_color(rainbow, 0.25)

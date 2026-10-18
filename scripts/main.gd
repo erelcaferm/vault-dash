@@ -103,6 +103,7 @@ var equipped_hero := "white"
 var equipped_wall := "rubble"
 var equipped_trail := "afterimage"
 var equipped_lava := "classic"
+var equipped_hat := "no_hat"
 var rainbow_phase := 0.0
 
 var touch_start := Vector2.ZERO
@@ -1347,6 +1348,8 @@ func equip(kind: String, id: String) -> void:
 			equipped_trail = id
 		"lava":
 			equipped_lava = id
+		"hat":
+			equipped_hat = id
 		_:
 			equipped_wall = id
 	_save()
@@ -1392,6 +1395,7 @@ func _load_save() -> void:
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 		equipped_trail = cfg.get_value("shop", "trail", "afterimage")
 		equipped_lava = cfg.get_value("shop", "lava", "classic")
+		equipped_hat = cfg.get_value("shop", "hat", "no_hat")
 		missions = cfg.get_value("missions", "active", [])
 
 
@@ -1405,6 +1409,7 @@ func _save() -> void:
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("shop", "trail", equipped_trail)
 	cfg.set_value("shop", "lava", equipped_lava)
+	cfg.set_value("shop", "hat", equipped_hat)
 	cfg.set_value("missions", "active", missions)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
@@ -1506,6 +1511,7 @@ func _draw_player() -> void:
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
 	Skins.draw_hero(self, p, size, color, look, 1.0, Skins.hero_glow(_hero_skin()))
+	Skins.draw_hat(self, Skins.find(Skins.HATS, equipped_hat), p, size, anim_time)
 	if shield:
 		draw_arc(p, TILE * 0.72, 0, TAU, 28, Color(POWERUP_COLORS.shield, 0.6 + 0.3 * sin(anim_time * 6.0)), 2.5)
 	if magnet_time > 0.0:

@@ -68,6 +68,20 @@ const TRAILS := [
 	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
 ]
 
+## Hats worn on top of the hero. `style` picks how it's drawn.
+const HATS := [
+	{"id": "no_hat", "name": "No hat", "price": 0, "style": "none"},
+	{"id": "cap", "name": "Cap", "price": 150, "style": "cap", "color": Color("e63946")},
+	{"id": "beanie", "name": "Beanie", "price": 200, "style": "beanie", "color": Color("4361ee")},
+	{"id": "party", "name": "Party Hat", "price": 250, "style": "party", "color": Color("ff70a6")},
+	{"id": "headphones", "name": "Headphones", "price": 300, "style": "headphones", "color": Color("2b2d42")},
+	{"id": "top_hat", "name": "Top Hat", "price": 450, "style": "top_hat", "color": Color("17171c")},
+	{"id": "wizard", "name": "Wizard", "price": 600, "style": "wizard", "color": Color("5a189a")},
+	{"id": "crown", "name": "Crown", "price": -1, "chest_only": true, "style": "crown", "color": Color("ffc300")},
+	{"id": "horns", "name": "Horns", "price": -1, "achievement": "pincushion", "style": "horns", "color": Color("c1121f")},
+	{"id": "halo", "name": "Halo", "price": -1, "achievement": "mission_master", "style": "halo", "color": Color("fff3a8")},
+]
+
 ## What rises from below. `color` fills it, `glow` lines the surface, and
 ## `bubbles` adds popping bubbles of that colour.
 const LAVA := [
@@ -95,6 +109,8 @@ static func list(kind: String) -> Array:
 			return TRAILS
 		"lava":
 			return LAVA
+		"hat":
+			return HATS
 	return WALLS
 
 
@@ -107,6 +123,8 @@ static func kind_name(kind: String) -> String:
 			return "trail"
 		"lava":
 			return "lava"
+		"hat":
+			return "hat"
 	return "wall skin"
 
 
@@ -145,6 +163,64 @@ static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color:
 	var s := size.y / 26.0
 	canvas.draw_circle(center + Vector2(-5, -3) * s + look, 2.6 * s, eye)
 	canvas.draw_circle(center + Vector2(5, -3) * s + look, 2.6 * s, eye)
+
+
+## Draws a hat on a hero drawn at `center` with `size`.
+static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size: Vector2, time := 0.0) -> void:
+	if item.style == "none":
+		return
+	var c: Color = item.color
+	var w := size.x
+	var top := center.y - size.y * 0.5
+	var x := center.x
+	match item.style:
+		"cap":
+			canvas.draw_rect(Rect2(x - w * 0.5, top - w * 0.28, w, w * 0.3), c)
+			canvas.draw_rect(Rect2(x, top - w * 0.06, w * 0.75, w * 0.1), c.darkened(0.25))
+			canvas.draw_circle(Vector2(x, top - w * 0.3), w * 0.06, c.lightened(0.3))
+		"beanie":
+			canvas.draw_rect(Rect2(x - w * 0.5, top - w * 0.3, w, w * 0.32), c)
+			canvas.draw_rect(Rect2(x - w * 0.55, top - w * 0.08, w * 1.1, w * 0.14), c.lightened(0.3))
+			canvas.draw_circle(Vector2(x, top - w * 0.36), w * 0.12, c.lightened(0.5))
+		"party":
+			var tip := Vector2(x, top - w * 0.75)
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.35, top + 1), tip, Vector2(x + w * 0.35, top + 1)]), c)
+			canvas.draw_line(Vector2(x - w * 0.24, top - w * 0.22), Vector2(x + w * 0.24, top - w * 0.22), Color("ffd23f"), w * 0.08)
+			canvas.draw_line(Vector2(x - w * 0.12, top - w * 0.5), Vector2(x + w * 0.12, top - w * 0.5), Color("4cc9f0"), w * 0.07)
+			canvas.draw_circle(tip, w * 0.1, Color.WHITE)
+		"headphones":
+			canvas.draw_arc(Vector2(x, top + w * 0.15), w * 0.6, PI * 1.05, PI * 1.95, 16, c, w * 0.1)
+			canvas.draw_rect(Rect2(x - w * 0.68, top + w * 0.1, w * 0.2, w * 0.38), Color("e84855"))
+			canvas.draw_rect(Rect2(x + w * 0.48, top + w * 0.1, w * 0.2, w * 0.38), Color("e84855"))
+		"top_hat":
+			canvas.draw_rect(Rect2(x - w * 0.6, top - w * 0.08, w * 1.2, w * 0.1), c)
+			canvas.draw_rect(Rect2(x - w * 0.36, top - w * 0.7, w * 0.72, w * 0.64), c)
+			canvas.draw_rect(Rect2(x - w * 0.36, top - w * 0.2, w * 0.72, w * 0.1), Color("e63946"))
+			canvas.draw_rect(Rect2(x - w * 0.6, top - w * 0.08, w * 1.2, w * 0.1), Color(1, 1, 1, 0.35), false, 1.0)
+		"wizard":
+			var tip := Vector2(x + w * 0.25, top - w * 0.9)
+			canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - w * 0.42, top), tip, Vector2(x + w * 0.42, top)]), c)
+			canvas.draw_rect(Rect2(x - w * 0.6, top - w * 0.06, w * 1.2, w * 0.1), c.darkened(0.2))
+			_sparkle(canvas, Vector2(x - w * 0.05, top - w * 0.38), w * (0.12 + 0.03 * sin(time * 5.0)), Color("ffd23f"))
+		"crown":
+			var base := top - w * 0.02
+			canvas.draw_colored_polygon(PackedVector2Array([
+				Vector2(x - w * 0.45, base), Vector2(x - w * 0.45, base - w * 0.42), Vector2(x - w * 0.22, base - w * 0.2),
+				Vector2(x, base - w * 0.5), Vector2(x + w * 0.22, base - w * 0.2), Vector2(x + w * 0.45, base - w * 0.42),
+				Vector2(x + w * 0.45, base),
+			]), c)
+			canvas.draw_circle(Vector2(x, base - w * 0.14), w * 0.07, Color("e63946"))
+			_sparkle(canvas, Vector2(x + w * 0.3, base - w * 0.5), w * 0.1 * (0.6 + 0.4 * sin(time * 4.0)), Color.WHITE)
+		"horns":
+			for side in [-1.0, 1.0]:
+				var root := Vector2(x + side * w * 0.3, top + 1)
+				canvas.draw_colored_polygon(PackedVector2Array([
+					root - Vector2(w * 0.12, 0), root + Vector2(side * w * 0.12, -w * 0.42), root + Vector2(w * 0.12, 0),
+				]), c)
+		"halo":
+			var bob := sin(time * 3.0) * w * 0.04
+			canvas.draw_arc(Vector2(x, top - w * 0.3 + bob), w * 0.36, 0, TAU, 24, Color(c, 0.35), w * 0.16)
+			canvas.draw_arc(Vector2(x, top - w * 0.3 + bob), w * 0.36, 0, TAU, 24, c, w * 0.07)
 
 
 ## Draws a slide trail behind a hero at `center` moving along `dir`.
