@@ -11,6 +11,8 @@ const ACTIVE := 3
 ## Every this-many missions finished, new ones go up a tier.
 const MISSIONS_PER_TIER := 3
 const MAX_TIER := 10
+## Coins to swap a mission you don't want for a different one.
+const SWAP_COST := 25
 
 const TEMPLATES := [
 	{"id": "coins_run", "text": "Collect %d coins in one run", "run": "run_coins", "base": 15, "step": 8},

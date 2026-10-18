@@ -96,7 +96,7 @@ Active power-ups are listed under the coin counter. Tune the `POWERUP_*`, `MAGNE
 
 ## Missions
 
-Three missions show at the top of the menu, such as "Collect 15 coins in one run", "Break 10 cracked walls" or "Reach floor 8 in the Daily Climb". Finishing one pays coins straight away and swaps in a new one with no waiting. Every 3 missions finished, new ones get bigger and pay more. "In one run" missions start from 0 each run. The others count from when the mission appeared. The templates live in `scripts/missions.gd`.
+Three missions show at the top of the menu, such as "Collect 15 coins in one run", "Break 10 cracked walls" or "Reach floor 8 in the Daily Climb". Finishing one pays coins straight away and swaps in a new one with no waiting. Every 3 missions finished, new ones get bigger and pay more. "In one run" missions start from 0 each run. The others count from when the mission appeared. Tap a mission twice to swap it for a different one for 25 coins (`SWAP_COST`), so one you don't fancy never blocks a slot. The templates live in `scripts/missions.gd`.
 
 ## Daily Climb
 

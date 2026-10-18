@@ -51,6 +51,18 @@ func _initialize() -> void:
 	var hard := Missions.make(game.mission_rng, 30, _others(easy.id), func(_s): return 0)
 	_expect(hard.goal > easy.goal and hard.reward > easy.reward, "later missions are bigger and pay more")
 	_expect(t.has("text"), "missions have text")
+	# Swapping a mission costs coins and gives a different one.
+	game.total_coins = 0
+	_expect(not game.swap_mission(0), "you can't swap without the coins")
+	game.total_coins = 100
+	var others: Array = [game.missions[1].id, game.missions[2].id]
+	_expect(game.swap_mission(0), "swapping gives a different mission")
+	_expect(game.total_coins == 100 - Missions.SWAP_COST, "swapping costs %d coins" % Missions.SWAP_COST)
+	_expect(not others.has(game.missions[0].id), "the new mission isn't a copy of another active one")
+	game._on_mission_tapped(1)
+	_expect(game.pending_swap == 1 and game.total_coins == 100 - Missions.SWAP_COST, "the first tap only asks to confirm")
+	game._on_mission_tapped(1)
+	_expect(game.pending_swap == -1 and game.total_coins == 100 - 2 * Missions.SWAP_COST, "the second tap swaps")
 	var saved: Array = game.missions.duplicate(true)
 	game._save()
 	game.queue_free()

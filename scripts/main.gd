@@ -159,6 +159,7 @@ var missions: Array = []         # saved; the active missions, see missions.gd
 var mission_rng := RandomNumberGenerator.new()
 var missions_panel: PanelContainer
 var missions_rows: VBoxContainer
+var pending_swap := -1           # the mission waiting for a second tap to swap
 var powerups := {}               # cell -> power-up type, on floors loaded this run
 var powerups_rolled := 0         # floors below this have had their power-up roll
 var powerup_rng := RandomNumberGenerator.new()
@@ -247,7 +248,7 @@ func reset() -> void:
 			progress += "\nToday's best: floor %d" % daily_best
 		if daily_streak > 0:
 			progress += "\nStreak: %d day%s" % [daily_streak, "" if daily_streak == 1 else "s"]
-		_show_message("DAILY CLIMB\n%s\n\nSame tower for everyone\ntoday.\n%s\n%s" % [_pretty_date(daily_date), goal, progress])
+		_show_message("DAILY CLIMB · %s\n\nSame tower for everyone today.\n%s\n%s" % [_pretty_date(daily_date), goal, progress])
 		return
 	var best := ""
 	if best_floor > 0:
@@ -576,7 +577,7 @@ func _die(reason: String, cause: String) -> void:
 		daily_ghost = recording.duplicate()
 	_bank_run()
 	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
-	_show_message("%s\n\n+%d coin%s\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, "" if run_coins == 1 else "s", best])
+	_show_message("%s\n\n+%d coin%s   %s\n\nSwipe to try again" % [reason % run_floor, run_coins, "" if run_coins == 1 else "s", best])
 	_update_revive_button()
 
 
@@ -803,12 +804,12 @@ func _build_hud() -> void:
 	message_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	message_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hud.add_child(message_backdrop)
-	message_label = _make_label(hud, 24, HORIZONTAL_ALIGNMENT_CENTER)
+	message_label = _make_label(hud, 22, HORIZONTAL_ALIGNMENT_CENTER)
 	message_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	message_label.offset_left = 24
 	# Leave room for the missions panel above and the buttons below.
-	message_label.offset_top = 150
-	message_label.offset_bottom = -170
+	message_label.offset_top = 195
+	message_label.offset_bottom = -185
 	message_label.offset_right = -24
 	message_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -831,11 +832,11 @@ func _build_hud() -> void:
 	missions_panel.offset_left = -160
 	missions_panel.offset_right = 160
 	missions_panel.offset_top = 70
-	missions_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	missions_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	hud.add_child(missions_panel)
 	missions_rows = VBoxContainer.new()
 	missions_rows.add_theme_constant_override("separation", 3)
-	missions_rows.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	missions_rows.mouse_filter = Control.MOUSE_FILTER_PASS
 	missions_panel.add_child(missions_rows)
 	_update_missions_label()
 	toast_label = _make_label(hud, 28, HORIZONTAL_ALIGNMENT_CENTER)
@@ -985,6 +986,7 @@ func _show_message(text: String) -> void:
 
 
 func _hide_message() -> void:
+	pending_swap = -1
 	pause_button.visible = state == State.PLAYING
 	missions_panel.visible = false
 	message_label.visible = false
@@ -1111,16 +1113,56 @@ func _update_missions_label() -> void:
 	var title := _plain_label("MISSIONS", 13, Color("ffd23f"))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	missions_rows.add_child(title)
-	for m in missions:
+	for i in missions.size():
+		var m: Dictionary = missions[i]
+		# Each row is a button: tap twice to swap a mission you don't fancy.
+		var button := Button.new()
+		button.flat = true
+		button.custom_minimum_size.y = 24
+		button.pressed.connect(_on_mission_tapped.bind(i))
 		var row := HBoxContainer.new()
+		row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_theme_constant_override("separation", 8)
-		var what := _plain_label(Missions.describe(m), 14, Color.WHITE)
+		button.add_child(row)
+		var swapping := pending_swap == i
+		var text := "Tap again to swap for ● %d" % Missions.SWAP_COST if swapping else Missions.describe(m)
+		var what := _plain_label(text, 14, Color("ffd23f") if swapping else Color.WHITE)
 		what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		what.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		what.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		what.clip_text = true
 		row.add_child(what)
-		row.add_child(_plain_label("%d/%d" % [mini(m.progress, m.goal), m.goal], 14, Color(1, 1, 1, 0.6)))
-		row.add_child(_plain_label("● %d" % m.reward, 14, Color("ffd23f")))
-		missions_rows.add_child(row)
+		if not swapping:
+			row.add_child(_plain_label("%d/%d" % [mini(m.progress, m.goal), m.goal], 14, Color(1, 1, 1, 0.6)))
+			row.add_child(_plain_label("● %d" % m.reward, 14, Color("ffd23f")))
+		missions_rows.add_child(button)
+
+
+func _on_mission_tapped(i: int) -> void:
+	if pending_swap != i:
+		pending_swap = i if total_coins >= Missions.SWAP_COST else -1
+		if pending_swap == -1:
+			_toast("Swapping costs ● %d" % Missions.SWAP_COST)
+	else:
+		swap_mission(i)
+	_update_missions_label()
+
+
+## Replaces mission `i` with a different one, for Missions.SWAP_COST coins.
+func swap_mission(i: int) -> bool:
+	pending_swap = -1
+	if i < 0 or i >= missions.size() or total_coins < Missions.SWAP_COST:
+		return false
+	total_coins -= Missions.SWAP_COST
+	var old: String = missions[i].id
+	var exclude := _mission_ids()
+	missions[i] = Missions.make(mission_rng, stat("missions_done"), exclude, stat)
+	sfx.play("coin", 0.8)
+	_save()
+	_update_missions_label()
+	if state == State.READY:
+		reset()    # refreshes the coin count on the title screen
+	return missions[i].id != old
 
 
 func _plain_label(text: String, size: int, color: Color) -> Label:
