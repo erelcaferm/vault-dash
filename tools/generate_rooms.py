@@ -234,6 +234,25 @@ def add_coins_and_fakes(room, rng, info):
     return fakes
 
 
+def seal_pockets(room):
+    """Turns floor that's walled off from the doors into wall, so no room has
+    little sealed-in gaps. Nothing sealed can be reached, so routes don't change."""
+    h, w = len(room), len(room[0])
+    seen = set()
+    todo = [(x, y) for y in (0, h - 1) for x in range(w) if room[y][x] != '#']
+    while todo:
+        x, y = todo.pop()
+        if (x, y) in seen or not (0 <= x < w and 0 <= y < h) or room[y][x] == '#':
+            continue
+        seen.add((x, y))
+        todo += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    for y in range(h):
+        for x in range(w):
+            if room[y][x] != '#' and (x, y) not in seen:
+                room[y][x] = '#'
+    return room
+
+
 def score(room, info):
     swipes, _, states, _, _ = info
     flat = ''.join(''.join(r) for r in room)
@@ -263,6 +282,7 @@ def main():
         info = valid(room, False)
         if info is None or not valid(room, True):
             continue
+        seal_pockets(room)
         k = key(room)
         if k not in found:
             found[k] = (score(room, info), [''.join(r) for r in room])

@@ -234,6 +234,8 @@ func _ready() -> void:
 	get_tree().node_added.connect(_on_node_added)
 	for b in find_children("*", "BaseButton", true, false):
 		_add_click(b)
+	for c in find_children("*", "Control", true, false):
+		_let_scroll_through(c)
 	reset()
 	# Chests saved in a run that never ended, like when the app was closed.
 	if pending_chests > 0:
@@ -1355,6 +1357,23 @@ func _refresh_texts() -> void:
 func _on_node_added(node: Node) -> void:
 	if node is BaseButton:
 		_add_click(node)
+	if node is Control:
+		_let_scroll_through(node)
+
+
+## A finger that lands on a card, row or progress bar in a scrolling list
+## must still scroll it. Controls that stop touches would swallow the drag
+## and the list would feel stuck, so inside a ScrollContainer they pass
+## touches on instead. Taps still press buttons; drags never do.
+static func _let_scroll_through(node: Control) -> void:
+	if node.mouse_filter != Control.MOUSE_FILTER_STOP or node is ScrollBar:
+		return
+	var p := node.get_parent()
+	while p != null:
+		if p is ScrollContainer:
+			node.mouse_filter = Control.MOUSE_FILTER_PASS
+			return
+		p = p.get_parent()
 
 
 func _add_click(b: BaseButton) -> void:
@@ -1880,7 +1899,8 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 	match t:
 		TowerScript.WALL:
 			draw_rect(r, biome.wall)
-			draw_rect(Rect2(r.position, Vector2(TILE, 4)), biome.edge)
+			if _has_roof(c):
+				draw_rect(Rect2(r.position, Vector2(TILE, 4)), biome.edge)
 		TowerScript.COIN, TowerScript.FAKE_COIN:
 			if t == TowerScript.FAKE_COIN:
 				_draw_fake_floor(r, c)
@@ -1895,7 +1915,7 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 					Vector2(bx, r.end.y - 3), Vector2(bx + w * 0.5, r.position.y + TILE * 0.25), Vector2(bx + w, r.end.y - 3),
 				]), SPIKE_COLOR)
 		TowerScript.CRACKED:
-			Skins.draw_cracked(self, r, _wall_skin(), anim_time)
+			Skins.draw_cracked(self, r, _wall_skin(), anim_time, _has_roof(c))
 		TowerScript.FAKE:
 			_draw_fake_floor(r, c)
 		TowerScript.GOAL:
@@ -1905,14 +1925,22 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 			draw_circle(mid, 4.0, Color.WHITE)
 
 
-## Fake floor that will give way looks like normal floor with a small
-## hairline crack, so a careful player can spot it. (On normal floors fake
-## tiles are solid and unmarked, so only real traps show a crack.)
+## Whether a wall at `c` shows its lit top edge: only when nothing solid
+## sits right above it, so stacked walls read as one block.
+func _has_roof(c: Vector2i) -> bool:
+	var above: String = tower.get_tile(c + Vector2i.UP)
+	return above != TowerScript.WALL and above != TowerScript.CRACKED
+
+
+## Fake floor that will give way looks like normal floor with a crack and
+## a thin white outline, so it's easy to spot at a glance. (On normal floors
+## fake tiles are solid and unmarked, so only real traps show.)
 func _draw_fake_floor(r: Rect2, _c: Vector2i) -> void:
-	var crack := Color(0, 0, 0, 0.45)
+	draw_rect(r.grow(-2.5), Color(1, 1, 1, 0.55), false, 1.5)
+	var crack := Color(1, 1, 1, 0.6)
 	var p := r.position
-	draw_polyline(PackedVector2Array([p + Vector2(9, 10), p + Vector2(13, 14), p + Vector2(12, 18), p + Vector2(16, 21)]), crack, 1.0)
-	draw_line(p + Vector2(13, 14), p + Vector2(18, 12), crack, 1.0)
+	draw_polyline(PackedVector2Array([p + Vector2(8, 9), p + Vector2(13, 14), p + Vector2(12, 18), p + Vector2(17, 21)]), crack, 1.5)
+	draw_line(p + Vector2(13, 14), p + Vector2(19, 11), crack, 1.5)
 
 
 func _draw_player() -> void:

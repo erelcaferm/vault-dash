@@ -37,7 +37,7 @@ Every run builds a new endless tower. After the start room, each floor picks one
 - A layout doesn't come back within 12 floors.
 - Layouts are randomly mirrored left to right.
 
-**Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. On trap floors they look like normal floor with a small crack, so a careful player can spot them. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor rolls for one. The chance starts at 6% (only 1% straight after another trap floor) and steps up every 25 floors until it reaches 80% at floor 200. Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
+**Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. On trap floors they look like normal floor with a white crack and a thin white outline, so they're easy to spot. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor rolls for one. The chance starts at 6% (only 1% straight after another trap floor) and steps up every 25 floors until it reaches 80% at floor 200. Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
 
 The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Temple. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
 
@@ -123,7 +123,7 @@ When you die, a **REVIVE** button offers one second chance per run for 50 coins 
 
 ## Levels and the level editor
 
-**LEVELS** on the menu opens 12 handmade levels and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it always shows its small crack. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
+**LEVELS** on the menu opens 12 handmade levels and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it always shows its white crack and outline. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
 
 - **Handmade levels** (`scripts/levels.gd`): each unlocks the next and pays once, the first time it's cleared: coins, or one of four level-only cosmetics (Pathfinder hero on 3, Explorer hat on 6, Breadcrumbs trail on 9, Laurel hat on 12). The best time is kept. The layouts came from a search for levels whose shortest solution grows from 7 to 19 moves, with a new hazard every few levels; `moves` in each entry is that shortest solution.
 - **Stars**: each handmade level has 3 stars, for clearing it, clearing it within its par time (1.5 seconds per move of the shortest solution, plus 5), and grabbing every coin. Stars from different runs add up. Trophies: Maze Runner (6 levels), Level Master (all 12), Star Collector (18 stars) and Perfectionist (all 36, which gives the Starlight hero).

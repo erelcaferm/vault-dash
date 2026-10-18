@@ -320,7 +320,9 @@ static func draw_lava(canvas: CanvasItem, item: Dictionary, left: float, right: 
 			canvas.draw_arc(Vector2(x, y), 2.0 + life * 3.5, 0, TAU, 12, Color(bubble, 1.0 - life), 2.0)
 
 
-static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time := 0.0) -> void:
+## `roof` is false when another wall sits right on top, so a stack of walls
+## reads as one solid block with a single lit top edge.
+static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time := 0.0, roof := true) -> void:
 	var base: Color = skin.base
 	var top: Color = skin.top
 	var detail: Color = skin.detail
@@ -329,7 +331,8 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 	var p := r.position
 	var mid := r.get_center()
 	canvas.draw_rect(r, base)
-	canvas.draw_rect(Rect2(p, Vector2(w, h * 0.13)), top)
+	if roof:
+		canvas.draw_rect(Rect2(p, Vector2(w, h * 0.13)), top)
 	match skin.style:
 		"crack":
 			canvas.draw_polyline(PackedVector2Array([
@@ -339,7 +342,7 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			canvas.draw_line(mid + Vector2(-w * 0.06, 0), mid + Vector2(w * 0.2, -h * 0.25), detail, 2.0)
 		"mud":
 			# Drips running down from the top edge, and a few lumps.
-			for i in 3:
+			for i in 3 if roof else 0:
 				var x := p.x + w * (0.2 + i * 0.3)
 				var drip := h * (0.25 + 0.12 * ((i * 7) % 3))
 				canvas.draw_line(Vector2(x, p.y + h * 0.1), Vector2(x, p.y + h * 0.1 + drip), top, w * 0.12)
@@ -348,9 +351,10 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			canvas.draw_circle(mid + Vector2(w * 0.2, h * 0.3), w * 0.06, detail)
 		"snow":
 			# A snow cap and a couple of sparkles.
-			canvas.draw_rect(Rect2(p, Vector2(w, h * 0.3)), top)
-			canvas.draw_circle(p + Vector2(w * 0.3, h * 0.3), w * 0.12, top)
-			canvas.draw_circle(p + Vector2(w * 0.72, h * 0.28), w * 0.1, top)
+			if roof:
+				canvas.draw_rect(Rect2(p, Vector2(w, h * 0.3)), top)
+				canvas.draw_circle(p + Vector2(w * 0.3, h * 0.3), w * 0.12, top)
+				canvas.draw_circle(p + Vector2(w * 0.72, h * 0.28), w * 0.1, top)
 			var twinkle := 0.5 + 0.5 * sin(time * 4.0 + p.x)
 			_sparkle(canvas, mid + Vector2(-w * 0.15, h * 0.2), w * 0.12, Color(detail, 0.5 + twinkle * 0.5))
 			_sparkle(canvas, mid + Vector2(w * 0.22, h * 0.05), w * 0.08, Color(detail, 1.0 - twinkle * 0.5))

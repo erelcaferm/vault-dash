@@ -333,7 +333,8 @@ func _draw_grid() -> void:
 	var h: int = level.rows.size()
 	for y in h:
 		for x in w:
-			_draw_tile(_canvas, Rect2(x * _cell, y * _cell, _cell, _cell), level.rows[y][x])
+			var above: String = level.rows[y - 1][x] if y > 0 else "."
+			_draw_tile(_canvas, Rect2(x * _cell, y * _cell, _cell, _cell), level.rows[y][x], above != "#" and above != "x")
 	var line := Color(1, 1, 1, 0.05)
 	for x in w + 1:
 		_canvas.draw_line(Vector2(x * _cell, 0), Vector2(x * _cell, h * _cell), line)
@@ -341,14 +342,15 @@ func _draw_grid() -> void:
 		_canvas.draw_line(Vector2(0, y * _cell), Vector2(w * _cell, y * _cell), line)
 
 
-func _draw_tile(canvas: CanvasItem, r: Rect2, t: String) -> void:
+func _draw_tile(canvas: CanvasItem, r: Rect2, t: String, roof := true) -> void:
 	var mid := r.get_center()
 	var s := r.size.x
 	canvas.draw_rect(r, FLOOR)
 	match t:
 		"#":
 			canvas.draw_rect(r, WALL)
-			canvas.draw_rect(Rect2(r.position, Vector2(s, s * 0.15)), EDGE)
+			if roof:
+				canvas.draw_rect(Rect2(r.position, Vector2(s, s * 0.15)), EDGE)
 		"c":
 			canvas.draw_circle(mid, s * 0.24, GOLD)
 		"^":
@@ -359,7 +361,7 @@ func _draw_tile(canvas: CanvasItem, r: Rect2, t: String) -> void:
 					Vector2(bx, r.end.y - 2), Vector2(bx + w * 0.5, r.position.y + s * 0.25), Vector2(bx + w, r.end.y - 2),
 				]), Color("e84855"))
 		"x":
-			Skins.draw_cracked(canvas, r, game._wall_skin())
+			Skins.draw_cracked(canvas, r, game._wall_skin(), 0.0, roof)
 		"f":
 			canvas.draw_rect(r.grow(-2), Color(0, 0, 0, 0.35))
 			canvas.draw_line(r.position + Vector2(s * 0.25, s * 0.3), mid, Color(1, 1, 1, 0.3), 1.5)
