@@ -26,7 +26,7 @@ const FAKE_COIN := "F"
 ## Every this-many floors is a trap floor, where fake floor gives way.
 const TRAP_EVERY := 30
 ## Every this-many floors has a treasure chest.
-const CHEST_EVERY := 100
+const CHEST_EVERY := 30
 ## Layouts unlocked at the start, and how many more unlock per floor climbed.
 const FIRST_UNLOCKED := 10
 const UNLOCKS_PER_FLOOR := 3

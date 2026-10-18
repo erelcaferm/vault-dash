@@ -299,7 +299,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_SPACE, KEY_ENTER:
 				_on_tap()
 			KEY_F2:
-				# Developer shortcut for trying the chest without climbing 100 floors.
+				# Developer shortcut for trying the chest without climbing to the next chest.
 				if OS.is_debug_build() and (state == State.READY or state == State.PLAYING):
 					_open_chest()
 

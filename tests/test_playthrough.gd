@@ -1,7 +1,7 @@
 extends SceneTree
 ## Plays the real game scene along the solver's route up a fixed 102-floor
 ## tower and checks it reaches the top. On the way it crosses three trap
-## floors and must open the chest on floor 100. Then it stands still and
+## floors and must open every chest it passes. Then it stands still and
 ## checks the lava wins.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 
@@ -47,8 +47,9 @@ func _process(_delta: float) -> bool:
 				game.chest_screen._gui_input(tap)   # second tap collects
 				chests += 1
 		elif game.state == game.State.WON:
-			if chests != 1:
-				printerr("FAIL: expected to open 1 chest, opened %d" % chests)
+			var expected := floori(float(HEIGHT) / TowerScript.CHEST_EVERY)
+			if chests != expected:
+				printerr("FAIL: expected to open %d chests, opened %d" % [expected, chests])
 				quit(1)
 			print("PASS: climbed %d floors in %.1f s of game time with %d coins" % [HEIGHT, game.elapsed, game.run_coins])
 			game.state_time = 1.0
