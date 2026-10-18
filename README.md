@@ -25,6 +25,8 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Shop items, prices and how they're drawn | `scripts/skins.gd` |
 | Shop screen | `scripts/shop.gd`, `scripts/skin_preview.gd` |
 | Chest rewards and odds | `scripts/chest.gd` |
+| Achievements and their rewards | `scripts/achievements.gd` |
+| Trophies screen | `scripts/achievements_screen.gd` |
 | Chest opening animation | `scripts/chest_screen.gd` |
 
 Rooms are 13×12 tiles. The tiles are: walls, coins, spikes (deadly), cracked walls (stop you once, then crumble), and fake floor.
@@ -65,6 +67,19 @@ Chest coins go straight to your bank, so you keep them even if you die. New item
 
 In a debug build (running from the editor), press **F2** to open a chest without climbing 30 floors.
 
+## Trophies (achievements)
+
+The **TROPHIES** button lists 23 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
+
+- **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
+- **Coins:** collect 10, 250 and 1,000 (Treasure walls).
+- **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths, 10 spike deaths and 5 fake-floor falls.
+- **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
+- **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), and play 25 runs.
+- **Collecting:** own 5 hero colours.
+
+Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
+
 ## Changing the rooms
 
 `scripts/rooms.gd` is generated; don't edit it by hand. To make a new set of 100 layouts, run the generator with a different seed:
@@ -88,8 +103,9 @@ godot --headless --path . --script res://tests/test_rooms.gd
 godot --headless --fixed-fps 60 --path . --script res://tests/test_playthrough.gd
 godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_chest.gd
+godot --headless --path . --script res://tests/test_achievements.gd
 ```
 
 The tests use their own save file, so they never touch your coins.
 
-`test_shop.gd` checks buying, equipping and saving. `test_chest.gd` checks the chest odds, the hidden trap meter and bonus chests, that you never get an item you already own, that every layout has open floor where the chest goes, and that rewards are granted. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 102-floor tower, crossing three trap floors, following the solver's route, and opens every chest on the way. It then stands still and checks that the lava kills an idle player.
+`test_shop.gd` checks buying, equipping and saving. `test_achievements.gd` checks achievements unlock, pay out and save. `test_chest.gd` checks the chest odds, the hidden trap meter and bonus chests, that you never get an item you already own, that every layout has open floor where the chest goes, and that rewards are granted. `test_rooms.gd` checks each of the 100 layouts on both normal and trap floors (including the stuck check). It also checks that 6 random 62-floor towers can be climbed. `test_playthrough.gd` plays the real game scene up a fixed 102-floor tower, crossing three trap floors, following the solver's route, and opens every chest on the way. It then stands still and checks that the lava kills an idle player.

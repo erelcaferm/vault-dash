@@ -6,6 +6,7 @@ signal closed
 
 const Skins := preload("res://scripts/skins.gd")
 const Preview := preload("res://scripts/skin_preview.gd")
+const Achievements := preload("res://scripts/achievements.gd")
 
 const GOLD := Color("ffd23f")
 const DIM := Color(1, 1, 1, 0.5)
@@ -144,6 +145,8 @@ func _card(item: Dictionary) -> Button:
 		status = _label("Tap to use", 14, DIM)
 	elif item.get("chest_only", false):
 		status = _label("Chest only", 14, Color("ffd700"))
+	elif item.has("achievement"):
+		status = _label(Achievements.find(item.achievement).get("name", "Achievement"), 13, Color("7fd6ff"))
 	elif pending_buy == item.id:
 		status = _label("Tap to buy!", 14, GOLD)
 	elif game.total_coins >= item.price:
@@ -159,7 +162,7 @@ func _on_card(item: Dictionary) -> void:
 	if game.owns(item):
 		game.equip(tab, item.id)
 		pending_buy = ""
-	elif item.get("chest_only", false):
+	elif item.get("chest_only", false) or item.has("achievement"):
 		pending_buy = ""
 	elif pending_buy == item.id:
 		game.buy(tab, item)

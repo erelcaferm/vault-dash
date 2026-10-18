@@ -8,6 +8,8 @@ const Skins := preload("res://scripts/skins.gd")
 const ShopScript := preload("res://scripts/shop.gd")
 const Chest := preload("res://scripts/chest.gd")
 const ChestScreen := preload("res://scripts/chest_screen.gd")
+const Achievements := preload("res://scripts/achievements.gd")
+const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -97,6 +99,14 @@ var trap_meter := 0.0            # saved; see TRAP_METER_FULL
 var bonus_chest_owed := false    # saved; a bonus chest you haven't opened yet
 var meter_rng := RandomNumberGenerator.new()
 var chest_return_state := State.PLAYING
+var stats := {}                  # saved counters that achievements watch
+var unlocked: Array = []         # saved ids of unlocked achievements
+var achievements_screen: Control
+var menu_bar: HBoxContainer
+var banner: PanelContainer
+var banner_label: Label
+var banner_queue: Array = []
+var banner_time := 0.0
 
 
 func _ready() -> void:
@@ -155,6 +165,7 @@ func _process(delta: float) -> void:
 	squash = maxf(squash - delta, 0.0)
 	toast_time = maxf(toast_time - delta, 0.0)
 	toast_label.modulate.a = clampf(toast_time / 0.4, 0.0, 1.0)
+	_update_banner(delta)
 	for b in bursts:
 		b.t += delta
 	bursts = bursts.filter(func(b): return b.t < 0.35)
@@ -193,13 +204,14 @@ func _advance() -> void:
 	if t == TowerScript.COIN:
 		tower.set_tile(cell, TowerScript.EMPTY)
 		run_coins += 1
+		add_stat("coins_collected")
 		bursts.append({"pos": _tile_center(cell), "t": 0.0, "color": COIN_COLOR})
 		_update_hud()
 	elif t == TowerScript.SPIKES:
-		_die("Spiked on floor %d")
+		_die("Spiked on floor %d", "spikes")
 		return
 	elif t == TowerScript.FAKE or t == TowerScript.FAKE_COIN:
-		_die("Fell through a fake floor\non floor %d")
+		_die("Fell through a fake floor\non floor %d", "fake")
 		return
 	elif t == TowerScript.GOAL:
 		_win()
@@ -216,6 +228,7 @@ func _advance() -> void:
 		chests_taken[k] = true
 		if bonus_chests.has(k):
 			bonus_chest_owed = false
+			add_stat("bonus_chests")
 			_save()
 		_stop()
 		_open_chest()
@@ -229,6 +242,7 @@ func _stop() -> void:
 
 func _break_wall(c: Vector2i) -> void:
 	tower.set_tile(c, TowerScript.EMPTY)
+	add_stat("walls_broken")
 	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": Color(_wall_skin().base, 1.0)})
 	shake = 0.12
 
@@ -239,7 +253,7 @@ func _update_lava(delta: float) -> void:
 	var player_y := _player_center().y
 	lava_y = minf(lava_y, player_y + LAVA_MAX_GAP * TILE)
 	if lava_y <= player_y:
-		_die("Melted on floor %d")
+		_die("Melted on floor %d", "lava")
 
 
 func _update_floor() -> void:
@@ -248,8 +262,14 @@ func _update_floor() -> void:
 		# A slide can carry you through more than one door at once.
 		for passed in range(run_floor + 1, f + 1):
 			if tower.is_trap(passed - 1):
+				add_stat("trap_floors")
 				add_trap_meter(passed, meter_rng.randf_range(TRAP_METER_MIN, TRAP_METER_MAX))
 		run_floor = f
+		if f > best_floor:
+			best_floor = f
+			check_achievements()
+		if f >= 20 and elapsed <= 60.0 and stat("fast_20") == 0:
+			add_stat("fast_20")
 		_update_hud()
 		if tower.is_trap(f - 1):
 			_toast("Floor %d\nWatch your step..." % f)
@@ -259,8 +279,10 @@ func _update_floor() -> void:
 		_toast(BIOMES[biome].name)
 
 
-func _die(reason: String) -> void:
+func _die(reason: String, cause: String) -> void:
 	state = State.DEAD
+	add_stat("deaths")
+	add_stat("deaths_" + cause)
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	shake = 0.35
@@ -289,7 +311,7 @@ func _bank_run() -> void:
 # --- Input -----------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if shop.visible or chest_screen.visible:
+	if shop.visible or chest_screen.visible or achievements_screen.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -339,6 +361,7 @@ func _on_swipe(d: Vector2i) -> void:
 	match state:
 		State.READY:
 			state = State.PLAYING
+			add_stat("runs")
 			_hide_message()
 			try_move(d)
 		State.PLAYING:
@@ -412,16 +435,35 @@ func _build_hud() -> void:
 	toast_label.offset_top = 70
 	toast_label.modulate.a = 0.0
 
-	shop_button = Button.new()
-	shop_button.text = "SHOP"
-	shop_button.add_theme_font_size_override("font_size", 22)
-	shop_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	shop_button.offset_left = -80
-	shop_button.offset_right = 80
-	shop_button.offset_top = -110
-	shop_button.offset_bottom = -56
-	shop_button.pressed.connect(_open_shop)
-	hud.add_child(shop_button)
+	menu_bar = HBoxContainer.new()
+	menu_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	menu_bar.offset_left = -150
+	menu_bar.offset_right = 150
+	menu_bar.offset_top = -110
+	menu_bar.offset_bottom = -56
+	menu_bar.add_theme_constant_override("separation", 10)
+	hud.add_child(menu_bar)
+	shop_button = _menu_button("SHOP", _open_shop)
+	_menu_button("TROPHIES", _open_achievements)
+
+	banner = PanelContainer.new()
+	var banner_style := StyleBoxFlat.new()
+	banner_style.bg_color = Color(0.08, 0.08, 0.12, 0.95)
+	banner_style.border_color = Color("ffd23f")
+	banner_style.set_border_width_all(2)
+	banner_style.set_corner_radius_all(8)
+	banner_style.set_content_margin_all(10)
+	banner.add_theme_stylebox_override("panel", banner_style)
+	banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	banner.offset_left = -150
+	banner.offset_right = 150
+	banner.offset_top = 64
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_label = Label.new()
+	banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner_label.add_theme_font_size_override("font_size", 17)
+	banner.add_child(banner_label)
+	banner.modulate.a = 0.0
 
 	shop = ShopScript.new()
 	hud.add_child(shop)
@@ -432,6 +474,13 @@ func _build_hud() -> void:
 	hud.add_child(chest_screen)
 	chest_screen.setup()
 	chest_screen.finished.connect(_on_chest_finished)
+
+	achievements_screen = AchievementsScreen.new()
+	hud.add_child(achievements_screen)
+	achievements_screen.setup(self)
+	achievements_screen.closed.connect(func(): achievements_screen.visible = false)
+	# The banner goes on top of every other screen.
+	hud.add_child(banner)
 	chest_rng.randomize()
 	meter_rng.randomize()
 
@@ -464,13 +513,81 @@ func _show_message(text: String) -> void:
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
-	shop_button.visible = true
+	menu_bar.visible = true
 
 
 func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
-	shop_button.visible = false
+	menu_bar.visible = false
+
+
+func _menu_button(text: String, action: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.add_theme_font_size_override("font_size", 20)
+	b.pressed.connect(action)
+	menu_bar.add_child(b)
+	return b
+
+
+# --- Achievements ----------------------------------------------------------
+
+## The current value of an achievement stat.
+func stat(id: String) -> int:
+	match id:
+		"best_floor":
+			return best_floor
+		"heroes_owned":
+			var n := 0
+			for item in Skins.HERO:
+				if owns(item):
+					n += 1
+			return n
+	return stats.get(id, 0)
+
+
+func add_stat(id: String, amount := 1) -> void:
+	stats[id] = stats.get(id, 0) + amount
+	check_achievements()
+
+
+func check_achievements() -> void:
+	for a in Achievements.LIST:
+		if not unlocked.has(a.id) and stat(a.stat) >= a.goal:
+			_unlock(a)
+
+
+func _unlock(a: Dictionary) -> void:
+	unlocked.append(a.id)
+	var reward := ""
+	if a.has("coins"):
+		total_coins += a.coins
+		reward = "+%d coins" % a.coins
+	else:
+		var kind: String = a.item[0]
+		var item := Skins.find(Skins.HERO if kind == "hero" else Skins.WALLS, a.item[1])
+		if not owned.has(item.id):
+			owned.append(item.id)
+		reward = "New %s: %s" % ["colour" if kind == "hero" else "wall skin", item.name]
+	banner_queue.append("TROPHY UNLOCKED\n%s\n%s" % [a.name, reward])
+	_save()
+
+
+func _update_banner(delta: float) -> void:
+	if banner_time > 0.0:
+		banner_time -= delta
+		banner.modulate.a = clampf(minf(banner_time, 2.8 - banner_time) / 0.3, 0.0, 1.0)
+	elif not banner_queue.is_empty():
+		banner_label.text = banner_queue.pop_front()
+		banner_time = 2.8
+	else:
+		banner.modulate.a = 0.0
+
+
+func _open_achievements() -> void:
+	achievements_screen.open()
 
 
 # --- Chests ----------------------------------------------------------------
@@ -510,6 +627,9 @@ func _open_chest() -> void:
 
 func _on_chest_finished(reward: Dictionary) -> void:
 	grant(reward)
+	add_stat("chests_opened")
+	if reward.rarity.id == "legendary":
+		add_stat("legendaries")
 	if chest_return_state == State.READY:
 		reset()
 	else:
@@ -525,6 +645,7 @@ func grant(reward: Dictionary) -> void:
 	elif not owned.has(reward.item.id):
 		owned.append(reward.item.id)
 		equip(reward.kind, reward.item.id)
+		check_achievements()
 	_save()
 
 
@@ -545,11 +666,12 @@ func owns(item: Dictionary) -> bool:
 
 
 func buy(kind: String, item: Dictionary) -> bool:
-	if owns(item) or item.get("chest_only", false) or total_coins < item.price:
+	if owns(item) or item.get("chest_only", false) or item.has("achievement") or total_coins < item.price:
 		return false
 	total_coins -= item.price
 	owned.append(item.id)
 	equip(kind, item.id)
+	check_achievements()
 	return true
 
 
@@ -585,6 +707,10 @@ func _load_save() -> void:
 		owned = cfg.get_value("shop", "owned", [])
 		trap_meter = cfg.get_value("secret", "meter", 0.0)
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
+		unlocked = cfg.get_value("achievements", "unlocked", [])
+		if cfg.has_section("stats"):
+			for key in cfg.get_section_keys("stats"):
+				stats[key] = cfg.get_value("stats", key)
 		equipped_hero = cfg.get_value("shop", "hero", "white")
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 
@@ -599,6 +725,9 @@ func _save() -> void:
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
+	cfg.set_value("achievements", "unlocked", unlocked)
+	for key in stats:
+		cfg.set_value("stats", key, stats[key])
 	cfg.save(save_path)
 
 

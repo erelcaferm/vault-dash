@@ -2,6 +2,7 @@ extends RefCounted
 ## Everything the shop sells, and how to draw it.
 ## Prices are in coins. Items priced 0 are owned from the start.
 ## Items marked chest_only can't be bought; they only drop from chests.
+## Items with an "achievement" id are earned by unlocking that achievement.
 
 const HERO := [
 	{"id": "white", "name": "White", "price": 0, "color": Color("f4f1de")},
@@ -20,6 +21,11 @@ const HERO := [
 	{"id": "neon", "name": "Neon", "price": -1, "chest_only": true, "color": Color("39ff14"), "glow": Color(0.22, 1.0, 0.08, 0.35)},
 	{"id": "ember", "name": "Ember", "price": -1, "chest_only": true, "color": Color("ff7b1c"), "glow": Color(1.0, 0.35, 0.0, 0.4)},
 	{"id": "void", "name": "Void", "price": -1, "chest_only": true, "color": Color("2b0a3d"), "glow": Color(0.7, 0.3, 0.95, 0.45)},
+	{"id": "cloud", "name": "Cloud", "price": -1, "achievement": "sky_high", "color": Color("e3f2ff"), "glow": Color(0.85, 0.93, 1.0, 0.35)},
+	{"id": "royal", "name": "Royal", "price": -1, "achievement": "centurion", "color": Color("5a189a"), "glow": Color(1.0, 0.82, 0.25, 0.45)},
+	{"id": "speedster", "name": "Speedster", "price": -1, "achievement": "speedrunner", "color": Color("ffe94d"), "glow": Color(1.0, 0.6, 0.0, 0.35)},
+	{"id": "ghost", "name": "Ghost", "price": -1, "achievement": "never_give_up", "color": Color(0.85, 0.9, 1.0, 0.55)},
+	{"id": "brick", "name": "Brick", "price": -1, "achievement": "wrecking_ball", "color": Color("b5523b")},
 ]
 
 ## Cracked-wall skins. `style` picks the pattern drawn on top of the block.
@@ -42,6 +48,12 @@ const WALLS := [
 		"base": Color("14111f"), "top": Color("2e2547"), "detail": Color("8c5bd6")},
 	{"id": "magma", "name": "Magma", "price": -1, "chest_only": true, "style": "magma",
 		"base": Color("2a1410"), "top": Color("4a2218"), "detail": Color("ff7b00")},
+	{"id": "treasure", "name": "Treasure", "price": -1, "achievement": "treasure_hunter", "style": "coins",
+		"base": Color("6b4a1e"), "top": Color("8a6428"), "detail": Color("ffd23f")},
+	{"id": "frozen", "name": "Frozen", "price": -1, "achievement": "trap_dodger", "style": "glass",
+		"base": Color(0.45, 0.75, 1.0, 0.7), "top": Color(0.9, 0.97, 1.0, 0.9), "detail": Color(1, 1, 1, 0.9)},
+	{"id": "marble", "name": "Marble", "price": -1, "achievement": "tower_legend", "style": "marble",
+		"base": Color("ece8e1"), "top": Color("ffffff"), "detail": Color("9a948c")},
 ]
 
 ## How fast the rainbow hero cycles through every colour, in full cycles per
@@ -74,7 +86,7 @@ static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color:
 	if glow.a > 0.0 and alpha >= 1.0:
 		canvas.draw_rect(r.grow(size.x * 0.3), Color(glow, glow.a * 0.4))
 		canvas.draw_rect(r.grow(size.x * 0.15), glow)
-	canvas.draw_rect(r, Color(color, alpha))
+	canvas.draw_rect(r, Color(color, color.a * alpha))
 	if alpha < 1.0:
 		return
 	var dark := color.get_luminance() < 0.3
@@ -148,6 +160,18 @@ static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time :=
 			canvas.draw_polyline(path, Color(glow, glow.a * 0.4), 5.0)
 			canvas.draw_polyline(path, glow, 2.0)
 			canvas.draw_line(mid + Vector2(-w * 0.08, -h * 0.02), mid + Vector2(w * 0.22, -h * 0.28), glow, 2.0)
+		"coins":
+			# A heap of coins.
+			for i in 5:
+				var o := Vector2(w * (0.22 + (i % 3) * 0.28), h * (0.72 - floorf(i / 3.0) * 0.3))
+				canvas.draw_circle(p + o, w * 0.15, detail.darkened(0.25))
+				canvas.draw_circle(p + o - Vector2(0, h * 0.04), w * 0.15, detail)
+		"marble":
+			canvas.draw_polyline(PackedVector2Array([
+				p + Vector2(0, h * 0.35), p + Vector2(w * 0.35, h * 0.45),
+				p + Vector2(w * 0.55, h * 0.75), p + Vector2(w, h * 0.85),
+			]), detail, 1.5)
+			canvas.draw_line(p + Vector2(w * 0.35, h * 0.45), p + Vector2(w * 0.8, h * 0.2), Color(detail, 0.6), 1.0)
 		"bars":
 			for i in 2:
 				var bar := Rect2(p + Vector2(w * 0.1, h * (0.2 + i * 0.4)), Vector2(w * 0.8, h * 0.32))
