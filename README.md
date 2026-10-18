@@ -121,11 +121,23 @@ The **II** button at the top pauses a run (Esc or P on a keyboard), and the game
 
 When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
 
+## Settings and languages
+
+The gear at the top of the screen (shown on the title and death screens, never during a run) opens **Settings**: sound, vibration and language. The choice is saved. Until a player picks a language, the game follows the phone's language, falling back to English.
+
+The game speaks English, Spanish, French, German, Turkish, Russian, and Simplified and Traditional Chinese. These are first-pass translations, so have a native speaker check them before release. To change or add text:
+
+1. Edit `tools/translations_table.py` (English text on the left, then es, fr, de, tr, ru, zh_CN, zh_TW).
+2. Run `python3 tools/build_translations.py` to rebuild `translations/strings.csv`. Godot turns it into `.translation` files when it imports.
+3. Run `python3 tools/i18n_keys.py --check`, which lists any text in the scripts that has no translation, or whose `%d`/`{name}` placeholders don't match.
+
+In code, a Label or Button whose text is exactly an English key translates itself; anything built from parts goes through `tr()`. Chinese text uses the phone's own font, which every Android, iOS and Windows device has. Text that runs long in some languages shrinks to fit (`fit_font` in `main.gd`).
+
 ## Sound and vibration
 
 Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, and the chest tick and reveal. To use a real recording instead, load it into `sounds` under the same name.
 
-On phones, breaking a wall, dying and opening a chest give a short buzz. The **SOUND** and **VIBRATION** buttons at the bottom of the menu turn these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
+On phones, breaking a wall, dying and opening a chest give a short buzz. Settings turns these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
 
 ## Exporting to Android
 
@@ -166,6 +178,7 @@ godot --headless --path . --script res://tests/test_revive.gd
 godot --headless --path . --script res://tests/test_pause.gd
 godot --headless --path . --script res://tests/test_missions.gd
 godot --headless --path . --script res://tests/test_powerups.gd
+godot --headless --path . --script res://tests/test_settings.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

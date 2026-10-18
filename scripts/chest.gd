@@ -54,8 +54,11 @@ static func pick_rarity(rng: RandomNumberGenerator) -> Dictionary:
 
 static func describe(reward: Dictionary) -> String:
 	if reward.kind == "coins":
-		return "%d coins" % reward.coins
-	return "%s %s" % [reward.item.name, Skins.kind_name(reward.kind)]
+		return TranslationServer.translate("%d coins") % reward.coins
+	return TranslationServer.translate("{item} {kind}").format({
+		"item": TranslationServer.translate(reward.item.name),
+		"kind": TranslationServer.translate(Skins.kind_name(reward.kind)),
+	})
 
 
 static func _coins(rarity: Dictionary, amount: int) -> Dictionary:

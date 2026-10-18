@@ -54,5 +54,5 @@ static func make(rng: RandomNumberGenerator, missions_done: int, exclude: Array,
 static func describe(m: Dictionary) -> String:
 	var t := find(m.id)
 	if m.goal == 1 and t.has("one"):
-		return t.one
-	return t.text % m.goal
+		return TranslationServer.translate(t.one)
+	return TranslationServer.translate(t.text) % m.goal

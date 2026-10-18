@@ -12,6 +12,7 @@ const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
+const SettingsScreen := preload("res://scripts/settings_screen.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -138,9 +139,9 @@ var banner_queue: Array = []
 var banner_time := 0.0
 var sfx: Node
 var vibration_on := true         # saved, like sfx.enabled
-var settings_bar: HBoxContainer
-var sound_button: Button
-var vibration_button: Button
+var gear_button: Button
+var settings_screen: Control
+var language := ""               # saved; "" means follow the phone's language
 var daily_mode := false
 var daily_button: Button
 var daily_date := ""             # saved; the day daily_best and daily_claimed are for
@@ -184,6 +185,7 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	_load_save()
+	set_language(language)
 	mission_rng.randomize()
 	_fill_missions()
 	camera = Camera2D.new()
@@ -243,18 +245,18 @@ func reset() -> void:
 	marker_floor = daily_best if daily_mode else best_floor
 	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
 	if daily_mode:
-		var goal := "Goal done! +%d coins" % DAILY_REWARD if daily_claimed else "Floor %d pays %d coins" % [DAILY_GOAL, DAILY_REWARD]
+		var goal := tr("Goal done! +%d coins") % DAILY_REWARD if daily_claimed else tr("Floor %d pays %d coins") % [DAILY_GOAL, DAILY_REWARD]
 		var progress := ""
 		if daily_best > 0:
-			progress += "\nToday's best: floor %d" % daily_best
+			progress += "\n" + tr("Today's best: floor %d") % daily_best
 		if daily_streak > 0:
-			progress += "\nStreak: %d day%s" % [daily_streak, "" if daily_streak == 1 else "s"]
-		_show_message("DAILY CLIMB · %s\n\nSame tower for everyone today.\n%s\n%s" % [_pretty_date(daily_date), goal, progress])
+			progress += "\n" + tr("Streak: %d days") % daily_streak
+		_show_message("%s · %s\n\n%s\n%s\n%s" % [tr("DAILY CLIMB"), _pretty_date(daily_date), tr("Same tower for everyone today."), goal, progress])
 		return
 	var best := ""
 	if best_floor > 0:
-		best = "\n\nBest floor %d   ● %d" % [best_floor, total_coins]
-	_show_message("VAULT DASH\n\nSwipe to slide.\nClimb before the lava\ngets you.%s" % best)
+		best = "\n\n" + tr("Best floor %d") % best_floor + "   ● %d" % total_coins
+	_show_message("VAULT DASH\n\n%s%s" % [tr("Swipe to slide.") + "\n" + tr("Climb before the lava gets you."), best])
 
 
 # --- Game loop -------------------------------------------------------------
@@ -327,7 +329,7 @@ func _advance() -> void:
 		_die("Spiked on floor %d", "spikes")
 		return
 	elif t == TowerScript.FAKE or t == TowerScript.FAKE_COIN:
-		_die("Fell through a fake floor\non floor %d", "fake")
+		_die("Fell through a fake floor on floor %d", "fake")
 		return
 	elif t == TowerScript.GOAL:
 		_win()
@@ -361,7 +363,7 @@ func _finish_combo() -> void:
 	report_run("run_coins", run_coins)
 	if combo >= 10 and stat("combo_10") == 0:
 		add_stat("combo_10")
-	_celebrate("COMBO x%d!  +%d" % [combo, bonus])
+	_celebrate(tr("COMBO x%d!") % combo + "  +%d" % bonus)
 	_update_hud()
 
 
@@ -454,11 +456,11 @@ func _update_powerups(delta: float) -> void:
 func _update_effects() -> void:
 	var parts: Array = []
 	if shield:
-		parts.append("SHIELD")
+		parts.append(tr("SHIELD"))
 	if magnet_time > 0.0:
-		parts.append("MAGNET %d" % ceili(magnet_time))
+		parts.append(tr("MAGNET") + " %d" % ceili(magnet_time))
 	if freeze_time > 0.0:
-		parts.append("FREEZE %d" % ceili(freeze_time))
+		parts.append(tr("FREEZE") + " %d" % ceili(freeze_time))
 	effects_label.text = "\n".join(parts)
 
 
@@ -548,18 +550,18 @@ func _update_floor() -> void:
 				daily_claimed = true
 				total_coins += DAILY_REWARD
 				add_stat("daily_goals")
-				banner_queue.append("DAILY GOAL!\nFloor %d reached\n+%d coins" % [DAILY_GOAL, DAILY_REWARD])
+				banner_queue.append("%s\n%s\n%s" % [tr("DAILY GOAL!"), tr("Floor %d reached") % DAILY_GOAL, tr("+%d coins") % DAILY_REWARD])
 				_save()
 		if f >= 20 and elapsed <= 60.0 and stat("fast_20") == 0:
 			add_stat("fast_20")
 		_update_hud()
 		if tower.is_trap(f - 1):
-			_toast("Floor %d\nWatch your step..." % f)
+			_toast(tr("Floor %d") % f + "\n" + tr("Watch your step..."))
 			sfx.play("trap")
 	var biome := _biome_index(cell.y)
 	if biome != last_biome:
 		last_biome = biome
-		_toast(BIOMES[biome].name)
+		_toast(tr(BIOMES[biome].name))
 
 
 func _die(reason: String, cause: String) -> void:
@@ -577,8 +579,8 @@ func _die(reason: String, cause: String) -> void:
 	if daily_mode and run_floor > daily_best_at_start:
 		daily_ghost = recording.duplicate()
 	_bank_run()
-	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
-	_show_message("%s\n\n+%d coin%s   %s\n\nSwipe to try again" % [reason % run_floor, run_coins, "" if run_coins == 1 else "s", best])
+	var best := tr("Today's best: floor %d") % daily_best if daily_mode else tr("Best: floor %d") % best_floor
+	_show_message("%s\n\n%s   %s\n\n%s" % [tr(reason) % run_floor, tr("+%d coins") % run_coins, best, tr("Swipe to try again")])
 	_update_revive_button()
 
 
@@ -598,7 +600,7 @@ func pause() -> void:
 	# The slide is frozen, not stopped, so pausing can't be used to turn mid-slide.
 	state = State.PAUSED
 	pause_button.visible = false
-	_show_message("PAUSED\n\nFloor %d   ● %d\n\nTap to carry on" % [run_floor, run_coins])
+	_show_message("%s\n\n%s   ● %d\n\n%s" % [tr("PAUSED"), tr("Floor %d") % run_floor, run_coins, tr("Tap to carry on")])
 	# Only the settings show while paused; the shop and trophies wait for the menu.
 	menu_bar.visible = false
 
@@ -648,7 +650,7 @@ func revive() -> bool:
 
 func _update_revive_button() -> void:
 	revive_button.visible = state == State.DEAD and not revived
-	revive_button.text = "REVIVE   ● %d" % revive_cost()
+	revive_button.text = tr("REVIVE") + "   ● %d" % revive_cost()
 	revive_button.disabled = total_coins < revive_cost()
 
 
@@ -674,7 +676,7 @@ func _bank_run() -> void:
 # --- Input -----------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if shop.visible or chest_screen.visible or achievements_screen.visible:
+	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -810,7 +812,7 @@ func _build_hud() -> void:
 	message_label.offset_left = 24
 	# Leave room for the missions panel above and the buttons below.
 	message_label.offset_top = 195
-	message_label.offset_bottom = -185
+	message_label.offset_bottom = -150
 	message_label.offset_right = -24
 	message_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -849,8 +851,8 @@ func _build_hud() -> void:
 	menu_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	menu_bar.offset_left = -165
 	menu_bar.offset_right = 165
-	menu_bar.offset_top = -110
-	menu_bar.offset_bottom = -56
+	menu_bar.offset_top = -74
+	menu_bar.offset_bottom = -20
 	menu_bar.add_theme_constant_override("separation", 10)
 	hud.add_child(menu_bar)
 	shop_button = _menu_button("SHOP", _open_shop)
@@ -876,8 +878,8 @@ func _build_hud() -> void:
 	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	revive_button.offset_left = -110
 	revive_button.offset_right = 110
-	revive_button.offset_top = -178
-	revive_button.offset_bottom = -124
+	revive_button.offset_top = -146
+	revive_button.offset_bottom = -92
 	revive_button.add_theme_font_size_override("font_size", 20)
 	revive_button.add_theme_color_override("font_color", Color("ffd23f"))
 	var revive_style := StyleBoxFlat.new()
@@ -892,23 +894,17 @@ func _build_hud() -> void:
 	revive_button.visible = false
 	hud.add_child(revive_button)
 
-	settings_bar = HBoxContainer.new()
-	settings_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	settings_bar.offset_left = -150
-	settings_bar.offset_right = 150
-	settings_bar.offset_top = -48
-	settings_bar.offset_bottom = -12
-	settings_bar.add_theme_constant_override("separation", 10)
-	hud.add_child(settings_bar)
-	sound_button = _small_button(settings_bar, func():
-		sfx.enabled = not sfx.enabled
-		sfx.play("coin")
-		_update_settings())
-	vibration_button = _small_button(settings_bar, func():
-		vibration_on = not vibration_on
-		vibrate(40)
-		_update_settings())
-	_update_settings()
+	gear_button = Button.new()
+	gear_button.flat = true
+	gear_button.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	gear_button.offset_left = -24
+	gear_button.offset_right = 24
+	gear_button.offset_top = 4
+	gear_button.offset_bottom = 48
+	gear_button.tooltip_text = "Settings"
+	gear_button.draw.connect(_draw_gear)
+	gear_button.pressed.connect(_open_settings)
+	hud.add_child(gear_button)
 
 	banner = PanelContainer.new()
 	var banner_style := StyleBoxFlat.new()
@@ -941,6 +937,11 @@ func _build_hud() -> void:
 	chest_screen.ticked.connect(func(): sfx.play("tick", randf_range(0.95, 1.05)))
 	chest_screen.revealed.connect(func(_r): sfx.play("reward"); vibrate(50))
 
+	settings_screen = SettingsScreen.new()
+	hud.add_child(settings_screen)
+	settings_screen.setup(self)
+	settings_screen.closed.connect(_close_settings)
+
 	achievements_screen = AchievementsScreen.new()
 	hud.add_child(achievements_screen)
 	achievements_screen.setup(self)
@@ -964,7 +965,7 @@ func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 
 func _update_hud() -> void:
 	coins_label.text = "● %d" % run_coins
-	floor_label.text = "Floor %d" % run_floor
+	floor_label.text = tr("Floor %d") % run_floor
 	var every := TowerScript.CHEST_EVERY
 	var next := ceili(float(run_floor) / every) * every
 	if chests_taken.has(next - 1):
@@ -972,7 +973,7 @@ func _update_hud() -> void:
 	for k in bonus_chests:
 		if k + 1 >= run_floor and k + 1 < next and not chests_taken.has(k):
 			next = k + 1
-	chest_label.text = "Chest at floor %d" % next
+	chest_label.text = tr("Chest at floor %d") % next
 
 
 func _show_message(text: String) -> void:
@@ -983,7 +984,7 @@ func _show_message(text: String) -> void:
 	message_label.visible = true
 	message_backdrop.visible = true
 	menu_bar.visible = true
-	settings_bar.visible = true
+	gear_button.visible = true
 
 
 func _hide_message() -> void:
@@ -993,7 +994,7 @@ func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
 	menu_bar.visible = false
-	settings_bar.visible = false
+	gear_button.visible = false
 	revive_button.visible = false
 
 
@@ -1007,20 +1008,75 @@ func _menu_button(text: String, action: Callable) -> Button:
 	return b
 
 
-func _small_button(parent: Node, action: Callable) -> Button:
-	var b := Button.new()
-	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 15)
-	b.flat = true
-	b.pressed.connect(action)
-	parent.add_child(b)
-	return b
+## A gear drawn in code, so it looks the same whatever the font.
+func _draw_gear() -> void:
+	var c := gear_button.size * 0.5
+	var r := 11.0
+	var color := Color(1, 1, 1, 0.9)
+	for i in 8:
+		var a := TAU * i / 8.0
+		var d := Vector2.from_angle(a)
+		var side := Vector2(-d.y, d.x)
+		gear_button.draw_colored_polygon(PackedVector2Array([
+			c + d * r * 0.8 + side * 3.2, c + d * (r + 4.0) + side * 2.4,
+			c + d * (r + 4.0) - side * 2.4, c + d * r * 0.8 - side * 3.2,
+		]), color)
+	gear_button.draw_circle(c, r, color)
+	gear_button.draw_circle(c, r * 0.42, Color(0.08, 0.08, 0.12))
 
 
-func _update_settings() -> void:
-	sound_button.text = "Sound: %s" % ("On" if sfx.enabled else "Off")
-	vibration_button.text = "Vibration: %s" % ("On" if vibration_on else "Off")
-	_save()
+func _open_settings() -> void:
+	settings_screen.open()
+
+
+func _close_settings() -> void:
+	settings_screen.visible = false
+	_refresh_texts()
+
+
+## Switches the game's language ("" follows the phone's).
+func set_language(locale: String) -> void:
+	language = locale
+	TranslationServer.set_locale(locale if locale != "" else device_locale())
+
+
+## Shrinks a label's font, down to `min_size`, until its (translated) text
+## fits `max_width`. Some languages run much longer than English.
+static func fit_font(label: Label, max_width: float, min_size: int) -> void:
+	var font := label.get_theme_font("font")
+	var size := label.get_theme_font_size("font_size")
+	var text := TranslationServer.translate(label.text)
+	while size > min_size and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > max_width:
+		size -= 1
+	label.add_theme_font_size_override("font_size", size)
+
+
+## The game's closest language to the phone's. Hong Kong, Macau, Taiwan and
+## "Hant" phones get Traditional Chinese; other Chinese phones get Simplified.
+static func device_locale() -> String:
+	var os_locale := OS.get_locale()
+	var lang := OS.get_locale_language()
+	if lang == "zh":
+		for tag in ["TW", "HK", "MO", "Hant"]:
+			if tag in os_locale:
+				return "zh_TW"
+		return "zh_CN"
+	if lang in ["es", "fr", "de", "tr", "ru"]:
+		return lang
+	return "en"
+
+
+## Redraws text that was set in code, after the language changes.
+func _refresh_texts() -> void:
+	match state:
+		State.READY:
+			reset()
+		State.PAUSED:
+			state = State.PLAYING
+			pause()
+	shop_button.text = tr("SHOP")
+	_update_missions_label()
+	_update_hud()
 
 
 func vibrate(ms: int) -> void:
@@ -1086,7 +1142,7 @@ func check_missions() -> void:
 		if m.progress < m.goal:
 			continue
 		total_coins += m.reward
-		banner_queue.append("MISSION DONE\n%s\n+%d coins" % [Missions.describe(m), m.reward])
+		banner_queue.append("%s\n%s\n%s" % [tr("MISSION DONE"), Missions.describe(m), tr("+%d coins") % m.reward])
 		stats["missions_done"] = stats.get("missions_done", 0) + 1
 		missions[i] = {}
 		done = true
@@ -1127,11 +1183,12 @@ func _update_missions_label() -> void:
 		row.add_theme_constant_override("separation", 8)
 		button.add_child(row)
 		var swapping := pending_swap == i
-		var text := "Tap again to swap for ● %d" % Missions.SWAP_COST if swapping else Missions.describe(m)
+		var text := tr("Tap again to swap for ● %d") % Missions.SWAP_COST if swapping else Missions.describe(m)
 		var what := _plain_label(text, 14, Color("ffd23f") if swapping else Color.WHITE)
 		what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		what.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		what.clip_text = true
+		fit_font(what, 210 if swapping else 205, 10)
 		row.add_child(what)
 		if not swapping:
 			row.add_child(_plain_label("%d/%d" % [mini(m.progress, m.goal), m.goal], 14, Color(1, 1, 1, 0.6)))
@@ -1143,7 +1200,7 @@ func _on_mission_tapped(i: int) -> void:
 	if pending_swap != i:
 		pending_swap = i if total_coins >= Missions.SWAP_COST else -1
 		if pending_swap == -1:
-			_toast("Swapping costs ● %d" % Missions.SWAP_COST)
+			_toast(tr("Swapping costs ● %d") % Missions.SWAP_COST)
 	else:
 		swap_mission(i)
 	_update_missions_label()
@@ -1186,14 +1243,14 @@ func _unlock(a: Dictionary) -> void:
 	var reward := ""
 	if a.has("coins"):
 		total_coins += a.coins
-		reward = "+%d coins" % a.coins
+		reward = tr("+%d coins") % a.coins
 	else:
 		var kind: String = a.item[0]
 		var item := Skins.find(Skins.list(kind), a.item[1])
 		if not owned.has(item.id):
 			owned.append(item.id)
-		reward = "New %s: %s" % [Skins.kind_name(kind), item.name]
-	banner_queue.append("TROPHY UNLOCKED\n%s\n%s" % [a.name, reward])
+		reward = tr("New {kind}: {item}").format({"kind": tr(Skins.kind_name(kind)), "item": tr(item.name)})
+	banner_queue.append("%s\n%s\n%s" % [tr("TROPHY UNLOCKED"), tr(a.name), reward])
 	_save()
 
 
@@ -1251,7 +1308,7 @@ static func _pretty_date(date: String) -> String:
 	var parts := date.split("-")
 	if parts.size() != 3:
 		return date
-	return "%s %d" % [MONTHS[int(parts[1]) - 1], int(parts[2])]
+	return TranslationServer.translate("{month} {day}").format({"month": TranslationServer.translate(MONTHS[int(parts[1]) - 1]), "day": int(parts[2])})
 
 
 # --- Chests ----------------------------------------------------------------
@@ -1382,6 +1439,7 @@ func _load_save() -> void:
 		unlocked = cfg.get_value("achievements", "unlocked", [])
 		sfx.enabled = cfg.get_value("settings", "sound", true)
 		vibration_on = cfg.get_value("settings", "vibration", true)
+		language = cfg.get_value("settings", "language", "")
 		daily_date = cfg.get_value("daily", "date", "")
 		daily_best = cfg.get_value("daily", "best", 0)
 		daily_claimed = cfg.get_value("daily", "claimed", false)
@@ -1416,6 +1474,7 @@ func _save() -> void:
 	cfg.set_value("achievements", "unlocked", unlocked)
 	cfg.set_value("settings", "sound", sfx.enabled)
 	cfg.set_value("settings", "vibration", vibration_on)
+	cfg.set_value("settings", "language", language)
 	cfg.set_value("daily", "date", daily_date)
 	cfg.set_value("daily", "best", daily_best)
 	cfg.set_value("daily", "claimed", daily_claimed)

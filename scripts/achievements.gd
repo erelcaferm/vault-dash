@@ -60,6 +60,9 @@ static func find(id: String) -> Dictionary:
 
 static func reward_text(a: Dictionary) -> String:
 	if a.has("coins"):
-		return "%d coins" % a.coins
+		return TranslationServer.translate("%d coins") % a.coins
 	var item := Skins.find(Skins.list(a.item[0]), a.item[1])
-	return "%s: %s" % [Skins.kind_name(a.item[0]).capitalize(), item.name]
+	return TranslationServer.translate("New {kind}: {item}").format({
+		"kind": TranslationServer.translate(Skins.kind_name(a.item[0])),
+		"item": TranslationServer.translate(item.name),
+	})

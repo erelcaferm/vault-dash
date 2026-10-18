@@ -137,7 +137,9 @@ func _card(item: Dictionary) -> Button:
 	preview.size_flags_vertical = SIZE_EXPAND_FILL
 	preview.mouse_filter = MOUSE_FILTER_IGNORE
 	box.add_child(preview)
-	box.add_child(_label(item.name, 16))
+	var name_label := _label(item.name, 16)
+	game.fit_font(name_label, 100, 11)
+	box.add_child(name_label)
 
 	var status: Label
 	if item.id == equipped:
@@ -154,6 +156,7 @@ func _card(item: Dictionary) -> Button:
 		status = _label("● %d" % item.price, 15, GOLD)
 	else:
 		status = _label("● %d" % item.price, 15, DIM)
+	game.fit_font(status, 100, 10)
 	box.add_child(status)
 	b.pressed.connect(_on_card.bind(item))
 	return b

@@ -1,0 +1,222 @@
+keys,en,es,fr,de,tr,ru,zh_CN,zh_TW
+SHOP,SHOP,TIENDA,BOUTIQUE,SHOP,MAĞAZA,МАГАЗИН,商店,商店
+TROPHIES,TROPHIES,TROFEOS,TROPHÉES,TROPHÄEN,KUPALAR,ТРОФЕИ,奖杯,獎盃
+DAILY,DAILY,DIARIO,DÉFI DU JOUR,TÄGLICH,GÜNLÜK,ДЕНЬ,每日,每日
+ENDLESS,ENDLESS,INFINITO,INFINI,ENDLOS,SONSUZ,БЕСКОНЕЧНО,无尽,無盡
+SETTINGS,SETTINGS,AJUSTES,PARAMÈTRES,EINSTELLUNGEN,AYARLAR,НАСТРОЙКИ,设置,設定
+LANGUAGE,LANGUAGE,IDIOMA,LANGUE,SPRACHE,DİL,ЯЗЫК,语言,語言
+Sound: %s,Sound: %s,Sonido: %s,Son : %s,Ton: %s,Ses: %s,Звук: %s,声音：%s,聲音：%s
+Vibration: %s,Vibration: %s,Vibración: %s,Vibration : %s,Vibration: %s,Titreşim: %s,Вибрация: %s,振动：%s,震動：%s
+On,On,Sí,Activé,An,Açık,Вкл,开,開
+Off,Off,No,Désactivé,Aus,Kapalı,Выкл,关,關
+Back,Back,Volver,Retour,Zurück,Geri,Назад,返回,返回
+Done,Done,Hecho,Fait,Erledigt,Tamam,Готово,已完成,已完成
+Floor %d,Floor %d,Piso %d,Étage %d,Etage %d,Kat %d,Этаж %d,第%d层,第%d層
+Chest at floor %d,Chest at floor %d,Cofre en el piso %d,Coffre à l'étage %d,Truhe auf Etage %d,Sandık %d. katta,Сундук на этаже %d,第%d层有宝箱,第%d層有寶箱
+Best floor %d,Best floor %d,Mejor piso: %d,Meilleur étage : %d,Beste Etage: %d,En iyi kat: %d,Рекорд: этаж %d,最高第%d层,最高第%d層
+Best: floor %d,Best: floor %d,Récord: piso %d,Record : étage %d,Rekord: Etage %d,Rekor: %d. kat,Рекорд: этаж %d,最佳：第%d层,最佳：第%d層
+Swipe to slide.,Swipe to slide.,Desliza para moverte.,Glisse pour avancer.,Wische zum Rutschen.,Kaymak için kaydır.,"Проведи, чтобы скользить.",滑动屏幕来移动。,滑動螢幕來移動。
+Climb before the lava gets you.,Climb before the lava gets you.,Sube antes de que te alcance la lava.,Grimpe avant que la lave ne t'attrape.,"Klettere, bevor die Lava dich erwischt.",Lav seni yakalamadan tırman.,"Взбирайся, пока тебя не настигла лава.",在岩浆追上你之前往上爬。,在岩漿追上你之前往上爬。
+Swipe to try again,Swipe to try again,Desliza para reintentar,Glisse pour réessayer,Wische für einen neuen Versuch,Tekrar denemek için kaydır,"Проведи, чтобы начать заново",滑动再试一次,滑動再試一次
++%d coins,+%d coins,+%d monedas,+%d pièces,+%d Münzen,+%d altın,+%d монет,+%d金币,+%d金幣
+%d coins,%d coins,%d monedas,%d pièces,%d Münzen,%d altın,%d монет,%d金币,%d金幣
+PAUSED,PAUSED,PAUSA,PAUSE,PAUSE,DURAKLATILDI,ПАУЗА,已暂停,已暫停
+Tap to carry on,Tap to carry on,Toca para seguir,Touche pour continuer,Tippe zum Weiterspielen,Devam etmek için dokun,"Нажми, чтобы продолжить",点击继续,點擊繼續
+REVIVE,REVIVE,REVIVIR,RÉANIMER,WIEDERBELEBEN,CANLAN,ОЖИТЬ,复活,復活
+Second chance!,Second chance!,¡Segunda oportunidad!,Seconde chance !,Zweite Chance!,İkinci şans!,Второй шанс!,第二次机会！,第二次機會！
+NEW BEST!,NEW BEST!,¡NUEVO RÉCORD!,NOUVEAU RECORD !,NEUER REKORD!,YENİ REKOR!,НОВЫЙ РЕКОРД!,新纪录！,新紀錄！
+COMBO x%d!,COMBO x%d!,¡COMBO x%d!,COMBO x%d !,KOMBO x%d!,KOMBO x%d!,КОМБО x%d!,连击 x%d！,連擊 x%d！
+Watch your step...,Watch your step...,Cuidado dónde pisas...,Attention où tu marches...,"Pass auf, wo du hintrittst...",Adımına dikkat et...,Смотри под ноги...,小心脚下……,小心腳下……
+Spiked on floor %d,Spiked on floor %d,Pinchado en el piso %d,Empalé à l'étage %d,Aufgespießt auf Etage %d,%d. katta dikene battın,Шипы на этаже %d,在第%d层被尖刺刺中,在第%d層被尖刺刺中
+Fell through a fake floor on floor %d,Fell through a fake floor on floor %d,Caíste por un suelo falso en el piso %d,Tombé dans un faux sol à l'étage %d,Durch einen falschen Boden gefallen auf Etage %d,%d. katta sahte zeminden düştün,Провалился сквозь ложный пол на этаже %d,在第%d层踩穿了假地板,在第%d層踩穿了假地板
+Melted on floor %d,Melted on floor %d,Derretido en el piso %d,Fondu à l'étage %d,Geschmolzen auf Etage %d,%d. katta eridin,Расплавился на этаже %d,在第%d层被岩浆吞没,在第%d層被岩漿吞沒
+The Crypt,The Crypt,La Cripta,La Crypte,Die Gruft,Mahzen,Склеп,地穴,地穴
+Ice Caves,Ice Caves,Cuevas de Hielo,Grottes de Glace,Eishöhlen,Buz Mağaraları,Ледяные пещеры,冰洞,冰洞
+Jungle Temple,Jungle Temple,Templo de la Selva,Temple de la Jungle,Dschungeltempel,Orman Tapınağı,Храм в джунглях,丛林神殿,叢林神殿
+DAILY CLIMB,DAILY CLIMB,ESCALADA DIARIA,ASCENSION DU JOUR,TAGESAUFSTIEG,GÜNLÜK TIRMANIŞ,ЕЖЕДНЕВНЫЙ ПОДЪЁМ,每日攀登,每日攀登
+Same tower for everyone today.,Same tower for everyone today.,La misma torre para todos hoy.,La même tour pour tout le monde aujourd'hui.,Heute für alle derselbe Turm.,Bugün herkes için aynı kule.,Сегодня у всех одна и та же башня.,今天所有人挑战同一座塔。,今天所有人挑戰同一座塔。
+Floor %d pays %d coins,Floor %d pays %d coins,El piso %d da %d monedas,L'étage %d rapporte %d pièces,Etage %d bringt %d Münzen,%d. kat %d altın verir,Этаж %d даёт %d монет,到达第%d层奖励%d金币,到達第%d層獎勵%d金幣
+Goal done! +%d coins,Goal done! +%d coins,¡Objetivo cumplido! +%d monedas,Objectif atteint ! +%d pièces,Ziel erreicht! +%d Münzen,Hedef tamam! +%d altın,Цель выполнена! +%d монет,目标达成！+%d金币,目標達成！+%d金幣
+Today's best: floor %d,Today's best: floor %d,Mejor de hoy: piso %d,Meilleur du jour : étage %d,Heutiger Rekord: Etage %d,Bugünün rekoru: %d. kat,Лучшее сегодня: этаж %d,今日最佳：第%d层,今日最佳：第%d層
+Streak: %d days,Streak: %d days,Racha: %d días,Série : %d jours,Serie: %d Tage,Seri: %d gün,Серия: %d дн.,连续：%d天,連續：%d天
+DAILY GOAL!,DAILY GOAL!,¡OBJETIVO DIARIO!,OBJECTIF DU JOUR !,TAGESZIEL!,GÜNLÜK HEDEF!,ЦЕЛЬ ДНЯ!,每日目标！,每日目標！
+Floor %d reached,Floor %d reached,Piso %d alcanzado,Étage %d atteint,Etage %d erreicht,%d. kata ulaşıldı,Достигнут этаж %d,已到达第%d层,已到達第%d層
+{month} {day},{month} {day},{day} {month},{day} {month},{day}. {month},{day} {month},{day} {month},{month}{day}日,{month}{day}日
+Jan,Jan,ene,janv.,Jan.,Oca,янв.,1月,1月
+Feb,Feb,feb,févr.,Feb.,Şub,февр.,2月,2月
+Mar,Mar,mar,mars,März,Mar,марта,3月,3月
+Apr,Apr,abr,avr.,Apr.,Nis,апр.,4月,4月
+May,May,may,mai,Mai,May,мая,5月,5月
+Jun,Jun,jun,juin,Juni,Haz,июня,6月,6月
+Jul,Jul,jul,juil.,Juli,Tem,июля,7月,7月
+Aug,Aug,ago,août,Aug.,Ağu,авг.,8月,8月
+Sep,Sep,sept,sept.,Sept.,Eyl,сент.,9月,9月
+Oct,Oct,oct,oct.,Okt.,Eki,окт.,10月,10月
+Nov,Nov,nov,nov.,Nov.,Kas,нояб.,11月,11月
+Dec,Dec,dic,déc.,Dez.,Ara,дек.,12月,12月
+SHIELD,SHIELD,ESCUDO,BOUCLIER,SCHILD,KALKAN,ЩИТ,护盾,護盾
+MAGNET,MAGNET,IMÁN,AIMANT,MAGNET,MIKNATIS,МАГНИТ,磁铁,磁鐵
+FREEZE,FREEZE,HIELO,GEL,FROST,DONDURMA,ЗАМОРОЗКА,冰冻,冰凍
+Shield!,Shield!,¡Escudo!,Bouclier !,Schild!,Kalkan!,Щит!,护盾！,護盾！
+Coin magnet!,Coin magnet!,¡Imán de monedas!,Aimant à pièces !,Münzmagnet!,Altın mıknatısı!,Магнит для монет!,金币磁铁！,金幣磁鐵！
+Lava frozen!,Lava frozen!,¡Lava congelada!,Lave gelée !,Lava gefroren!,Lav dondu!,Лава заморожена!,岩浆冻结！,岩漿凍結！
+Shield saved you!,Shield saved you!,¡El escudo te salvó!,Le bouclier t'a sauvé !,Der Schild hat dich gerettet!,Kalkan seni kurtardı!,Щит тебя спас!,护盾救了你！,護盾救了你！
+MISSIONS,MISSIONS,MISIONES,MISSIONS,MISSIONEN,GÖREVLER,ЗАДАНИЯ,任务,任務
+MISSION DONE,MISSION DONE,MISIÓN CUMPLIDA,MISSION ACCOMPLIE,MISSION ERFÜLLT,GÖREV TAMAM,ЗАДАНИЕ ВЫПОЛНЕНО,任务完成,任務完成
+Tap again to swap for ● %d,Tap again to swap for ● %d,Toca otra vez para cambiar por ● %d,Touche encore pour changer : ● %d,Nochmal tippen zum Tauschen: ● %d,Değiştirmek için tekrar dokun: ● %d,"Нажми ещё раз, чтобы сменить за ● %d",再点一次更换，花费 ● %d,再點一次更換，花費 ● %d
+Swapping costs ● %d,Swapping costs ● %d,Cambiar cuesta ● %d,Changer coûte ● %d,Tauschen kostet ● %d,Değiştirmek ● %d tutar,Смена стоит ● %d,更换需要 ● %d,更換需要 ● %d
+Collect %d coins in one run,Collect %d coins in one run,Consigue %d monedas en una partida,Ramasse %d pièces en une partie,Sammle %d Münzen in einem Lauf,Tek oyunda %d altın topla,Собери %d монет за один забег,单局收集%d枚金币,單局收集%d枚金幣
+Reach floor %d,Reach floor %d,Llega al piso %d,Atteins l'étage %d,Erreiche Etage %d,%d. kata ulaş,Доберись до этажа %d,到达第%d层,到達第%d層
+Reach floor %d in the Daily Climb,Reach floor %d in the Daily Climb,Llega al piso %d en la Escalada diaria,Étage %d au défi du jour,Erreiche Etage %d im Tagesaufstieg,Günlük Tırmanışta %d. kata ulaş,Этаж %d в задании дня,在每日攀登中到达第%d层,在每日攀登中到達第%d層
+Break %d cracked walls,Break %d cracked walls,Rompe %d muros agrietados,Casse %d murs fissurés,Zerbrich %d rissige Wände,%d çatlak duvar kır,Разбей %d треснувших стен,打破%d面裂墙,打破%d面裂牆
+Pass %d trap floors,Pass %d trap floors,Supera %d pisos trampa,Passe %d étages piégés,Überstehe %d Fallen-Etagen,%d tuzaklı kat geç,Пройди %d этажей с ловушками,通过%d个陷阱层,通過%d個陷阱層
+Open %d chests,Open %d chests,Abre %d cofres,Ouvre %d coffres,Öffne %d Truhen,%d sandık aç,Открой %d сундука,打开%d个宝箱,打開%d個寶箱
+Open a chest,Open a chest,Abre un cofre,Ouvre un coffre,Öffne eine Truhe,Bir sandık aç,Открой сундук,打开一个宝箱,打開一個寶箱
+Grab %d power-ups,Grab %d power-ups,Coge %d potenciadores,Attrape %d bonus,Schnapp dir %d Power-ups,%d güçlendirici topla,Подбери %d бонусов,拾取%d个道具,拾取%d個道具
+Grab a power-up,Grab a power-up,Coge un potenciador,Attrape un bonus,Schnapp dir ein Power-up,Bir güçlendirici topla,Подбери бонус,拾取一个道具,拾取一個道具
+Collect %d coins,Collect %d coins,Consigue %d monedas,Ramasse %d pièces,Sammle %d Münzen,%d altın topla,Собери %d монет,收集%d枚金币,收集%d枚金幣
+TREASURE CHEST,TREASURE CHEST,COFRE DEL TESORO,COFFRE AU TRÉSOR,SCHATZTRUHE,HAZİNE SANDIĞI,СУНДУК С СОКРОВИЩАМИ,宝箱,寶箱
+Tap to skip,Tap to skip,Toca para saltar,Touche pour passer,Tippe zum Überspringen,Geçmek için dokun,"Нажми, чтобы пропустить",点击跳过,點擊跳過
+Tap to continue,Tap to continue,Toca para continuar,Touche pour continuer,Tippe zum Fortfahren,Devam etmek için dokun,"Нажми, чтобы продолжить",点击继续,點擊繼續
+Common,Common,Común,Commun,Gewöhnlich,Sıradan,Обычный,普通,普通
+Rare,Rare,Raro,Rare,Selten,Nadir,Редкий,稀有,稀有
+Epic,Epic,Épico,Épique,Episch,Destansı,Эпический,史诗,史詩
+Legendary,Legendary,Legendario,Légendaire,Legendär,Efsanevi,Легендарный,传说,傳說
+{item} {kind},{item} {kind},{kind}: {item},{kind} : {item},{kind}: {item},{item} {kind},{kind}: {item},{kind}：{item},{kind}：{item}
+New {kind}: {item},New {kind}: {item},Nuevo {kind}: {item},Nouveau {kind} : {item},Neu ({kind}): {item},Yeni {kind}: {item},Новое ({kind}): {item},新{kind}：{item},新{kind}：{item}
+colour,colour,color,couleur,Farbe,renk,цвет,颜色,顏色
+wall skin,wall skin,aspecto de muro,apparence de mur,Wand-Skin,duvar görünümü,облик стены,墙壁外观,牆壁外觀
+trail,trail,estela,traînée,Spur,iz,след,拖尾,拖尾
+lava,lava,lava,lave,Lava,lav,лава,岩浆,岩漿
+hat,hat,sombrero,chapeau,Hut,şapka,шляпа,帽子,帽子
+Equipped,Equipped,Equipado,Équipé,Ausgerüstet,Kuşanıldı,Надето,已装备,已裝備
+Tap to use,Tap to use,Toca para usar,Touche pour utiliser,Tippe zum Benutzen,Kullanmak için dokun,Надеть,点击使用,點擊使用
+Chest only,Chest only,Solo en cofres,Coffres uniquement,Nur aus Truhen,Sadece sandıktan,Только из сундуков,仅限宝箱,僅限寶箱
+Tap to buy!,Tap to buy!,¡Toca para comprar!,Touche pour acheter !,Tippe zum Kaufen!,Satın almak için dokun!,"Нажми, чтобы купить!",点击购买！,點擊購買！
+Hero,Hero,Héroe,Héros,Held,Kahraman,Герой,角色,角色
+Hats,Hats,Sombreros,Chapeaux,Hüte,Şapkalar,Шляпы,帽子,帽子
+Walls,Walls,Muros,Murs,Wände,Duvarlar,Стены,墙壁,牆壁
+Trails,Trails,Estelas,Traînées,Spuren,İzler,Следы,拖尾,拖尾
+Lava,Lava,Lava,Lave,Lava,Lav,Лава,岩浆,岩漿
+White,White,Blanco,Blanc,Weiß,Beyaz,Белый,白色,白色
+Black,Black,Negro,Noir,Schwarz,Siyah,Чёрный,黑色,黑色
+Red,Red,Rojo,Rouge,Rot,Kırmızı,Красный,红色,紅色
+Orange,Orange,Naranja,Orange,Orange,Turuncu,Оранжевый,橙色,橙色
+Lemon,Lemon,Limón,Citron,Zitrone,Limon,Лимонный,柠檬,檸檬
+Mint,Mint,Menta,Menthe,Minze,Nane,Мятный,薄荷,薄荷
+Green,Green,Verde,Vert,Grün,Yeşil,Зелёный,绿色,綠色
+Sky,Sky,Cielo,Ciel,Himmel,Gök,Небесный,天蓝,天藍
+Blue,Blue,Azul,Bleu,Blau,Mavi,Синий,蓝色,藍色
+Purple,Purple,Morado,Violet,Lila,Mor,Фиолетовый,紫色,紫色
+Pink,Pink,Rosa,Rose,Rosa,Pembe,Розовый,粉色,粉色
+Gold,Gold,Oro,Or,Gold,Altın,Золотой,金色,金色
+Rainbow,Rainbow,Arcoíris,Arc-en-ciel,Regenbogen,Gökkuşağı,Радуга,彩虹,彩虹
+Neon,Neon,Neón,Néon,Neon,Neon,Неон,霓虹,霓虹
+Ember,Ember,Brasa,Braise,Glut,Kor,Уголёк,余烬,餘燼
+Void,Void,Vacío,Néant,Leere,Boşluk,Пустота,虚空,虛空
+Cloud,Cloud,Nube,Nuage,Wolke,Bulut,Облако,云朵,雲朵
+Royal,Royal,Real,Royal,Königlich,Kraliyet,Королевский,皇家,皇家
+Speedster,Speedster,Velocista,Bolide,Flitzer,Hızcı,Скороход,飞毛腿,飛毛腿
+Ghost,Ghost,Fantasma,Fantôme,Geist,Hayalet,Призрак,幽灵,幽靈
+Sunrise,Sunrise,Amanecer,Aurore,Sonnenaufgang,Gündoğumu,Рассвет,日出,日出
+Brick,Brick,Ladrillo,Brique,Ziegel,Tuğla,Кирпич,砖块,磚塊
+Rubble,Rubble,Escombros,Gravats,Schutt,Moloz,Обломки,碎石,碎石
+Mud,Mud,Barro,Boue,Schlamm,Çamur,Грязь,泥巴,泥巴
+Snow,Snow,Nieve,Neige,Schnee,Kar,Снег,白雪,白雪
+Wood,Wood,Madera,Bois,Holz,Tahta,Дерево,木头,木頭
+Glass,Glass,Cristal,Verre,Glas,Cam,Стекло,玻璃,玻璃
+Crystal,Crystal,Cuarzo,Cristal,Kristall,Kristal,Кристалл,水晶,水晶
+Gold Bars,Gold Bars,Lingotes,Lingots d'or,Goldbarren,Altın Külçe,Золотые слитки,金条,金條
+Obsidian,Obsidian,Obsidiana,Obsidienne,Obsidian,Obsidyen,Обсидиан,黑曜石,黑曜石
+Magma,Magma,Magma,Magma,Magma,Magma,Магма,熔岩,熔岩
+Treasure,Treasure,Tesoro,Trésor,Schatz,Hazine,Сокровище,宝藏,寶藏
+Frozen,Frozen,Congelado,Gelé,Gefroren,Donmuş,Ледяной,冰封,冰封
+Marble,Marble,Mármol,Marbre,Marmor,Mermer,Мрамор,大理石,大理石
+Afterimage,Afterimage,Imagen residual,Rémanence,Nachbild,Gölge iz,Остаточный образ,残影,殘影
+Pixels,Pixels,Píxeles,Pixels,Pixel,Pikseller,Пиксели,像素,像素
+Bubbles,Bubbles,Burbujas,Bulles,Blasen,Baloncuklar,Пузыри,泡泡,泡泡
+Sparkle,Sparkle,Destellos,Étincelles,Funkeln,Işıltı,Блёстки,闪光,閃光
+Fire,Fire,Fuego,Feu,Feuer,Ateş,Огонь,火焰,火焰
+Comet,Comet,Cometa,Comète,Komet,Kuyruklu Yıldız,Комета,彗星,彗星
+Gold Dust,Gold Dust,Polvo de oro,Poussière d'or,Goldstaub,Altın Tozu,Золотая пыль,金粉,金粉
+No hat,No hat,Sin sombrero,Sans chapeau,Kein Hut,Şapkasız,Без шляпы,不戴帽子,不戴帽子
+Cap,Cap,Gorra,Casquette,Kappe,Kep,Кепка,鸭舌帽,鴨舌帽
+Beanie,Beanie,Gorro,Bonnet,Mütze,Bere,Шапка,毛线帽,毛線帽
+Party Hat,Party Hat,Gorro de fiesta,Chapeau de fête,Partyhut,Parti Şapkası,Колпак,派对帽,派對帽
+Headphones,Headphones,Auriculares,Casque audio,Kopfhörer,Kulaklık,Наушники,耳机,耳機
+Top Hat,Top Hat,Chistera,Haut-de-forme,Zylinder,Silindir Şapka,Цилиндр,高礼帽,高禮帽
+Wizard,Wizard,Mago,Sorcier,Zauberer,Büyücü,Волшебник,巫师帽,巫師帽
+Crown,Crown,Corona,Couronne,Krone,Taç,Корона,王冠,王冠
+Horns,Horns,Cuernos,Cornes,Hörner,Boynuzlar,Рога,恶魔角,惡魔角
+Halo,Halo,Aureola,Auréole,Heiligenschein,Hale,Нимб,光环,光環
+Acid,Acid,Ácido,Acide,Säure,Asit,Кислота,酸液,酸液
+Chocolate,Chocolate,Chocolate,Chocolat,Schokolade,Çikolata,Шоколад,巧克力,巧克力
+Bubblegum,Bubblegum,Chicle,Chewing-gum,Kaugummi,Sakız,Жвачка,泡泡糖,泡泡糖
+Plasma,Plasma,Plasma,Plasma,Plasma,Plazma,Плазма,等离子,等離子
+Molten Gold,Molten Gold,Oro fundido,Or en fusion,Flüssiges Gold,Erimiş Altın,Расплавленное золото,熔金,熔金
+Ash,Ash,Ceniza,Cendre,Asche,Kül,Пепел,灰烬,灰燼
+TROPHY UNLOCKED,TROPHY UNLOCKED,TROFEO DESBLOQUEADO,TROPHÉE DÉBLOQUÉ,TROPHÄE FREIGESCHALTET,KUPA AÇILDI,ТРОФЕЙ ПОЛУЧЕН,解锁奖杯,解鎖獎盃
+First Steps,First Steps,Primeros pasos,Premiers pas,Erste Schritte,İlk Adımlar,Первые шаги,第一步,第一步
+Climber,Climber,Escalador,Grimpeur,Kletterer,Tırmanıcı,Скалолаз,攀登者,攀登者
+Sky High,Sky High,Hasta el cielo,Au septième ciel,Himmelhoch,Gökyüzüne,До небес,直上云霄,直上雲霄
+Centurion,Centurion,Centurión,Centurion,Zenturio,Yüzbaşı,Центурион,百层勇士,百層勇士
+Tower Legend,Tower Legend,Leyenda de la torre,Légende de la tour,Turmlegende,Kule Efsanesi,Легенда башни,高塔传奇,高塔傳奇
+Speedrunner,Speedrunner,Speedrunner,Speedrunner,Speedrunner,Hız Koşucusu,Спидраннер,速通达人,速通達人
+Coin Rush,Coin Rush,Lluvia de monedas,Ruée vers l'or,Münzrausch,Altın Yağmuru,Монетный поток,金币狂潮,金幣狂潮
+Pocket Change,Pocket Change,Calderilla,Petite monnaie,Kleingeld,Bozuk Para,Мелочь,零钱,零錢
+Coin Collector,Coin Collector,Coleccionista,Collectionneur,Münzsammler,Altın Koleksiyoncusu,Коллекционер,金币收藏家,金幣收藏家
+Treasure Hunter,Treasure Hunter,Cazatesoros,Chasseur de trésors,Schatzjäger,Hazine Avcısı,Охотник за сокровищами,寻宝猎人,尋寶獵人
+Oops,Oops,Ups,Oups,Hoppla,Hoppala,Упс,哎呀,哎呀
+Persistent,Persistent,Persistente,Persévérant,Beharrlich,Azimli,Упорный,坚持不懈,堅持不懈
+Never Give Up,Never Give Up,Nunca te rindas,Jamais abandonner,Niemals aufgeben,Asla Pes Etme,Никогда не сдавайся,永不放弃,永不放棄
+Hot Feet,Hot Feet,Pies calientes,Pieds brûlants,Heiße Füße,Sıcak Ayaklar,Горячие пятки,热脚丫,熱腳丫
+Pincushion,Pincushion,Alfiletero,Pelote d'épingles,Nadelkissen,İğnelik,Подушечка для игл,针垫,針墊
+Gravity Wins,Gravity Wins,La gravedad gana,La gravité gagne,Die Schwerkraft siegt,Yerçekimi Kazanır,Гравитация победила,重力获胜,重力獲勝
+Lucky,Lucky,Suertudo,Chanceux,Glückspilz,Şanslı,Везунчик,幸运儿,幸運兒
+Hoarder,Hoarder,Acaparador,Collectionneur de coffres,Hamsterer,İstifçi,Барахольщик,囤积者,囤積者
+Jackpot,Jackpot,Premio gordo,Jackpot,Hauptgewinn,Büyük İkramiye,Джекпот,头奖,頭獎
+Secret Stash,Secret Stash,Alijo secreto,Cachette secrète,Geheimes Versteck,Gizli Zula,Тайник,秘密宝藏,秘密寶藏
+Wrecking Ball,Wrecking Ball,Bola de demolición,Boulet de démolition,Abrissbirne,Yıkım Topu,Таран,破坏球,破壞球
+Trap Dodger,Trap Dodger,Esquivatrampas,Esquive-pièges,Fallenausweicher,Tuzak Ustası,Ловкач,陷阱躲避者,陷阱躲避者
+Second Wind,Second Wind,Segundo aliento,Second souffle,Zweiter Atem,İkinci Nefes,Второе дыхание,重振旗鼓,重振旗鼓
+Powered Up,Powered Up,Potenciado,Survolté,Aufgeladen,Güçlendi,Заряжен,能量满满,能量滿滿
+Regular,Regular,Habitual,Habitué,Stammgast,Müdavim,Завсегдатай,常客,常客
+Daily Climber,Daily Climber,Escalador diario,Grimpeur du jour,Täglicher Kletterer,Günlük Tırmanıcı,Ежедневный скалолаз,每日攀登者,每日攀登者
+Goal Getter,Goal Getter,Cumplidor,Objectif atteint,Zielstrebig,Hedef Avcısı,Целеустремлённый,目标达人,目標達人
+On a Roll,On a Roll,En racha,Sur une lancée,Im Lauf,Seri Halinde,В ударе,势如破竹,勢如破竹
+Devoted,Devoted,Devoto,Dévoué,Hingebungsvoll,Sadık,Преданный,忠实玩家,忠實玩家
+Busy Bee,Busy Bee,Abeja obrera,Abeille ouvrière,Fleißige Biene,Çalışkan Arı,Трудолюбивая пчела,小蜜蜂,小蜜蜂
+Mission Master,Mission Master,Maestro de misiones,Maître des missions,Missionsmeister,Görev Ustası,Мастер заданий,任务大师,任務大師
+Fashionista,Fashionista,Fashionista,Fashionista,Fashionista,Moda Tutkunu,Модник,时尚达人,時尚達人
+Reach floor 5,Reach floor 5,Llega al piso 5,Atteins l'étage 5,Erreiche Etage 5,5. kata ulaş,Доберись до этажа 5,到达第5层,到達第5層
+Reach floor 25,Reach floor 25,Llega al piso 25,Atteins l'étage 25,Erreiche Etage 25,25. kata ulaş,Доберись до этажа 25,到达第25层,到達第25層
+Reach floor 50,Reach floor 50,Llega al piso 50,Atteins l'étage 50,Erreiche Etage 50,50. kata ulaş,Доберись до этажа 50,到达第50层,到達第50層
+Reach floor 100,Reach floor 100,Llega al piso 100,Atteins l'étage 100,Erreiche Etage 100,100. kata ulaş,Доберись до этажа 100,到达第100层,到達第100層
+Reach floor 200,Reach floor 200,Llega al piso 200,Atteins l'étage 200,Erreiche Etage 200,200. kata ulaş,Доберись до этажа 200,到达第200层,到達第200層
+Reach floor 20 within 60 seconds,Reach floor 20 within 60 seconds,Llega al piso 20 en 60 segundos,Atteins l'étage 20 en 60 secondes,Erreiche Etage 20 in 60 Sekunden,60 saniyede 20. kata ulaş,Доберись до этажа 20 за 60 секунд,60秒内到达第20层,60秒內到達第20層
+Grab 10 coins in one slide,Grab 10 coins in one slide,Coge 10 monedas en un solo deslizamiento,Attrape 10 pièces en une glissade,Schnapp dir 10 Münzen in einem Rutsch,Tek kaymada 10 altın topla,Собери 10 монет за одно скольжение,一次滑动收集10枚金币,一次滑動收集10枚金幣
+Collect 10 coins,Collect 10 coins,Consigue 10 monedas,Ramasse 10 pièces,Sammle 10 Münzen,10 altın topla,Собери 10 монет,收集10枚金币,收集10枚金幣
+Collect 250 coins,Collect 250 coins,Consigue 250 monedas,Ramasse 250 pièces,Sammle 250 Münzen,250 altın topla,Собери 250 монет,收集250枚金币,收集250枚金幣
+"Collect 1,000 coins","Collect 1,000 coins",Consigue 1.000 monedas,Ramasse 1 000 pièces,Sammle 1.000 Münzen,1.000 altın topla,Собери 1000 монет,收集1000枚金币,收集1000枚金幣
+Die for the first time,Die for the first time,Muere por primera vez,Meurs pour la première fois,Stirb zum ersten Mal,İlk kez öl,Погибни в первый раз,第一次死亡,第一次死亡
+Die 5 times,Die 5 times,Muere 5 veces,Meurs 5 fois,Stirb 5 Mal,5 kez öl,Погибни 5 раз,死亡5次,死亡5次
+Die 50 times,Die 50 times,Muere 50 veces,Meurs 50 fois,Stirb 50 Mal,50 kez öl,Погибни 50 раз,死亡50次,死亡50次
+Get caught by the lava 10 times,Get caught by the lava 10 times,Deja que la lava te atrape 10 veces,Fais-toi rattraper par la lave 10 fois,Lass dich 10 Mal von der Lava erwischen,Lava 10 kez yakalansın,Попадись лаве 10 раз,被岩浆追上10次,被岩漿追上10次
+Land on spikes 10 times,Land on spikes 10 times,Cae sobre pinchos 10 veces,Tombe sur des pics 10 fois,Lande 10 Mal auf Stacheln,10 kez dikenlere düş,Попади на шипы 10 раз,落在尖刺上10次,落在尖刺上10次
+Fall through a fake floor 5 times,Fall through a fake floor 5 times,Cae por un suelo falso 5 veces,Tombe dans un faux sol 5 fois,Fall 5 Mal durch einen falschen Boden,5 kez sahte zeminden düş,Провались сквозь ложный пол 5 раз,踩穿假地板5次,踩穿假地板5次
+Open your first chest,Open your first chest,Abre tu primer cofre,Ouvre ton premier coffre,Öffne deine erste Truhe,İlk sandığını aç,Открой свой первый сундук,打开你的第一个宝箱,打開你的第一個寶箱
+Open 5 chests,Open 5 chests,Abre 5 cofres,Ouvre 5 coffres,Öffne 5 Truhen,5 sandık aç,Открой 5 сундуков,打开5个宝箱,打開5個寶箱
+Get a Legendary from a chest,Get a Legendary from a chest,Consigue un Legendario de un cofre,Obtiens un Légendaire dans un coffre,Erhalte etwas Legendäres aus einer Truhe,Sandıktan Efsanevi bir ödül al,Получи легендарный предмет из сундука,从宝箱开出传说物品,從寶箱開出傳說物品
+Find a bonus chest,Find a bonus chest,Encuentra un cofre extra,Trouve un coffre bonus,Finde eine Bonustruhe,Bir bonus sandık bul,Найди бонусный сундук,找到一个奖励宝箱,找到一個獎勵寶箱
+Break 100 cracked walls,Break 100 cracked walls,Rompe 100 muros agrietados,Casse 100 murs fissurés,Zerbrich 100 rissige Wände,100 çatlak duvar kır,Разбей 100 треснувших стен,打破100面裂墙,打破100面裂牆
+Reach 25 trap floors,Reach 25 trap floors,Llega a 25 pisos trampa,Atteins 25 étages piégés,Erreiche 25 Fallen-Etagen,25 tuzaklı kata ulaş,Доберись до 25 этажей с ловушками,到达25个陷阱层,到達25個陷阱層
+Revive after dying,Revive after dying,Revive tras morir,Réanime-toi après une mort,Belebe dich nach dem Tod wieder,Öldükten sonra canlan,Оживи после смерти,死亡后复活,死亡後復活
+Grab 25 power-ups,Grab 25 power-ups,Coge 25 potenciadores,Attrape 25 bonus,Schnapp dir 25 Power-ups,25 güçlendirici topla,Подбери 25 бонусов,拾取25个道具,拾取25個道具
+Play 25 runs,Play 25 runs,Juega 25 partidas,Joue 25 parties,Spiele 25 Läufe,25 oyun oyna,Сыграй 25 забегов,进行25局游戏,進行25局遊戲
+Play a Daily Climb,Play a Daily Climb,Juega una Escalada diaria,Joue une Ascension du jour,Spiele einen Tagesaufstieg,Bir Günlük Tırmanış oyna,Сыграй ежедневный подъём,参加一次每日攀登,參加一次每日攀登
+Hit the daily goal 10 times,Hit the daily goal 10 times,Cumple el objetivo diario 10 veces,Atteins l'objectif du jour 10 fois,Erreiche das Tagesziel 10 Mal,Günlük hedefe 10 kez ulaş,Выполни цель дня 10 раз,达成每日目标10次,達成每日目標10次
+Play the Daily Climb 7 days in a row,Play the Daily Climb 7 days in a row,Juega la Escalada diaria 7 días seguidos,Joue l'Ascension du jour 7 jours d'affilée,Spiele den Tagesaufstieg 7 Tage in Folge,Günlük Tırmanışı 7 gün üst üste oyna,Играй в ежедневный подъём 7 дней подряд,连续7天参加每日攀登,連續7天參加每日攀登
+Play the Daily Climb on 30 days,Play the Daily Climb on 30 days,Juega la Escalada diaria en 30 días,Joue l'Ascension du jour pendant 30 jours,Spiele den Tagesaufstieg an 30 Tagen,Günlük Tırmanışı 30 gün oyna,Сыграй в ежедневный подъём в течение 30 дней,累计30天参加每日攀登,累計30天參加每日攀登
+Finish 10 missions,Finish 10 missions,Completa 10 misiones,Termine 10 missions,Schließe 10 Missionen ab,10 görev tamamla,Выполни 10 заданий,完成10个任务,完成10個任務
+Finish 50 missions,Finish 50 missions,Completa 50 misiones,Termine 50 missions,Schließe 50 Missionen ab,50 görev tamamla,Выполни 50 заданий,完成50个任务,完成50個任務
+Own 5 hero colours,Own 5 hero colours,Ten 5 colores de héroe,Possède 5 couleurs de héros,Besitze 5 Heldenfarben,5 kahraman rengine sahip ol,Собери 5 цветов героя,拥有5种角色颜色,擁有5種角色顏色

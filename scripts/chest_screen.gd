@@ -144,7 +144,7 @@ func _reveal() -> void:
 		_tween.kill()
 	_strip.position.x = _final_x
 	var rarity: Dictionary = _reward.rarity
-	_result.text = "%s\n%s" % [rarity.name.to_upper(), Chest.describe(_reward)]
+	_result.text = "%s\n%s" % [tr(rarity.name).to_upper(), Chest.describe(_reward)]
 	_result.add_theme_color_override("font_color", rarity.color)
 	_hint.text = "Tap to continue"
 	revealed.emit(_reward)
