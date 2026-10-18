@@ -212,6 +212,8 @@ var level_back_button: Button
 var level_next_button: Button
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
+var test_safe_insets: Array = []  # for tests: [left, top, right, bottom] instead of the phone's
+var safe_root: Control
 
 
 func _ready() -> void:
@@ -1135,6 +1137,54 @@ func _build_hud() -> void:
 	hud.add_child(banner)
 	chest_rng.randomize()
 	meter_rng.randomize()
+	# Buttons, text and menus live inside the screen's safe area, clear of
+	# notches, camera holes and gesture bars. The tower, the lava glow and
+	# the menu backgrounds still fill the whole screen.
+	safe_root = Control.new()
+	safe_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	safe_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.add_child(safe_root)
+	for child in hud.get_children():
+		if child != safe_root and child != message_backdrop and child != danger_overlay:
+			child.reparent(safe_root, false)
+	get_viewport().size_changed.connect(_apply_safe_area)
+	_apply_safe_area()
+
+
+## How far the safe area is from each screen edge, in game units: left, top,
+## right, bottom. Zero on phones without a notch, and on desktop.
+func safe_insets() -> Array:
+	if test_safe_insets.size() == 4:
+		return test_safe_insets
+	if not OS.has_feature("mobile"):
+		return [0.0, 0.0, 0.0, 0.0]
+	var window := Vector2(DisplayServer.window_get_size())
+	var safe := Rect2(DisplayServer.get_display_safe_area())
+	if window.x <= 0.0 or safe.size.x <= 0.0:
+		return [0.0, 0.0, 0.0, 0.0]
+	var units := get_viewport_rect().size / window
+	return [
+		maxf(safe.position.x, 0.0) * units.x,
+		maxf(safe.position.y, 0.0) * units.y,
+		maxf(window.x - safe.end.x, 0.0) * units.x,
+		maxf(window.y - safe.end.y, 0.0) * units.y,
+	]
+
+
+func _apply_safe_area() -> void:
+	var inset := safe_insets()
+	safe_root.offset_left = inset[0]
+	safe_root.offset_top = inset[1]
+	safe_root.offset_right = -inset[2]
+	safe_root.offset_bottom = -inset[3]
+	# Full-screen menus keep their background edge to edge.
+	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen]:
+		var bg: Control = screen.get_child(0)
+		if bg is ColorRect:
+			bg.offset_left = -inset[0]
+			bg.offset_top = -inset[1]
+			bg.offset_right = inset[2]
+			bg.offset_bottom = inset[3]
 
 
 func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:

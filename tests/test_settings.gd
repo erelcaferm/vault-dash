@@ -66,6 +66,19 @@ func _initialize() -> void:
 			clicks += 1
 	_expect(clicks == 1, "buttons click once")
 
+	# A phone with a notch: buttons and text move clear of it, backgrounds don't.
+	_expect(game.safe_insets() == [0.0, 0.0, 0.0, 0.0], "no notch, no inset (desktop)")
+	game.test_safe_insets = [0.0, 32.0, 0.0, 24.0]
+	game._apply_safe_area()
+	_expect(game.gear_button.get_global_rect().position.y >= 32.0, "the gear sits below the notch")
+	_expect(game.floor_label.get_global_rect().position.y >= 32.0, "the HUD sits below the notch")
+	_expect(game.menu_bar.get_global_rect().end.y <= game.get_viewport_rect().size.y - 24.0, "the menu sits above the gesture bar")
+	var shop_bg: Control = game.shop.get_child(0)
+	_expect(shop_bg.get_global_rect().position.y <= 0.0 and shop_bg.get_global_rect().end.y >= game.get_viewport_rect().size.y,
+			"menu backgrounds still fill the whole screen")
+	game.test_safe_insets = []
+	game._apply_safe_area()
+
 	game.set_language("")
 	_expect(TranslationServer.get_locale() == game.device_locale(), "auto follows the phone's language")
 

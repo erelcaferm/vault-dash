@@ -89,12 +89,12 @@ func open(reward: Dictionary, rng: RandomNumberGenerator, title := "TREASURE CHE
 	_result.text = ""
 	_hint.text = "Tap to skip"
 
-	var width := minf(get_viewport_rect().size.x - 24.0, 420.0)
+	var width := minf(size.x - 24.0, 420.0)
 	_window.offset_left = -width * 0.5
 	_window.offset_right = width * 0.5
 	_window.offset_top = -CARD_H * 0.5 - 8
 	_window.offset_bottom = CARD_H * 0.5 + 8
-	var center := get_viewport_rect().size * 0.5
+	var center := size * 0.5
 	_marker.position = Vector2(center.x - 1.5, center.y - CARD_H * 0.5 - 18)
 	_marker.size = Vector2(3, CARD_H + 36)
 
