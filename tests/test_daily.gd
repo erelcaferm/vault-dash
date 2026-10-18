@@ -47,7 +47,17 @@ func _initialize() -> void:
 	_reach_floor(game, 20)
 	_expect(game.total_coins == coins_before + game.DAILY_REWARD, "the daily reward pays once")
 	_expect(game.daily_best == 20, "today's best is tracked")
+	for i in 5:
+		await process_frame
 	game._die("Test on floor %d", "lava")
+	_expect(game.daily_ghost.size() >= 3, "a new daily best is saved as the ghost")
+	var ghost: PackedVector2Array = game.daily_ghost
+	game.reset()
+	game._on_swipe(Vector2i.UP)
+	for i in 3:
+		await process_frame
+	game._die("Test on floor %d", "lava")
+	_expect(game.daily_ghost == ghost, "a worse run doesn't replace the ghost")
 	game.reset()
 	game._on_swipe(Vector2i.UP)
 	_expect(game.daily_streak == 1 and game.stat("daily_days") == 1, "a second run the same day doesn't count again")
@@ -57,6 +67,7 @@ func _initialize() -> void:
 	var next_day = _new_game("2026-10-19")
 	await process_frame
 	_expect(next_day.daily_best == 0 and not next_day.daily_claimed, "a new day resets the best and the reward")
+	_expect(next_day.daily_ghost.is_empty(), "a new day clears the ghost")
 	next_day.daily_mode = true
 	next_day.reset()
 	next_day._on_swipe(Vector2i.UP)

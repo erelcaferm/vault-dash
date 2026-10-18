@@ -29,6 +29,9 @@ const MAGNET_TIME := 8.0
 const MAGNET_RANGE := 2          # tiles, in every direction
 const FREEZE_TIME := 4.0
 const POWERUP_COLORS := {"shield": Color("4cc9f0"), "magnet": Color("e84855"), "freeze": Color("bdefff")}
+## The Daily Climb ghost: your best run today, replayed for you to race.
+## Positions are recorded every GHOST_STEP seconds of play.
+const GHOST_STEP := 0.1
 const DANGER_GAP := 5.0          # the screen edges glow red when the lava is this close (tiles)
 const RESTART_DELAY := 0.35
 const SAVE_PATH := "user://save.cfg"
@@ -160,6 +163,9 @@ var shield := false
 var magnet_time := 0.0
 var freeze_time := 0.0
 var effects_label: Label
+var daily_ghost := PackedVector2Array()  # saved; today's best daily run
+var recording := PackedVector2Array()    # this run, in case it beats the ghost
+var daily_best_at_start := 0
 var danger := 0.0                # 0-1, how close the lava is, for the red glow
 var heartbeat_time := 0.0
 var danger_overlay: Control
@@ -207,6 +213,8 @@ func reset() -> void:
 	revived = false
 	lava_grace = 0.0
 	best_at_start = best_floor
+	daily_best_at_start = daily_best
+	recording = PackedVector2Array()
 	new_best_shown = false
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
@@ -257,6 +265,9 @@ func _process(delta: float) -> void:
 	if state == State.PLAYING:
 		_update_powerups(delta)
 		_update_lava(delta)
+		if daily_mode:
+			while recording.size() * GHOST_STEP <= elapsed:
+				recording.append(_player_center())
 	shake = maxf(shake - delta, 0.0)
 	squash = maxf(squash - delta, 0.0)
 	toast_time = maxf(toast_time - delta, 0.0)
@@ -539,6 +550,8 @@ func _die(reason: String, cause: String) -> void:
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	shake = 0.35
+	if daily_mode and run_floor > daily_best_at_start:
+		daily_ghost = recording.duplicate()
 	_bank_run()
 	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
 	_show_message("%s\n\n+%d coin%s\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, "" if run_coins == 1 else "s", best])
@@ -1153,6 +1166,7 @@ func _refresh_daily() -> void:
 		daily_date = today()
 		daily_best = 0
 		daily_claimed = false
+		daily_ghost = PackedVector2Array()
 
 
 ## Counts the day towards the daily stats and the streak, once per day.
@@ -1306,6 +1320,7 @@ func _load_save() -> void:
 		daily_claimed = cfg.get_value("daily", "claimed", false)
 		daily_last_played = cfg.get_value("daily", "last_played", "")
 		daily_streak = cfg.get_value("daily", "streak", 0)
+		daily_ghost = cfg.get_value("daily", "ghost", PackedVector2Array())
 		if cfg.has_section("stats"):
 			for key in cfg.get_section_keys("stats"):
 				stats[key] = cfg.get_value("stats", key)
@@ -1337,6 +1352,7 @@ func _save() -> void:
 	cfg.set_value("daily", "claimed", daily_claimed)
 	cfg.set_value("daily", "last_played", daily_last_played)
 	cfg.set_value("daily", "streak", daily_streak)
+	cfg.set_value("daily", "ghost", daily_ghost)
 	for key in stats:
 		cfg.set_value("stats", key, stats[key])
 	cfg.save(save_path)
@@ -1375,6 +1391,7 @@ func _draw() -> void:
 	_draw_powerups(y0, y1)
 	_draw_best_marker(top, bottom)
 	_draw_hints()
+	_draw_ghost()
 	_draw_player()
 	for b in bursts:
 		var k: float = b.t / 0.35
@@ -1491,6 +1508,27 @@ func _draw_best_marker(top: float, bottom: float) -> void:
 	var pos := Vector2(width - size.x - 6, y - 5)
 	draw_rect(Rect2(pos - Vector2(4, size.y - 2), size + Vector2(8, 2)), Color(0, 0, 0, 0.6))
 	draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, color)
+
+
+## Where today's best Daily Climb run was at this point in the run.
+func ghost_position() -> Vector2:
+	var t := elapsed / GHOST_STEP
+	var i := mini(floori(t), daily_ghost.size() - 1)
+	var next := mini(i + 1, daily_ghost.size() - 1)
+	return daily_ghost[i].lerp(daily_ghost[next], t - floorf(t))
+
+
+func _draw_ghost() -> void:
+	if not daily_mode or daily_ghost.is_empty() or state == State.READY:
+		return
+	var p := ghost_position()
+	var finished := elapsed / GHOST_STEP >= daily_ghost.size() - 1
+	var alpha := 0.15 if finished else 0.35
+	Skins.draw_hero(self, p, Vector2(TILE - 6, TILE - 6), Color(0.85, 0.95, 1.0), Vector2.ZERO, alpha)
+	var font := ThemeDB.fallback_font
+	var label := "BEST"
+	var size := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10)
+	draw_string(font, p - Vector2(size.x * 0.5, TILE * 0.6), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, alpha + 0.2))
 
 
 func _draw_powerups(y0: int, y1: int) -> void:

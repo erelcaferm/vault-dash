@@ -100,7 +100,7 @@ Three missions show at the top of the menu, such as "Collect 15 coins in one run
 
 ## Daily Climb
 
-The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
+The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Your best run of the day is recorded and replays as a faint **BEST** ghost on later runs that day, so you can race yourself. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
 
 ## Pause and new best
 
