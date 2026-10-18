@@ -83,7 +83,6 @@ const BIOMES := [
 	{"name": "Jungle Temple", "bg": Color("132519"), "wall": Color("3d6638"), "edge": Color("8fc275")},
 ]
 const COIN_COLOR := Color("ffd23f")
-const FAKE_EDGE := Color("e0a96d")   # the flickering rim and cracks of fake floor
 const SPIKE_COLOR := Color("e84855")
 
 var tower: TowerScript
@@ -1856,17 +1855,14 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 			draw_circle(mid, 4.0, Color.WHITE)
 
 
-## Fake floor that will give way: a darker, cracked patch whose edge
-## flickers, so a careful player can always spot it before stepping on it.
-## (On normal floors fake tiles read as plain floor, so only real traps show.)
-func _draw_fake_floor(r: Rect2, c: Vector2i) -> void:
-	var flicker := 0.5 + 0.5 * sin(anim_time * 3.0 + c.x * 1.3 + c.y * 0.9)
-	draw_rect(r.grow(-2), Color(0, 0, 0, 0.38))
-	draw_rect(r.grow(-2), Color(FAKE_EDGE, 0.25 + 0.35 * flicker), false, 1.5)
-	var crack := Color(FAKE_EDGE, 0.55)
+## Fake floor that will give way looks like normal floor with a small
+## hairline crack, so a careful player can spot it. (On normal floors fake
+## tiles are solid and unmarked, so only real traps show a crack.)
+func _draw_fake_floor(r: Rect2, _c: Vector2i) -> void:
+	var crack := Color(0, 0, 0, 0.45)
 	var p := r.position
-	draw_polyline(PackedVector2Array([p + Vector2(6, 8), p + Vector2(13, 14), p + Vector2(11, 20), p + Vector2(18, 26)]), crack, 1.5)
-	draw_polyline(PackedVector2Array([p + Vector2(13, 14), p + Vector2(22, 11), p + Vector2(27, 15)]), crack, 1.5)
+	draw_polyline(PackedVector2Array([p + Vector2(9, 10), p + Vector2(13, 14), p + Vector2(12, 18), p + Vector2(16, 21)]), crack, 1.0)
+	draw_line(p + Vector2(13, 14), p + Vector2(18, 12), crack, 1.0)
 
 
 func _draw_player() -> void:
