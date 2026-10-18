@@ -8,6 +8,7 @@ const LevelCode := preload("res://scripts/level_code.gd")
 const LevelGrid := preload("res://scripts/level_grid.gd")
 const Solver := preload("res://scripts/solver.gd")
 const Skins := preload("res://scripts/skins.gd")
+const Hazards := preload("res://scripts/hazards.gd")
 
 ## The grid's cells shrink to fit big levels into this area, up to MAX_CELL.
 const GRID_AREA := Vector2(348, 400)
@@ -23,6 +24,7 @@ const EDGE := Color("7a82a3")
 const TOOLS := [
 	["#", "Wall"], [".", "Floor"], ["c", "Coin"], ["^", "Spikes"],
 	["x", "Cracked wall"], ["f", "Fake floor"], ["S", "Start"], ["G", "Exit"],
+	["M", "Moving block"], ["T", "Spike trap"],
 ]
 ## The search gives up past this many positions; huge open levels are
 ## still allowed, they just can't be checked before testing.
@@ -117,13 +119,13 @@ func setup(main_game) -> void:
 	column.add_child(_canvas)
 
 	var palette := HBoxContainer.new()
-	palette.add_theme_constant_override("separation", 3)
+	palette.add_theme_constant_override("separation", 2)
 	palette.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(palette)
 	for t in TOOLS:
 		var b := Button.new()
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(36, 36)
+		b.custom_minimum_size = Vector2(32, 36)
 		b.tooltip_text = t[1]
 		var tile: String = t[0]
 		b.draw.connect(func(): _draw_tile(b, Rect2(Vector2(8, 8), b.size - Vector2(16, 16)), tile))
@@ -372,6 +374,10 @@ func _draw_tile(canvas: CanvasItem, r: Rect2, t: String, roof := true) -> void:
 			canvas.draw_circle(mid, s * 0.42, Color(GOLD, 0.35))
 			canvas.draw_circle(mid, s * 0.3, GOLD)
 			canvas.draw_circle(mid, s * 0.13, Color.WHITE)
+		"M":
+			Hazards.new()._draw_mover(canvas, mid, s, Vector2i.RIGHT, 0.0)
+		"T":
+			Hazards.new()._draw_trap(canvas, r, 2, 0.0)
 
 
 # --- Helpers ---------------------------------------------------------------

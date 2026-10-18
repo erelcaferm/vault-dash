@@ -89,7 +89,9 @@ static func chance(f: int, from: int, low: float, high: float) -> float:
 
 func _room_cells(k: int) -> Array:
 	var cells: Array = []
-	for y in range(-(k + 1) * TowerScript.ROOM_H, -k * TowerScript.ROOM_H):
+	# A level (LevelGrid) is one room of its own height.
+	var rows := range(-tower.height, 0) if "height" in tower else range(-(k + 1) * TowerScript.ROOM_H, -k * TowerScript.ROOM_H)
+	for y in rows:
 		for x in tower.width:
 			cells.append(Vector2i(x, y))
 	return cells
@@ -150,6 +152,12 @@ func _spawn_mover(k: int) -> void:
 	var c: Vector2i = spots[rng.randi_range(0, spots.size() - 1)]
 	var dirs: Array = DIRS.filter(func(d): return path.has(c + d))
 	movers.append({"room": k, "cell": c, "next": c, "pos": Vector2(c), "dir": dirs[rng.randi_range(0, dirs.size() - 1)]})
+
+
+## Puts a block at `c` in room `k`, for a level's own blocks.
+func add_mover(c: Vector2i, k: int) -> void:
+	var dirs: Array = DIRS.filter(func(d): return _path(k).has(c + d))
+	movers.append({"room": k, "cell": c, "next": c, "pos": Vector2(c), "dir": Vector2i.RIGHT if dirs.is_empty() else dirs[0]})
 
 
 ## Whether a block starting at `c` has enough room to wander, off any one line.

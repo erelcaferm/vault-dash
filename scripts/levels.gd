@@ -5,7 +5,9 @@ extends RefCounted
 ##
 ## The layouts came from a search for levels whose shortest solution grows
 ## from 7 to 24 moves (levels 13-24 also vary in size), adding one new hazard every few levels; `moves` is
-## that shortest solution, which tests/test_levels.gd checks.
+## that shortest solution, which tests/test_levels.gd checks. Levels 25-27
+## add moving blocks (M) and spike traps (T); the solver ignores those, as
+## they only cost waiting time, which par allows for.
 
 const LEVELS := [
 	{
@@ -580,6 +582,70 @@ const LEVELS := [
 			"################",
 		],
 	},
+	{
+		"name": "Block Party", "time": 60, "moves": 11, "reward": {"coins": 120},
+		"rows": [
+			"#############",
+			"#..#.G.#.#..#",
+			"#...c#....M.#",
+			"##..#.......#",
+			"#.#^......c.#",
+			"##.##^..#...#",
+			"#...........#",
+			"#.#.....^...#",
+			"#.#.........#",
+			"#.....#.....#",
+			"#.......#.#c#",
+			"#...#.##.#..#",
+			"#.#..###.#..#",
+			"#.....S....##",
+			"#############",
+		],
+	},
+	{
+		"name": "Trap Timing", "time": 65, "moves": 12, "reward": {"coins": 140},
+		"rows": [
+			"#############",
+			"#....#..G...#",
+			"#...T.#.....#",
+			"#..#...##.^c#",
+			"#.#......^..#",
+			"##....#..#..#",
+			"##.##..#.#..#",
+			"#....#.#....#",
+			"#...c.T...Tc#",
+			"#.#....###..#",
+			"#..........##",
+			"#..^........#",
+			"#.^..#.##.#.#",
+			"#^..##......#",
+			"#.#.#.S#.##.#",
+			"#############",
+		],
+	},
+	{
+		"name": "Rush Hour", "time": 75, "moves": 14, "reward": {"coins": 200},
+		"rows": [
+			"###############",
+			"#.##.#..G.....#",
+			"#....#..#.....#",
+			"##...###...^^.#",
+			"##...^..##..#.#",
+			"#...#.#.^..##.#",
+			"###......T.M.##",
+			"##........##..#",
+			"#.###.##..#.Tc#",
+			"#...#...#.....#",
+			"#....##.#..#.##",
+			"#..##.#.#.M...#",
+			"#.#.#.####.#c.#",
+			"#.........#..##",
+			"##....#...#...#",
+			"###.##^.....#.#",
+			"#..c.#.S.#...##",
+			"###############",
+		],
+	},
 ]
 
 
@@ -593,9 +659,13 @@ const STARS_PER_LEVEL := 3
 
 
 ## The time to beat for the second star: a second and a half per move of
-## the shortest solution, plus 5 seconds to look around.
+## the shortest solution, plus 5 seconds to look around, plus 3 seconds for
+## each moving block or spike trap (up to 4) to wait on.
 static func par(i: int) -> int:
-	return int(LEVELS[i].moves * 1.5) + 5
+	var hazards := 0
+	for row: String in LEVELS[i].rows:
+		hazards += row.count("M") + row.count("T")
+	return int(LEVELS[i].moves * 1.5) + 5 + 3 * mini(hazards, 4)
 
 
 static func star_count(bits: int) -> int:

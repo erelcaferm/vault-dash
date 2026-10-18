@@ -8,6 +8,8 @@ extends "res://scripts/tower.gd"
 
 var height := 0
 var _grid: Array = []
+var movers_at: Array = []        # where moving blocks start (M), now floor
+var traps_at: Array = []         # spike traps (T), now floor
 
 
 ## `rows` are equal-length strings, top row first.
@@ -16,11 +18,20 @@ func load_rows(rows: Array) -> void:
 	height = rows.size()
 	_grid = _parse(rows, false)
 	start = Vector2i.ZERO
+	movers_at.clear()
+	traps_at.clear()
 	for y in height:
 		for x in width:
-			if _grid[y][x] == START:
-				_grid[y][x] = EMPTY
+			var t: String = _grid[y][x]
+			if t == START:
 				start = Vector2i(x, y - height)
+			elif t == "M":
+				movers_at.append(Vector2i(x, y - height))
+			elif t == "T":
+				traps_at.append(Vector2i(x, y - height))
+			else:
+				continue
+			_grid[y][x] = EMPTY
 
 
 func get_tile(c: Vector2i, broken: Dictionary = {}) -> String:

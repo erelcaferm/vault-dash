@@ -339,6 +339,12 @@ func reset() -> void:
 	hazards.blocked_cells = func(): return powerups.keys() + [food_cell]
 	hazards.setup(tower, seed_value + 2, hazards_on and not is_level() and not daily_mode)
 	hazards.roll(3)
+	if is_level():
+		hazards.enabled = true
+		for c: Vector2i in tower.movers_at:
+			hazards.add_mover(c, 0)
+		for c: Vector2i in tower.traps_at:
+			hazards.traps[c] = 0.0
 	hazard_grace = 0.0
 	_update_effects()
 	tower.room_limit = test_room_limit
@@ -427,6 +433,9 @@ func _process(delta: float) -> void:
 		_update_slide(delta)
 		idle_time = idle_time + delta if is_idle() else 0.0
 	if state == State.PLAYING and is_level():
+		_update_hazards(delta)
+		if state != State.PLAYING:
+			return
 		var before := ceili(time_left)
 		time_left -= delta
 		# A beep each second over the last few, rising as time runs out.
@@ -2986,7 +2995,7 @@ func _level_lost(cause: String) -> void:
 	sfx.play("time_up" if cause == "time" else "death")
 	vibrate(150)
 	shake = 0.35
-	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!"}.get(cause, "Out of time!") as String
+	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!", "mover": "Hit by a moving block!", "trap": "Caught by a spike trap!"}.get(cause, "Out of time!") as String
 	_show_message("%s\n\n%s" % [tr(reason), tr("Swipe to try again")])
 
 

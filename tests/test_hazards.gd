@@ -92,6 +92,19 @@ func _initialize() -> void:
 	_expect(game.hazards.movers.is_empty() and game.hazards.traps.is_empty(), "no hazards in the Daily Climb")
 	game.daily_mode = false
 
+	# Levels can have their own blocks (M) and traps (T).
+	var Levels = load("res://scripts/levels.gd")
+	var LevelCode = load("res://scripts/level_code.gd")
+	game.start_campaign_level(26)
+	_expect(game.hazards.movers.size() == 2 and game.hazards.traps.size() == 2, "Rush Hour has 2 blocks and 2 traps")
+	_expect(game.tower.get_tile(game.tower.movers_at[0]) == TowerScript.EMPTY, "a block's start is floor underneath")
+	var code: String = LevelCode.encode(Levels.level(26))
+	_expect(LevelCode.decode(code).rows == Levels.level(26).rows, "share codes keep blocks and traps")
+	var bad: Dictionary = LevelCode.blank("t")
+	bad.rows[1] = bad.rows[1].substr(0, 1) + "T" + bad.rows[1].substr(2)
+	_expect(LevelCode.problem(bad) == "Spike traps need open floor all round", "a trap beside a wall is refused")
+	game.level = {}
+
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	if failures == 0:
 		print("PASS: moving blocks and spike traps are fair")

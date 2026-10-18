@@ -6,6 +6,7 @@ extends RefCounted
 ## are equal-length strings of tiles, top row first, using the tower's letters:
 ##   #  wall    .  floor    c  coin    ^  spikes    x  cracked wall
 ##   f  fake floor (always gives way)   S  start (one)   G  exit (one or more)
+##   M  moving block (starts here)   T  spike trap (on open floor, no wall beside it)
 ##
 ## Levels can be MIN_W to MAX_W tiles wide and MIN_H to MAX_H tall. The
 ## limits keep the editor's cells big enough to tap and the solver quick.
@@ -21,7 +22,7 @@ const MIN_W := 7
 const MAX_W := 16
 const MIN_H := 8
 const MAX_H := 24
-const TILES := "#.c^xfSG"
+const TILES := "#.c^xfSGMT"         # new letters go on the end, so old codes still read
 const MIN_TIME := 10
 const MAX_TIME := 300
 const TIME_STEP := 5
@@ -109,6 +110,16 @@ static func problem(level: Dictionary) -> String:
 		return "Place one start"
 	if exits == 0:
 		return "Place an exit"
+	# Traps must be where you can only slide over them, never stand.
+	var solid := func(x: int, y: int) -> bool:
+		return x < 0 or y < 0 or x >= w or y >= rows.size() or (rows[y] as String)[x] in "#x"
+	for y in rows.size():
+		for x in w:
+			var t: String = (rows[y] as String)[x]
+			if t == "T" and (solid.call(x - 1, y) or solid.call(x + 1, y) or solid.call(x, y - 1) or solid.call(x, y + 1)):
+				return "Spike traps need open floor all round"
+			if t == "M" and [solid.call(x - 1, y), solid.call(x + 1, y), solid.call(x, y - 1), solid.call(x, y + 1)].count(false) < 2:
+				return "Moving blocks need room to move"
 	return ""
 
 

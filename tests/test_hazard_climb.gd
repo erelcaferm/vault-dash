@@ -3,12 +3,15 @@ extends SceneTree
 ## patient player follows the solver's route up 80 floors with hazards on,
 ## and before each slide waits until the slide is clear. The lava is kept
 ## away so only the hazards are being tested. Fails if the player dies or
-## has to wait too long for any slide.
+## has to wait too long for any slide. Then it does the same on every
+## campaign level that has blocks or traps, within the level's time.
 ## Run: godot --headless --fixed-fps 60 --path . --script res://tests/test_hazard_climb.gd
 
 const TowerScript := preload("res://scripts/tower.gd")
 const Rooms := preload("res://scripts/rooms.gd")
 const Solver := preload("res://scripts/solver.gd")
+const Levels := preload("res://scripts/levels.gd")
+const LevelGrid := preload("res://scripts/level_grid.gd")
 
 const SEED := 9
 const HEIGHT := 80
@@ -21,6 +24,8 @@ var longest := 0.0
 var total_wait := 0.0
 var frames := 0
 var done := false
+var levels: Array = []           # campaign levels with hazards, still to play
+var level_now := -1
 
 
 func _initialize() -> void:
@@ -43,15 +48,21 @@ func _process(delta: float) -> bool:
 	if done:
 		return true
 	frames += 1
-	if game.state == game.State.PLAYING:
+	if game.state == game.State.PLAYING and level_now < 0:
 		game.lava_y = game._player_center().y + 20 * game.TILE
-	if game.state == game.State.WON:
-		var hz = game.hazards
-		var floors := {}
-		for m in hz.movers:
-			floors[m.room] = true
+	if game.state == game.State.WON and level_now < 0:
 		print("PASS: climbed %d floors past hazards, waiting %.1f s in all (longest wait %.1f s)" % [HEIGHT, total_wait, longest])
-		return _finish(0)
+		for i in Levels.LEVELS.size():
+			if "M" in "".join(Levels.LEVELS[i].rows) or "T" in "".join(Levels.LEVELS[i].rows):
+				levels.append(i)
+		_next_level()
+		return false
+	if game.state == game.State.WON:
+		print("PASS: level %d (%s) cleared in %.1f s of %d" % [level_now + 1, Levels.LEVELS[level_now].name, game.elapsed, Levels.LEVELS[level_now].time])
+		if levels.is_empty():
+			return _finish(0)
+		_next_level()
+		return false
 	if game.state == game.State.DEAD:
 		printerr("FAIL: died on floor %d (%s) while waiting for gaps" % [game.run_floor, game.end_message.split("\n")[0]])
 		return _finish(1)
@@ -88,6 +99,17 @@ func _process(delta: float) -> bool:
 				printerr("  %4d %s" % [y, row])
 			return _finish(1)
 	return false
+
+
+func _next_level() -> void:
+	level_now = levels.pop_front()
+	var grid = LevelGrid.new()
+	grid.load_rows(Levels.LEVELS[level_now].rows)
+	var solver = Solver.new(grid)
+	solver.run()
+	route = solver.solution.duplicate()
+	waited = 0.0
+	game.start_campaign_level(level_now)
 
 
 func _finish(code: int) -> bool:

@@ -150,6 +150,8 @@ Fairness rules, so a block is an obstacle to time, never a wall:
 
 **Spike traps** (from floor 12, on 20% of floors rising to 45%). 2–4 dark plates with a red rim and spike tips just showing. They only go on open tiles with nothing solid on any side, so you can only slide over them, never stop on one. Every 3 seconds the spikes poke out and flash (warning), then shoot up; sliding over one while it's up kills you. All traps in a room share one timer.
 
+**In levels:** the level builder has two new tiles, **M** (a moving block starts here) and **T** (a spike trap). A trap must have open floor on all four sides, and a block needs at least two open sides, or the level can't be tested or shared. Share codes carry both. Levels 25–27 (Block Party, Trap Timing, Rush Hour) use them; par time allows 3 extra seconds per block or trap, up to 4.
+
 The first time you reach a floor with hazards, a tip says standing still is safe. `test_hazards.gd` checks the placement rules and that blocks never step onto a standing player. `test_hazard_climb.gd` has a patient player climb 80 floors along the solver's route with hazards on, waiting before each slide until it's clear; it must never die or wait more than 15 seconds (the longest wait is about 5).
 
 ## Power-ups
