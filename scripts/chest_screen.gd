@@ -3,6 +3,8 @@ extends Control
 ## lands on the reward. Tap while it spins to skip; tap again to carry on.
 
 signal finished(reward: Dictionary)
+signal ticked                    # a card passed the marker
+signal revealed(reward: Dictionary)
 
 const Chest := preload("res://scripts/chest.gd")
 const Preview := preload("res://scripts/skin_preview.gd")
@@ -127,6 +129,8 @@ func _process(delta: float) -> void:
 	if under != _last_card:
 		_last_card = under
 		_tick = 1.0
+		if not _revealed:
+			ticked.emit()
 	_tick = maxf(_tick - delta * 6.0, 0.0)
 	_marker.color = Color("ffd23f").lerp(Color.WHITE, _tick)
 	_marker.scale = Vector2(1.0 + _tick, 1.0)
@@ -143,6 +147,7 @@ func _reveal() -> void:
 	_result.text = "%s\n%s" % [rarity.name.to_upper(), Chest.describe(_reward)]
 	_result.add_theme_color_override("font_color", rarity.color)
 	_hint.text = "Tap to continue"
+	revealed.emit(_reward)
 	var winner: Control = _strip.get_child(WINNER)
 	winner.pivot_offset = winner.size * 0.5
 	var pop := create_tween()

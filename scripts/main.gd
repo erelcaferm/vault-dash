@@ -10,6 +10,7 @@ const Chest := preload("res://scripts/chest.gd")
 const ChestScreen := preload("res://scripts/chest_screen.gd")
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
+const Sfx := preload("res://scripts/sfx.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -107,9 +108,16 @@ var banner: PanelContainer
 var banner_label: Label
 var banner_queue: Array = []
 var banner_time := 0.0
+var sfx: Node
+var vibration_on := true         # saved, like sfx.enabled
+var settings_bar: HBoxContainer
+var sound_button: Button
+var vibration_button: Button
 
 
 func _ready() -> void:
+	sfx = Sfx.new()
+	add_child(sfx)
 	_load_save()
 	camera = Camera2D.new()
 	camera.position_smoothing_enabled = true
@@ -195,6 +203,7 @@ func _start_move(d: Vector2i) -> void:
 		return
 	move_dir = d
 	move_progress = 0.0
+	sfx.play("swipe", randf_range(0.9, 1.1))
 
 
 ## Called each time the player finishes moving one tile.
@@ -205,6 +214,7 @@ func _advance() -> void:
 		tower.set_tile(cell, TowerScript.EMPTY)
 		run_coins += 1
 		add_stat("coins_collected")
+		sfx.play("coin", randf_range(0.97, 1.06))
 		bursts.append({"pos": _tile_center(cell), "t": 0.0, "color": COIN_COLOR})
 		_update_hud()
 	elif t == TowerScript.SPIKES:
@@ -235,6 +245,8 @@ func _advance() -> void:
 
 
 func _stop() -> void:
+	if move_dir != Vector2i.ZERO:
+		sfx.play("stop")
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
 	squash = 0.12
@@ -243,6 +255,8 @@ func _stop() -> void:
 func _break_wall(c: Vector2i) -> void:
 	tower.set_tile(c, TowerScript.EMPTY)
 	add_stat("walls_broken")
+	sfx.play("break")
+	vibrate(25)
 	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": Color(_wall_skin().base, 1.0)})
 	shake = 0.12
 
@@ -273,6 +287,7 @@ func _update_floor() -> void:
 		_update_hud()
 		if tower.is_trap(f - 1):
 			_toast("Floor %d\nWatch your step..." % f)
+			sfx.play("trap")
 	var biome := _biome_index(cell.y)
 	if biome != last_biome:
 		last_biome = biome
@@ -283,6 +298,8 @@ func _die(reason: String, cause: String) -> void:
 	state = State.DEAD
 	add_stat("deaths")
 	add_stat("deaths_" + cause)
+	sfx.play("death")
+	vibrate(150)
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
 	shake = 0.35
@@ -446,6 +463,24 @@ func _build_hud() -> void:
 	shop_button = _menu_button("SHOP", _open_shop)
 	_menu_button("TROPHIES", _open_achievements)
 
+	settings_bar = HBoxContainer.new()
+	settings_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	settings_bar.offset_left = -150
+	settings_bar.offset_right = 150
+	settings_bar.offset_top = -48
+	settings_bar.offset_bottom = -12
+	settings_bar.add_theme_constant_override("separation", 10)
+	hud.add_child(settings_bar)
+	sound_button = _small_button(settings_bar, func():
+		sfx.enabled = not sfx.enabled
+		sfx.play("coin")
+		_update_settings())
+	vibration_button = _small_button(settings_bar, func():
+		vibration_on = not vibration_on
+		vibrate(40)
+		_update_settings())
+	_update_settings()
+
 	banner = PanelContainer.new()
 	var banner_style := StyleBoxFlat.new()
 	banner_style.bg_color = Color(0.08, 0.08, 0.12, 0.95)
@@ -474,6 +509,8 @@ func _build_hud() -> void:
 	hud.add_child(chest_screen)
 	chest_screen.setup()
 	chest_screen.finished.connect(_on_chest_finished)
+	chest_screen.ticked.connect(func(): sfx.play("tick", randf_range(0.95, 1.05)))
+	chest_screen.revealed.connect(func(_r): sfx.play("reward"); vibrate(50))
 
 	achievements_screen = AchievementsScreen.new()
 	hud.add_child(achievements_screen)
@@ -514,12 +551,14 @@ func _show_message(text: String) -> void:
 	message_label.visible = true
 	message_backdrop.visible = true
 	menu_bar.visible = true
+	settings_bar.visible = true
 
 
 func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
 	menu_bar.visible = false
+	settings_bar.visible = false
 
 
 func _menu_button(text: String, action: Callable) -> Button:
@@ -530,6 +569,27 @@ func _menu_button(text: String, action: Callable) -> Button:
 	b.pressed.connect(action)
 	menu_bar.add_child(b)
 	return b
+
+
+func _small_button(parent: Node, action: Callable) -> Button:
+	var b := Button.new()
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.add_theme_font_size_override("font_size", 15)
+	b.flat = true
+	b.pressed.connect(action)
+	parent.add_child(b)
+	return b
+
+
+func _update_settings() -> void:
+	sound_button.text = "Sound: %s" % ("On" if sfx.enabled else "Off")
+	vibration_button.text = "Vibration: %s" % ("On" if vibration_on else "Off")
+	_save()
+
+
+func vibrate(ms: int) -> void:
+	if vibration_on:
+		Input.vibrate_handheld(ms)
 
 
 # --- Achievements ----------------------------------------------------------
@@ -582,6 +642,7 @@ func _update_banner(delta: float) -> void:
 	elif not banner_queue.is_empty():
 		banner_label.text = banner_queue.pop_front()
 		banner_time = 2.8
+		sfx.play("trophy")
 	else:
 		banner.modulate.a = 0.0
 
@@ -708,6 +769,8 @@ func _load_save() -> void:
 		trap_meter = cfg.get_value("secret", "meter", 0.0)
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
 		unlocked = cfg.get_value("achievements", "unlocked", [])
+		sfx.enabled = cfg.get_value("settings", "sound", true)
+		vibration_on = cfg.get_value("settings", "vibration", true)
 		if cfg.has_section("stats"):
 			for key in cfg.get_section_keys("stats"):
 				stats[key] = cfg.get_value("stats", key)
@@ -726,6 +789,8 @@ func _save() -> void:
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.set_value("achievements", "unlocked", unlocked)
+	cfg.set_value("settings", "sound", sfx.enabled)
+	cfg.set_value("settings", "vibration", vibration_on)
 	for key in stats:
 		cfg.set_value("stats", key, stats[key])
 	cfg.save(save_path)

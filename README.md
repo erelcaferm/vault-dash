@@ -80,6 +80,12 @@ The **TROPHIES** button lists 23 achievements with your progress on each. A bann
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
 
+## Sound and vibration
+
+Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, and the chest tick and reveal. To use a real recording instead, load it into `sounds` under the same name.
+
+On phones, breaking a wall, dying and opening a chest give a short buzz. The **SOUND** and **VIBRATION** buttons at the bottom of the menu turn these on and off, and the choice is saved. For Android, tick **Vibrate** under Permissions in the export preset, or the phone won't buzz.
+
 ## Changing the rooms
 
 `scripts/rooms.gd` is generated; don't edit it by hand. To make a new set of 100 layouts, run the generator with a different seed:
