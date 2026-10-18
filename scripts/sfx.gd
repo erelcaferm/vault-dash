@@ -1,16 +1,26 @@
 extends Node
 ## Sound effects, made from code at startup so the game needs no audio files.
 ## Swap any of them for a real recording later by loading it into `sounds`.
+## Also plays the background music loop (sounds/music.wav, written by
+## tools/make_music.gd), which has its own on/off switch.
 
 const RATE := 22050
 
 var enabled := true
+var music_enabled := true
+var music: AudioStreamPlayer
+const MUSIC_DB := -11.0
+const MUSIC_QUIET_DB := -20.0        # while paused or in a menu screen
 var sounds := {}
 var _players: Array = []
 var _next := 0
 
 
 func _ready() -> void:
+	music = AudioStreamPlayer.new()
+	music.stream = load("res://sounds/music.wav")
+	music.volume_db = MUSIC_DB
+	add_child(music)
 	for i in 8:
 		var p := AudioStreamPlayer.new()
 		add_child(p)
@@ -49,6 +59,21 @@ func _ready() -> void:
 		"paint": _make(0.03, func(t, _n): return _square(660.0, t) * 0.08 * _fade(t, 0.03)),
 		"erase": _make(0.04, func(t, n): return _noise(n) * 0.18 * _fade(t, 0.04)),
 	}
+
+
+## Starts or stops the music to match `music_enabled`.
+func update_music() -> void:
+	if music_enabled and not music.playing:
+		music.play()
+	elif not music_enabled and music.playing:
+		music.stop()
+
+
+## `speed` 1.0 is normal; above it the music plays faster (and a little
+## higher), to build tension. `quiet` turns it down behind menus.
+func set_music_mood(speed: float, quiet: bool) -> void:
+	music.pitch_scale = move_toward(music.pitch_scale, speed, 0.01)
+	music.volume_db = move_toward(music.volume_db, MUSIC_QUIET_DB if quiet else MUSIC_DB, 0.5)
 
 
 func play(id: String, pitch := 1.0) -> void:

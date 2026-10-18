@@ -209,6 +209,7 @@ func _ready() -> void:
 	add_child(sfx)
 	_load_save()
 	set_language(language)
+	sfx.update_music()
 	mission_rng.randomize()
 	_fill_missions()
 	camera = Camera2D.new()
@@ -331,6 +332,7 @@ func _process(delta: float) -> void:
 	toast_label.modulate.a = clampf(toast_time / 0.4, 0.0, 1.0)
 	_update_banner(delta)
 	_update_danger(delta)
+	_update_music()
 	for b in bursts:
 		b.t += delta
 	bursts = bursts.filter(func(b): return b.t < 0.35)
@@ -546,6 +548,20 @@ func _update_lava(delta: float) -> void:
 	lava_y = minf(lava_y, player_y + LAVA_MAX_GAP * TILE)
 	if lava_y <= player_y:
 		_die("Melted on floor %d", "lava")
+
+
+## The music speeds up as the lava does (and in a level's last seconds),
+## and goes quiet behind menus and the pause screen.
+func _update_music() -> void:
+	var speed := 1.0
+	if state == State.PLAYING:
+		if is_level():
+			speed = 1.08 if time_left <= LEVEL_WARN_TIME else 1.0
+		else:
+			speed = 1.0 + 0.08 * clampf(elapsed / 90.0, 0.0, 1.0)
+	var quiet := state == State.PAUSED or shop.visible or achievements_screen.visible \
+			or settings_screen.visible or levels_screen.visible or level_editor.visible or chest_screen.visible
+	sfx.set_music_mood(speed, quiet)
 
 
 ## Red glow and a heartbeat as the lava closes in.
@@ -1584,6 +1600,7 @@ func _load_save() -> void:
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
 		unlocked = cfg.get_value("achievements", "unlocked", [])
 		sfx.enabled = cfg.get_value("settings", "sound", true)
+		sfx.music_enabled = cfg.get_value("settings", "music", true)
 		vibration_on = cfg.get_value("settings", "vibration", true)
 		language = cfg.get_value("settings", "language", "")
 		daily_date = cfg.get_value("daily", "date", "")
@@ -1625,6 +1642,7 @@ func _save() -> void:
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.set_value("achievements", "unlocked", unlocked)
 	cfg.set_value("settings", "sound", sfx.enabled)
+	cfg.set_value("settings", "music", sfx.music_enabled)
 	cfg.set_value("settings", "vibration", vibration_on)
 	cfg.set_value("settings", "language", language)
 	cfg.set_value("daily", "date", daily_date)

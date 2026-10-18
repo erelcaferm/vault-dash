@@ -21,6 +21,9 @@ func _initialize() -> void:
 	var sound: bool = game.sfx.enabled
 	game.settings_screen._sound.pressed.emit()
 	_expect(game.sfx.enabled != sound, "the sound toggle flips sound")
+	_expect(game.sfx.music_enabled and game.sfx.music.playing, "music plays by default")
+	game.settings_screen._music.pressed.emit()
+	_expect(not game.sfx.music_enabled and not game.sfx.music.playing, "the music toggle stops the music")
 	game.settings_screen._language_buttons["es"].pressed.emit()
 	_expect(TranslationServer.get_locale() == "es", "picking Español switches to Spanish")
 	_expect(tr("SHOP") == "TIENDA", "Spanish text is loaded")
@@ -36,6 +39,7 @@ func _initialize() -> void:
 	cfg.load(SAVE)
 	_expect(cfg.get_value("settings", "language", "") == "es", "the language is saved")
 	_expect(cfg.get_value("settings", "sound", true) == game.sfx.enabled, "the sound setting is saved")
+	_expect(cfg.get_value("settings", "music", true) == false, "the music setting is saved")
 
 	game._on_swipe(Vector2i.UP)
 	_expect(not game.gear_button.visible, "the gear hides during a run")

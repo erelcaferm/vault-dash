@@ -1,5 +1,5 @@
 extends Control
-## Settings: sound, vibration and language. Opened from the gear button on
+## Settings: sound, music, vibration and language. Opened from the gear button on
 ## the menu; the values live in main.gd, which saves them.
 
 signal closed
@@ -21,6 +21,7 @@ const GOLD := Color("ffd23f")
 var game
 var _sound: Button
 var _vibration: Button
+var _music: Button
 var _language_buttons := {}
 
 
@@ -45,6 +46,10 @@ func setup(main_game) -> void:
 	_sound = _toggle(column, func():
 		game.sfx.enabled = not game.sfx.enabled
 		game.sfx.play("coin")
+		_after_change())
+	_music = _toggle(column, func():
+		game.sfx.music_enabled = not game.sfx.music_enabled
+		game.sfx.update_music()
 		_after_change())
 	_vibration = _toggle(column, func():
 		game.vibration_on = not game.vibration_on
@@ -96,6 +101,7 @@ func _after_change() -> void:
 
 func _refresh() -> void:
 	_sound.text = tr("Sound: %s") % tr("On" if game.sfx.enabled else "Off")
+	_music.text = tr("Music: %s") % tr("On" if game.sfx.music_enabled else "Off")
 	_vibration.text = tr("Vibration: %s") % tr("On" if game.vibration_on else "Off")
 	var current: String = game.language if game.language != "" else game.device_locale()
 	for locale in _language_buttons:

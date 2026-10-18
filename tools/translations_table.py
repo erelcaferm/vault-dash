@@ -315,4 +315,5 @@ T = {
     "Height %d": ("Alto %d", "Hauteur %d", "Höhe %d", "Yükseklik %d", "Высота %d", "高 %d", "高 %d"),
     "That's the biggest size": ("Ese es el tamaño máximo", "C'est la taille maximale", "Größer geht nicht", "En büyük boyut bu", "Больше нельзя", "已是最大尺寸", "已是最大尺寸"),
     "That's the smallest size": ("Ese es el tamaño mínimo", "C'est la taille minimale", "Kleiner geht nicht", "En küçük boyut bu", "Меньше нельзя", "已是最小尺寸", "已是最小尺寸"),
+    "Music: %s": ("Música: %s", "Musique : %s", "Musik: %s", "Müzik: %s", "Музыка: %s", "音乐：%s", "音樂：%s"),
 }

@@ -145,6 +145,8 @@ In code, a Label or Button whose text is exactly an English key translates itsel
 
 Every sound is made from code at startup (`scripts/sfx.gd`), so there are no audio files yet: swipe, stop, coin, wall break, death, trap warning, trophy, the chest tick and reveal, a click on every button, buying, a refusal buzz, levels (start, the last-5-seconds countdown, time up, level clear) and painting in the editor. To use a real recording instead, load it into `sounds` under the same name.
 
+**Music:** a 16-second chiptune loop in A minor (`sounds/music.wav`), written by `tools/make_music.gd` from the notes listed at its top; change them and rerun `godot --headless --path . --script res://tools/make_music.gd` for a new tune. It plays quietly behind menus, speeds up a little as the lava does, and has its own switch in Settings. To use a real track instead, drop it in `sounds/` and point `music.stream` at it in `sfx.gd`.
+
 On phones, breaking a wall, dying and opening a chest give a short buzz. Settings turns these on and off, and the choice is saved. For Android, the export preset needs the **Vibrate** permission, or the phone won't buzz (the ready-made preset below has it on).
 
 ## App icon
