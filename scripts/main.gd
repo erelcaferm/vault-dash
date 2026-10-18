@@ -36,6 +36,12 @@ const CARRYOVER_CHEST_FLOOR := 8
 ## DAILY_GOAL in it pays DAILY_REWARD coins, once per day.
 const DAILY_GOAL := 15
 const DAILY_REWARD := 100
+## One revive per run, paid in coins: the base cost plus a bit per floor.
+## You go back to where your last slide started, with the lava pushed back.
+const REVIVE_BASE_COST := 50
+const REVIVE_COST_PER_FLOOR := 2
+const REVIVE_LAVA_GAP := 8.0     # tiles between you and the lava after a revive
+const REVIVE_GRACE := 1.5        # seconds the lava waits after a revive
 
 enum State { READY, PLAYING, DEAD, WON, CHEST }
 
@@ -124,6 +130,10 @@ var daily_best := 0
 var daily_claimed := false
 var daily_last_played := ""      # saved; the last day a Daily Climb was started
 var daily_streak := 0            # saved; days in a row with a Daily Climb
+var revived := false            # whether this run's revive is used
+var slide_start := Vector2i.ZERO # where the current or last slide began
+var lava_grace := 0.0
+var revive_button: Button
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
 
@@ -152,6 +162,9 @@ func reset() -> void:
 	tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
 	tower.room_limit = test_room_limit
 	cell = tower.start
+	slide_start = cell
+	revived = false
+	lava_grace = 0.0
 	move_dir = Vector2i.ZERO
 	move_progress = 0.0
 	queued_dir = Vector2i.ZERO
@@ -230,6 +243,7 @@ func _start_move(d: Vector2i) -> void:
 	if t == TowerScript.CRACKED:
 		_break_wall(cell + d)
 		return
+	slide_start = cell
 	move_dir = d
 	move_progress = 0.0
 	sfx.play("swipe", randf_range(0.9, 1.1))
@@ -291,6 +305,9 @@ func _break_wall(c: Vector2i) -> void:
 
 
 func _update_lava(delta: float) -> void:
+	if lava_grace > 0.0:
+		lava_grace -= delta
+		return
 	var speed := minf(LAVA_START_SPEED + LAVA_ACCEL * elapsed, LAVA_MAX_SPEED)
 	lava_y -= speed * TILE * delta
 	var player_y := _player_center().y
@@ -343,6 +360,42 @@ func _die(reason: String, cause: String) -> void:
 	_bank_run()
 	var best := "Today's best: floor %d" % daily_best if daily_mode else "Best: floor %d" % best_floor
 	_show_message("%s\n\n+%d coins\n%s\n\nSwipe to try again" % [reason % run_floor, run_coins, best])
+	_update_revive_button()
+
+
+func revive_cost() -> int:
+	return snappedi(REVIVE_BASE_COST + run_floor * REVIVE_COST_PER_FLOOR, 10)
+
+
+## Spends coins to carry on after dying, once per run. Coins from before the
+## death are already banked, so the run's coin count starts again from 0.
+func revive() -> bool:
+	if state != State.DEAD or revived or total_coins < revive_cost():
+		return false
+	total_coins -= revive_cost()
+	revived = true
+	run_coins = 0
+	add_stat("revives")
+	cell = slide_start
+	move_dir = Vector2i.ZERO
+	queued_dir = Vector2i.ZERO
+	lava_y = _player_center().y + REVIVE_LAVA_GAP * TILE
+	lava_grace = REVIVE_GRACE
+	state = State.PLAYING
+	state_time = 0.0
+	_hide_message()
+	sfx.play("reward")
+	vibrate(40)
+	_toast("Second chance!")
+	_save()
+	_update_hud()
+	return true
+
+
+func _update_revive_button() -> void:
+	revive_button.visible = state == State.DEAD and not revived
+	revive_button.text = "REVIVE   ● %d" % revive_cost()
+	revive_button.disabled = total_coins < revive_cost()
 
 
 ## Only reachable when a test gives the tower an exit.
@@ -359,6 +412,7 @@ func _win() -> void:
 func _bank_run() -> void:
 	total_coins += run_coins
 	best_floor = maxi(best_floor, run_floor)
+	check_achievements()
 	_save()
 	_update_hud()
 
@@ -506,6 +560,26 @@ func _build_hud() -> void:
 		reset())
 	_menu_button("TROPHIES", _open_achievements)
 
+	revive_button = Button.new()
+	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	revive_button.offset_left = -110
+	revive_button.offset_right = 110
+	revive_button.offset_top = -178
+	revive_button.offset_bottom = -124
+	revive_button.add_theme_font_size_override("font_size", 20)
+	revive_button.add_theme_color_override("font_color", Color("ffd23f"))
+	var revive_style := StyleBoxFlat.new()
+	revive_style.bg_color = Color(0.25, 0.16, 0.02, 0.92)
+	revive_style.border_color = Color("ffd23f")
+	revive_style.set_border_width_all(2)
+	revive_style.set_corner_radius_all(8)
+	revive_button.add_theme_stylebox_override("normal", revive_style)
+	revive_button.add_theme_stylebox_override("hover", revive_style)
+	revive_button.add_theme_stylebox_override("pressed", revive_style)
+	revive_button.pressed.connect(revive)
+	revive_button.visible = false
+	hud.add_child(revive_button)
+
 	settings_bar = HBoxContainer.new()
 	settings_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	settings_bar.offset_left = -150
@@ -602,6 +676,7 @@ func _hide_message() -> void:
 	message_backdrop.visible = false
 	menu_bar.visible = false
 	settings_bar.visible = false
+	revive_button.visible = false
 
 
 func _menu_button(text: String, action: Callable) -> Button:

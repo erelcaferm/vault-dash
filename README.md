@@ -69,13 +69,13 @@ In a debug build (running from the editor), press **F2** to open a chest without
 
 ## Trophies (achievements)
 
-The **TROPHIES** button lists 27 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
+The **TROPHIES** button lists 28 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
 
 - **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
 - **Coins:** collect 10, 250 and 1,000 (Treasure walls).
 - **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths, 10 spike deaths and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
-- **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), and play 25 runs.
+- **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, and play 25 runs.
 - **Daily Climb:** play one (coins), hit the daily goal 10 times, play 7 days in a row (Sunrise hero), and play on 30 days.
 - **Collecting:** own 5 hero colours.
 
@@ -84,6 +84,10 @@ Stats and trophies are saved. To add an achievement, add a line to `scripts/achi
 ## Daily Climb
 
 The **DAILY** button on the menu switches to the Daily Climb (press **ENDLESS** to switch back). Everyone gets the same tower that day, built from a seed made from the date. Reaching floor 15 pays 100 coins once a day, today's best is shown on the menu, and playing on days in a row builds a streak. Tune `DAILY_GOAL` and `DAILY_REWARD` in `scripts/main.gd`.
+
+## Revive
+
+When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
 
 ## Sound and vibration
 
@@ -116,6 +120,7 @@ godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_chest.gd
 godot --headless --path . --script res://tests/test_achievements.gd
 godot --headless --path . --script res://tests/test_daily.gd
+godot --headless --path . --script res://tests/test_revive.gd
 ```
 
 The tests use their own save file, so they never touch your coins.
