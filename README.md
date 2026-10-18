@@ -54,17 +54,30 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 
 Items you win (from chests, trophies or levels) are never equipped for you. They're marked **NEW** in the shop, their tab gets a red dot, and the SHOP button pulses gold until you've looked. Leaving a tab (or equipping the item) clears its NEW marks. A chest that drops an item also shows an **EQUIP** button, so you can put it on straight away or tap anywhere to keep what you're wearing.
 
-Prices are set so the shop is a long-term goal: buying everything costs about 79,000 coins, while a good 100-floor run earns a few hundred.
+Prices go by how good an item looks, in tiers, and are set from a simulated playthrough (see **Economy** below) so a casual player earns a typical item in 20 to 60 minutes of play:
 
-- **Hero colours:** White and Black are free. Ten colours cost 300–750 coins, Gold 2500 and Rainbow 6000. Rainbow cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
-- **Creatures:** the same square hero with animated parts drawn in code (`draw_hero_item` in `skins.gd`). Frog (3000) blinks its bulging eyes and puffs its throat. Bunny (3500) flops its ears and twitches its nose. Ginger Cat (4000) and Tiger (5500, striped) blink, twitch an ear now and then and swish their tail, which streams out behind while sliding. Robot (4500) has a blinking antenna and a scanning visor. Midnight Cat, a black cat with green eyes, only drops from chests.
-- **Hats:** worn on top of any hero. No hat is free. Cap, Bow, Beanie, Flower, Party Hat, Headphones, Chef Hat, Top Hat, Viking, Pirate, Wizard and Propeller (it spins) cost 400–2200. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
-- **Cracked-wall skins:** Rubble is free. Mud, Snow, Cobblestone, Moss, Wood, Brick, Cookie, Glass, Crystal, Toy Blocks, Neon, Circuit (with a blinking light) and Gold Bars cost 400–3000. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy.
-- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Smoke, Bubbles, Hearts, Autumn Leaves, Snowflakes, Sparkle, Paw Prints, Lightning and Fire cost 600–1500. Comet and Rainbow Ribbon only drop from chests as Legendaries, Gold Dust comes from the Goal Getter trophy, and Music Notes and Confetti come from levels 18 and 21.
-- **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum, Honey, Ocean, Ink and Plasma cost 750–1600. Molten Gold and Aurora only drop from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
+| Tier | Price | What's in it | Casual player |
+|---|---|---|---|
+| Starter | 600 | Red, Orange and Lemon, so the first session ends with a buy | ~12 min |
+| Plain | 1,200–1,600 | solid colours, simple hats, plain wall and lava recolours, Pixels and Smoke | ~30 min |
+| Patterned | 2,000–2,600 | patterned walls, bubbles, hearts, leaves, detailed hats, bubbling lava | ~50 min |
+| Fancy | 2,800–4,000 | animated or glowing trails, hats and walls (Fire, Lightning, Propeller, Neon, Circuit, Plasma) | ~60–85 min |
+| Shiny | 4,500–6,000 | Silver, Rose Gold, Toxic and Gold heroes, Silver and Gold Bars | ~2 h |
+| Creatures | 7,000–9,000 | the animated characters, from Frog to Tiger | ~3 h |
+| Legendary | 12,000–18,000 | rainbow effects: Rainbow Wall, Rainbow hero, Rainbow lava and the Unicorn | 4–6 h |
+
+Buying everything costs about 453,000 coins, so the shop stays a long-term goal; chests drop shop items along the way.
+
+- **Hero colours:** White and Black are free. Plain colours cost 600–1600 coins, Silver, Rose Gold and Toxic 4500–5000, Gold 6000 and Rainbow 14,000. Rainbow cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
+- **Creatures:** the same square hero with animated parts drawn in code (`draw_hero_item` in `skins.gd`). Frog (7000) blinks its bulging eyes and puffs its throat. Bunny (7500) flops its ears and twitches its nose. Ginger Cat (8000) and Tiger (9000, striped) blink, twitch an ear now and then and swish their tail, which streams out behind while sliding. Robot (8500) has a blinking antenna and a scanning visor. Midnight Cat, a black cat with green eyes, only drops from chests.
+- **Hats:** worn on top of any hero. No hat is free. Cap, Bow, Beanie, Flower, Party Hat, Headphones, Chef Hat, Top Hat, Viking, Pirate, Wizard and Propeller (it spins) cost 1400–4000. The Crown only drops from chests, Horns come from the Pincushion trophy and the Halo from Mission Master.
+- **Cracked-wall skins:** Rubble is free. Mud, Snow, Cobblestone, Moss, Wood, Brick, Cookie, Glass, Crystal, Toy Blocks, Neon, Circuit (with a blinking light) and Gold Bars cost 1400–6000. Candy and Starlight come from levels 15 and 24, and Gilded from the Gold Rush trophy.
+- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Smoke, Bubbles, Hearts, Autumn Leaves, Snowflakes, Sparkle, Paw Prints, Lightning and Fire cost 1600–4000. Comet and Rainbow Ribbon only drop from chests as Legendaries, Gold Dust comes from the Goal Getter trophy, and Music Notes and Confetti come from levels 18 and 21.
+- **Lava:** recolour what rises from below. Lava is free. Acid, Chocolate, Bubblegum, Honey, Ocean, Ink and Plasma cost 1500–3500. Molten Gold and Aurora only drop from chests, and Ash comes from the Hot Feet trophy (10 lava deaths).
 
 - **Pet lines:** each of the 8 pets has its own hat, trail, hero and wall skin, earned only by levelling that pet up (see Pets below). They show in the shop with the pet's name and the level that unlocks them.
 - **Variants:** 20 more hero colours, 10 hats, 10 trails, 12 wall skins and 10 lavas were added on 2026-10-19, bringing the shop to 192 items.
+- **Kid picks:** 23 cosmetics designed the way a five-year-old would want them, added 2026-10-18 (215 items now). Creatures: **Unicorn** (18,000, the priciest item: a rainbow mane and tail that cycle colours, a golden horn, eyelashes and sparkles popping around it), **Dino** (spikes, a wagging tail and a roar every few seconds), **Shark** (fin, tail, gills and chomping teeth), **Panda**, **Penguin** (flippers flap faster while sliding), **Alien** (glowing antennae that bob) and **Fuzzy Monster** (one big eye that looks where you're going). Hats: **Unicorn Horn**, **Space Helmet** (a glass bubble with a blinking light), **Fire Helmet**, **Ice Cream** (two scoops, a cherry and a drip) and **Balloon** (bobs on its string). Trails: **Stars** (colour-changing), **Sweets** (spinning wrapped candies), **Butterflies** (flapping), **Dino Tracks** and **Sprinkles**. Walls: **Birthday Cake** (icing drips and a cherry on the top block), **Present** (a ribbon and a bow that wiggles), **Jelly** (wobbly, with bubbles) and **Rainbow**. Lava: **Rainbow** (bands of colour drift along) and **Glitter Goo** (twinkling sparkles). The creature drawings are `_draw_kid_hero` in `skins.gd`.
 
 **Preview:** tapping any item puts it on the preview window at the top of the shop, where your hero slides between two cracked walls above the lava wearing your whole look. Tap more items to try a full outfit; tapping an item you own takes it back off the preview. Leaving the shop clears the preview.
 
@@ -73,6 +86,25 @@ Prices are set so the shop is a long-term goal: buying everything costs about 79
 Every item id must be unique across all kinds, because owned and new items share one list (`test_chest.gd` checks this).
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
+
+## Economy
+
+`tools/economy_sim.gd` plays the real game from a brand-new save as a simulated person, for 7 days of 30 minutes, and reports coins per minute, where they came from and how often the player can buy something. The player follows a route two floors ahead after a short think (longer when a new floor appears), detours for coins, now and then swipes the wrong way (sometimes into spikes or fake floor, less often as the days go on), and waits for blocks, traps and lasers. Each day they claim the daily gift, play the Daily Climb and the vault once and clear two handmade levels; with `ads` they also take the shop's coin ads and double a third of their runs. Time on menus and chests counts. They buy the next item on a shuffled, cheapest-first wish list as soon as they can afford it.
+
+```
+godot --headless --path . --script res://tools/economy_sim.gd -- skill=casual [ads] [days=7] [minutes=30] [out=report.txt]
+```
+
+`skill` is `beginner`, `casual` or `good`. Results on 2026-10-18 (minutes of play per purchase, after the first hour):
+
+| Player | Coins a minute | Old prices | Final prices |
+|---|---|---|---|
+| Beginner | 34 | 14 | 39 |
+| Casual | 46 | 11 | 31 |
+| Casual, watches ads | 48 | 10 | 31 |
+| Good | 60 | 9 | 26 |
+
+About half the coins come from tower runs, then missions and trophies, chests, the Daily Climb and levels; ads add about a quarter for players who watch them. Chests also drop an item about once an hour. `tools/cosmetics_sheet.gd` draws a contact sheet of shop items (`xvfb-run godot --path . --script res://tools/cosmetics_sheet.gd -- out.png unicorn,dino`) for checking new cosmetics.
 
 ## Daily gift
 
@@ -111,8 +143,8 @@ A treasure chest waits on floors 30, 60, 90 and so on (always trap floors too), 
 |---|---|---|
 | Common | 55% | 30–60 coins |
 | Rare | 25% | 80–150 coins |
-| Epic | 15% | a random shop item you don't own yet (400 coins if you own them all) |
-| Legendary | 5% | a chest-only item, such as the Neon, Ember, Void or Midnight Cat hero, the Crown, Obsidian or Magma walls, the Comet or Rainbow Ribbon trail, or Molten Gold or Aurora lava (1000 coins if you own them all) |
+| Epic | 15% | a random shop item you don't own yet (800 coins if you own them all) |
+| Legendary | 5% | a chest-only item, such as the Neon, Ember, Void or Midnight Cat hero, the Crown, Obsidian or Magma walls, the Comet or Rainbow Ribbon trail, or Molten Gold or Aurora lava (2000 coins if you own them all) |
 
 **Bonus chests:** a hidden meter fills by a random 0.5–1 each time you reach a trap floor. When it reaches 5, a bonus chest appears 5 floors ahead. If that floor already has a chest, the bonus moves 10 floors further. If you die before reaching it, it waits on floor 8 of your next run. The meter carries over between runs. All of these numbers are at the top of `scripts/main.gd`.
 

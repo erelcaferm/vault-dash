@@ -19,9 +19,21 @@ func _initialize() -> void:
 	_expect(game.owns(Skins.find(Skins.HERO, "black")), "black is free")
 	_expect(game.owns(Skins.find(Skins.WALLS, "rubble")), "rubble is free")
 	_expect(not game.owns(rainbow), "rainbow starts locked")
+	# The rainbow-effect items (the Legendary tier) cost more than anything else.
+	var special := ["rainbow", "unicorn", "rainbow_lava", "rainbow_wall"]
+	var cheapest_special := 1 << 30
+	var priciest_other := 0
+	for kind in ["hero", "hat", "trail", "walls", "lava"]:
+		for item in Skins.list(kind):
+			if special.has(item.id):
+				cheapest_special = mini(cheapest_special, item.price)
+			else:
+				priciest_other = maxi(priciest_other, item.price)
+	_expect(cheapest_special > priciest_other, "rainbow-effect items are the most expensive")
 	var priciest := 0
 	for item in Skins.HERO:
-		priciest = maxi(priciest, item.price)
+		if item.id != "unicorn":
+			priciest = maxi(priciest, item.price)
 	_expect(rainbow.price == priciest, "rainbow is the most expensive colour")
 
 	game.total_coins = rainbow.price - 1

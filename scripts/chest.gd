@@ -14,8 +14,8 @@ const RARITIES := [
 const COMMON_COINS := [30, 60]
 const RARE_COINS := [80, 150]
 ## Paid instead when every item of that rarity is already owned.
-const EPIC_FALLBACK_COINS := 400
-const LEGENDARY_FALLBACK_COINS := 1000
+const EPIC_FALLBACK_COINS := 800
+const LEGENDARY_FALLBACK_COINS := 2000
 
 
 ## Rolls one reward. `owns` is a Callable taking a shop item and returning
