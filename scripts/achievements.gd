@@ -5,6 +5,8 @@ extends RefCounted
 ## that stat reaches `goal`. A reward is either coins or a skin that can only
 ## be earned this way (those skins are listed in skins.gd with "achievement").
 
+const Skins := preload("res://scripts/skins.gd")
+
 const LIST := [
 	# Climbing
 	{"id": "first_steps", "name": "First Steps", "desc": "Reach floor 5", "stat": "best_floor", "goal": 5, "coins": 25},
@@ -48,6 +50,5 @@ static func find(id: String) -> Dictionary:
 static func reward_text(a: Dictionary) -> String:
 	if a.has("coins"):
 		return "%d coins" % a.coins
-	var Skins := load("res://scripts/skins.gd")
 	var list: Array = Skins.HERO if a.item[0] == "hero" else Skins.WALLS
 	return "Skin: %s" % Skins.find(list, a.item[1]).name

@@ -62,6 +62,8 @@ func _initialize() -> void:
 	_expect(again.unlocked.has("persistent") and again.unlocked.has("sky_high"), "unlocked achievements survive a restart")
 	_expect(again.stat("coins_collected") == 10 and again.stat("deaths") == 5, "stats survive a restart")
 	_expect(again.owns(brick), "achievement skins survive a restart")
+	again._open_achievements()
+	_expect(again.achievements_screen.visible, "trophies screen opens")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 
 	if failures == 0:
