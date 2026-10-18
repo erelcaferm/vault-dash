@@ -17,10 +17,9 @@ func _initialize() -> void:
 		ids[a.id] = true
 		_expect(a.has("coins") != a.has("item"), "%s has exactly one reward" % a.id)
 		if a.has("item"):
-			var list: Array = Skins.HERO if a.item[0] == "hero" else Skins.WALLS
-			var item := Skins.find(list, a.item[1])
+			var item := Skins.find(Skins.list(a.item[0]), a.item[1])
 			_expect(item.id == a.item[1] and item.get("achievement", "") == a.id, "%s rewards a real skin tied to it" % a.id)
-	for item in Skins.HERO + Skins.WALLS:
+	for item in Skins.HERO + Skins.WALLS + Skins.TRAILS:
 		if item.has("achievement"):
 			_expect(ids.has(item.achievement), "%s is tied to a real achievement" % item.id)
 

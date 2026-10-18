@@ -35,6 +35,15 @@ func _initialize() -> void:
 	_expect(game.equipped_hero == "rainbow" and game.equipped_wall == "glass", "purchases are equipped")
 	_expect(not game.buy("hero", rainbow), "can't buy twice")
 
+	var fire := Skins.find(Skins.TRAILS, "fire")
+	_expect(game.owns(Skins.find(Skins.TRAILS, "afterimage")) and not game.owns(fire), "only the Afterimage trail is free")
+	game.total_coins += fire.price
+	_expect(game.buy("trail", fire) and game.equipped_trail == "fire", "buys and equips a trail")
+	game._open_shop()
+	game.shop._show_tab("trail")
+	_expect(game.shop._grid.get_child_count() == Skins.TRAILS.size(), "the Trails tab lists every trail")
+	game.shop.visible = false
+
 	game.equip("hero", "black")
 	game.queue_free()
 
@@ -42,7 +51,7 @@ func _initialize() -> void:
 	await process_frame
 	_expect(reloaded.total_coins == 5, "coins survive a restart")
 	_expect(reloaded.owns(rainbow) and reloaded.owns(glass), "purchases survive a restart")
-	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass", "equipped items survive a restart")
+	_expect(reloaded.equipped_hero == "black" and reloaded.equipped_wall == "glass" and reloaded.equipped_trail == "fire", "equipped items survive a restart")
 
 	var red := Skins.hero_color(rainbow, 0.0)
 	var later := Skins.hero_color(rainbow, 0.25)

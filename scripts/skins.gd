@@ -57,10 +57,41 @@ const WALLS := [
 		"base": Color("ece8e1"), "top": Color("ffffff"), "detail": Color("9a948c")},
 ]
 
+## Trails left behind the hero while sliding. `style` picks how it's drawn.
+const TRAILS := [
+	{"id": "afterimage", "name": "Afterimage", "price": 0, "style": "afterimage"},
+	{"id": "pixels", "name": "Pixels", "price": 200, "style": "pixels"},
+	{"id": "bubbles", "name": "Bubbles", "price": 250, "style": "bubbles", "color": Color("8fd8ff")},
+	{"id": "sparkle", "name": "Sparkle", "price": 350, "style": "sparkle", "color": Color("fff3a8")},
+	{"id": "fire", "name": "Fire", "price": 500, "style": "fire"},
+	{"id": "comet", "name": "Comet", "price": -1, "chest_only": true, "style": "comet"},
+	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
+]
+
 ## How fast the rainbow hero cycles through every colour, in full cycles per
 ## second, standing still and while sliding.
 const RAINBOW_IDLE_SPEED := 0.25
 const RAINBOW_SLIDE_SPEED := 1.5
+
+
+## The item list for a kind of cosmetic: "hero", "walls" or "trail".
+static func list(kind: String) -> Array:
+	match kind:
+		"hero":
+			return HERO
+		"trail":
+			return TRAILS
+	return WALLS
+
+
+## What one of `kind` is called, for messages like "New trail: Fire".
+static func kind_name(kind: String) -> String:
+	match kind:
+		"hero":
+			return "colour"
+		"trail":
+			return "trail"
+	return "wall skin"
 
 
 static func find(items: Array, id: String) -> Dictionary:
@@ -98,6 +129,54 @@ static func draw_hero(canvas: CanvasItem, center: Vector2, size: Vector2, color:
 	var s := size.y / 26.0
 	canvas.draw_circle(center + Vector2(-5, -3) * s + look, 2.6 * s, eye)
 	canvas.draw_circle(center + Vector2(5, -3) * s + look, 2.6 * s, eye)
+
+
+## Draws a slide trail behind a hero at `center` moving along `dir`.
+## `color` is the hero's colour; `time` animates it.
+static func draw_trail(canvas: CanvasItem, item: Dictionary, center: Vector2, dir: Vector2, size: Vector2, color: Color, time: float) -> void:
+	var side := Vector2(-dir.y, dir.x)
+	# Squashing while sliding narrows the hero, so size particles by its long side.
+	var base := maxf(size.x, size.y)
+	var tile := base + 6.0
+	match item.style:
+		"afterimage":
+			for i in range(3, 0, -1):
+				draw_hero(canvas, center - dir * tile * 0.4 * i, size, color, Vector2.ZERO, 0.12 * (4 - i))
+		"pixels":
+			for i in 7:
+				var back := tile * (0.4 + i * 0.22)
+				var wobble := side * sin(time * 30.0 + i * 2.1) * base * 0.25
+				var s := base * (0.3 - i * 0.03)
+				canvas.draw_rect(Rect2(center - dir * back + wobble - Vector2(s, s) * 0.5, Vector2(s, s)), Color(color, 0.8 - i * 0.1))
+		"bubbles":
+			var c: Color = item.color
+			for i in 6:
+				var back := tile * (0.45 + i * 0.3)
+				var wobble := side * sin(time * 12.0 + i * 1.7) * base * 0.3
+				var r := base * (0.12 + 0.06 * ((i * 5) % 3))
+				canvas.draw_arc(center - dir * back + wobble, r, 0, TAU, 14, Color(c, 0.85 - i * 0.12), 1.5)
+				canvas.draw_circle(center - dir * back + wobble + Vector2(-r, -r) * 0.35, r * 0.25, Color(1, 1, 1, 0.7 - i * 0.1))
+		"sparkle":
+			var c: Color = item.color
+			for i in 6:
+				var back := tile * (0.4 + i * 0.28)
+				var off := side * sin(time * 17.0 + i * 2.5) * base * 0.45
+				var twinkle := 0.5 + 0.5 * sin(time * 25.0 + i * 1.3)
+				_sparkle(canvas, center - dir * back + off, base * (0.22 - i * 0.025) * (0.6 + twinkle * 0.4), Color(c, 1.0 - i * 0.14))
+		"fire":
+			for i in 8:
+				var back := tile * (0.35 + i * 0.2)
+				var flicker := side * sin(time * 40.0 + i * 1.9) * base * 0.18
+				var r := base * (0.42 - i * 0.045)
+				var heat := Color("fff3a0").lerp(Color("ff3d00"), i / 7.0)
+				canvas.draw_circle(center - dir * back + flicker, r, Color(heat, 0.9 - i * 0.1))
+		"comet":
+			for i in 10:
+				var back := tile * (0.3 + i * 0.18)
+				var hue := fposmod(time * 0.8 + i * 0.06, 1.0)
+				var r := base * (0.45 - i * 0.04)
+				canvas.draw_circle(center - dir * back, r, Color.from_hsv(hue, 0.65, 1.0, 0.75 - i * 0.07))
+			_sparkle(canvas, center - dir * tile * 0.6 + side * base * 0.5, base * 0.2, Color(1, 1, 1, 0.9))
 
 
 static func draw_cracked(canvas: CanvasItem, r: Rect2, skin: Dictionary, time := 0.0) -> void:

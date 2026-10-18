@@ -86,6 +86,7 @@ var best_time := 0.0
 var owned: Array = []            # ids of shop items bought (free ones aren't listed)
 var equipped_hero := "white"
 var equipped_wall := "rubble"
+var equipped_trail := "afterimage"
 var rainbow_phase := 0.0
 
 var touch_start := Vector2.ZERO
@@ -819,10 +820,10 @@ func _unlock(a: Dictionary) -> void:
 		reward = "+%d coins" % a.coins
 	else:
 		var kind: String = a.item[0]
-		var item := Skins.find(Skins.HERO if kind == "hero" else Skins.WALLS, a.item[1])
+		var item := Skins.find(Skins.list(kind), a.item[1])
 		if not owned.has(item.id):
 			owned.append(item.id)
-		reward = "New %s: %s" % ["colour" if kind == "hero" else "wall skin", item.name]
+		reward = "New %s: %s" % [Skins.kind_name(kind), item.name]
 	banner_queue.append("TROPHY UNLOCKED\n%s\n%s" % [a.name, reward])
 	_save()
 
@@ -970,10 +971,13 @@ func buy(kind: String, item: Dictionary) -> bool:
 
 
 func equip(kind: String, id: String) -> void:
-	if kind == "hero":
-		equipped_hero = id
-	else:
-		equipped_wall = id
+	match kind:
+		"hero":
+			equipped_hero = id
+		"trail":
+			equipped_trail = id
+		_:
+			equipped_wall = id
 	_save()
 
 
@@ -1014,6 +1018,7 @@ func _load_save() -> void:
 				stats[key] = cfg.get_value("stats", key)
 		equipped_hero = cfg.get_value("shop", "hero", "white")
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
+		equipped_trail = cfg.get_value("shop", "trail", "afterimage")
 
 
 func _save() -> void:
@@ -1024,6 +1029,7 @@ func _save() -> void:
 	cfg.set_value("shop", "owned", owned)
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
+	cfg.set_value("shop", "trail", equipped_trail)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.set_value("achievements", "unlocked", unlocked)
@@ -1116,11 +1122,8 @@ func _draw_player() -> void:
 	elif squash > 0.0:
 		size *= Vector2(1.15, 0.88)
 	var color := Skins.hero_color(_hero_skin(), rainbow_phase)
-	# Speed trail
 	if move_dir != Vector2i.ZERO:
-		for i in range(3, 0, -1):
-			var ghost := p - Vector2(move_dir) * TILE * 0.4 * i
-			Skins.draw_hero(self, ghost, size, color, Vector2.ZERO, 0.12 * (4 - i))
+		Skins.draw_trail(self, Skins.find(Skins.TRAILS, equipped_trail), p, Vector2(move_dir), size, color, anim_time)
 	# Eyes look where you're going.
 	var look := Vector2(move_dir if move_dir != Vector2i.ZERO else queued_dir) * 3.0
 	Skins.draw_hero(self, p, size, color, look, 1.0, Skins.hero_glow(_hero_skin()))

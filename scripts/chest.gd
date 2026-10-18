@@ -20,7 +20,7 @@ const LEGENDARY_FALLBACK_COINS := 1000
 
 ## Rolls one reward. `owns` is a Callable taking a shop item and returning
 ## whether the player has it, so nothing already owned is ever dropped.
-## Returns {rarity, kind ("coins", "hero" or "walls"), coins, item}.
+## Returns {rarity, kind ("coins", "hero", "walls" or "trail"), coins, item}.
 static func roll(rng: RandomNumberGenerator, owns: Callable) -> Dictionary:
 	var rarity := pick_rarity(rng)
 	match rarity.id:
@@ -55,8 +55,7 @@ static func pick_rarity(rng: RandomNumberGenerator) -> Dictionary:
 static func describe(reward: Dictionary) -> String:
 	if reward.kind == "coins":
 		return "%d coins" % reward.coins
-	var what := "colour" if reward.kind == "hero" else "wall skin"
-	return "%s %s" % [reward.item.name, what]
+	return "%s %s" % [reward.item.name, Skins.kind_name(reward.kind)]
 
 
 static func _coins(rarity: Dictionary, amount: int) -> Dictionary:
@@ -70,10 +69,8 @@ static func _item(rarity: Dictionary, entry: Array) -> Dictionary:
 ## Every shop item matching `filter`, as [kind, item] pairs.
 static func _items(filter: Callable) -> Array:
 	var out: Array = []
-	for item in Skins.HERO:
-		if filter.call(item):
-			out.append(["hero", item])
-	for item in Skins.WALLS:
-		if filter.call(item):
-			out.append(["walls", item])
+	for kind in ["hero", "walls", "trail"]:
+		for item in Skins.list(kind):
+			if filter.call(item):
+				out.append([kind, item])
 	return out

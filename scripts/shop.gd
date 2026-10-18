@@ -1,5 +1,5 @@
 extends Control
-## The coin shop: hero colours and cracked-wall skins.
+## The coin shop: hero colours, cracked-wall skins and slide trails.
 ## Coins, owned items and what's equipped live in main.gd, which saves them.
 
 signal closed
@@ -49,7 +49,7 @@ func setup(main_game) -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 8)
 	column.add_child(tabs)
-	for t in [["hero", "Hero"], ["walls", "Cracked walls"]]:
+	for t in [["hero", "Hero"], ["walls", "Walls"], ["trail", "Trails"]]:
 		var b := Button.new()
 		b.text = t[1]
 		b.toggle_mode = true
@@ -102,14 +102,14 @@ func _refresh() -> void:
 	for c in _grid.get_children():
 		_grid.remove_child(c)
 		c.queue_free()
-	var items: Array = Skins.HERO if tab == "hero" else Skins.WALLS
+	var items: Array = Skins.list(tab)
 	for item in items:
 		_grid.add_child(_card(item))
 	_scroll.set_deferred("scroll_vertical", keep)
 
 
 func _card(item: Dictionary) -> Button:
-	var equipped: String = game.equipped_hero if tab == "hero" else game.equipped_wall
+	var equipped: String = {"hero": game.equipped_hero, "walls": game.equipped_wall, "trail": game.equipped_trail}[tab]
 	var owned: bool = game.owns(item)
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(0, 132)
@@ -132,7 +132,8 @@ func _card(item: Dictionary) -> Button:
 	b.add_child(box)
 	var preview := Preview.new()
 	preview.item = item
-	preview.kind = "hero" if tab == "hero" else "walls"
+	preview.kind = tab
+	preview.hero = game._hero_skin()
 	preview.size_flags_vertical = SIZE_EXPAND_FILL
 	preview.mouse_filter = MOUSE_FILTER_IGNORE
 	box.add_child(preview)

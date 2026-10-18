@@ -47,6 +47,7 @@ The **SHOP** button appears on the title and game-over screens, and everything i
 
 - **Hero colours:** White and Black are free. Ten colours cost 100–600 coins. Rainbow costs 1500 and is the most expensive. It cycles through every colour, about once every 4 seconds standing still and much faster while sliding.
 - **Cracked-wall skins:** Rubble is free. Mud, Snow, Wood, Glass, Crystal and Gold Bars cost 150–800.
+- **Slide trails:** what you leave behind while sliding. Afterimage is free. Pixels, Bubbles, Sparkle and Fire cost 200–500. Comet (a rainbow streak) only drops from chests as a Legendary, and Gold Dust comes from the Goal Getter trophy.
 
 To change prices or add items, edit `scripts/skins.gd`. Purchases are saved with your coins in `user://save.cfg`.
 
@@ -76,7 +77,7 @@ The **TROPHIES** button lists 28 achievements with your progress on each. A bann
 - **Deaths:** die 1, 5 and 50 times (Ghost hero), plus 10 lava deaths, 10 spike deaths and 5 fake-floor falls.
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
 - **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, and play 25 runs.
-- **Daily Climb:** play one (coins), hit the daily goal 10 times, play 7 days in a row (Sunrise hero), and play on 30 days.
+- **Daily Climb:** play one (coins), hit the daily goal 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.
 - **Collecting:** own 5 hero colours.
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
