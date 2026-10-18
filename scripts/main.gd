@@ -13,6 +13,11 @@ const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
+const LevelGrid := preload("res://scripts/level_grid.gd")
+const LevelCode := preload("res://scripts/level_code.gd")
+const Levels := preload("res://scripts/levels.gd")
+const LevelsScreen := preload("res://scripts/levels_screen.gd")
+const LevelEditor := preload("res://scripts/level_editor.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -60,6 +65,9 @@ const REVIVE_BASE_COST := 50
 const REVIVE_COST_PER_FLOOR := 2
 const REVIVE_LAVA_GAP := 8.0     # tiles between you and the lava after a revive
 const REVIVE_GRACE := 1.5        # seconds the lava waits after a revive
+## Levels: the screen glows red and a heartbeat plays in the last seconds.
+const LEVEL_WARN_TIME := 5.0
+const LEVEL_TOP_GAP := 250.0     # camera y below the level's top edge
 
 enum State { READY, PLAYING, DEAD, WON, CHEST, PAUSED }
 
@@ -177,6 +185,20 @@ var danger := 0.0                # 0-1, how close the lava is, for the red glow
 var heartbeat_time := 0.0
 var danger_overlay: Control
 var marker_floor := 0            # the best to beat, drawn as a line on the tower
+## Levels (handmade or player-made) replace the tower while `level` is set.
+var level := {}                  # {name, time, rows}; empty in the tower
+var level_source := ""           # "campaign", "custom" or "test" (from the editor)
+var level_index := -1            # which campaign level
+var time_left := 0.0
+var level_coins := 0             # coins in the level when it started
+var levels_cleared: Array = []   # saved; campaign levels cleared
+var level_times := {}            # saved; best time per campaign level
+var custom_levels: Array = []    # saved; codes of levels made or added by the player
+var levels_screen: Control
+var level_editor: Control
+var level_bar: HBoxContainer
+var level_back_button: Button
+var level_next_button: Button
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
 
@@ -198,14 +220,18 @@ func _ready() -> void:
 
 
 func reset() -> void:
-	tower = TowerScript.new()
-	_refresh_daily()
 	var seed_value := randi()
-	if test_seed >= 0:
-		seed_value = test_seed
-	elif daily_mode:
-		seed_value = daily_seed(daily_date)
-	tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
+	if is_level():
+		tower = LevelGrid.new()
+		tower.load_rows(level.rows)
+	else:
+		tower = TowerScript.new()
+		_refresh_daily()
+		if test_seed >= 0:
+			seed_value = test_seed
+		elif daily_mode:
+			seed_value = daily_seed(daily_date)
+		tower.build(Rooms.START, Rooms.LAYOUTS, seed_value)
 	# Seeded from the tower, so the Daily Climb has the same power-ups for everyone.
 	powerup_rng.seed = seed_value + 1
 	powerups.clear()
@@ -236,12 +262,20 @@ func reset() -> void:
 	bursts.clear()
 	chests_taken.clear()
 	bonus_chests.clear()
-	if bonus_chest_owed:
+	if bonus_chest_owed and not is_level():
 		bonus_chests[CARRYOVER_CHEST_FLOOR - 1] = true
 	state = State.READY
+	if is_level():
+		time_left = level.time
+		level_coins = tower.coins_left()
+		lava_y = INF
+		marker_floor = 0
 	camera.position = _camera_target()
 	camera.reset_smoothing()
 	_update_hud()
+	if is_level():
+		_show_message("%s\n\n%s\n\n%s" % [level_title(), tr("Reach the exit before the time runs out."), _level_best_text()])
+		return
 	marker_floor = daily_best if daily_mode else best_floor
 	daily_button.text = "ENDLESS" if daily_mode else "DAILY"
 	if daily_mode:
@@ -270,7 +304,13 @@ func _process(delta: float) -> void:
 		elapsed += delta
 		_update_slide(delta)
 		idle_time = idle_time + delta if is_idle() else 0.0
-	if state == State.PLAYING:
+	if state == State.PLAYING and is_level():
+		time_left -= delta
+		if time_left <= 0.0:
+			time_left = 0.0
+			_die("Out of time!", "time")
+		_update_hud()
+	elif state == State.PLAYING:
 		_update_powerups(delta)
 		_update_lava(delta)
 		if daily_mode:
@@ -356,7 +396,7 @@ func _advance() -> void:
 func _finish_combo() -> void:
 	var combo := slide_coins
 	slide_coins = 0
-	if combo < COMBO_MIN:
+	if combo < COMBO_MIN or is_level():
 		return
 	var bonus := combo - (COMBO_MIN - 1)
 	run_coins += bonus
@@ -370,8 +410,10 @@ func _finish_combo() -> void:
 func _collect_coin(c: Vector2i) -> void:
 	tower.set_tile(c, TowerScript.EMPTY)
 	run_coins += 1
-	add_stat("coins_collected")
-	report_run("run_coins", run_coins)
+	# Coins in levels are for the score only, so made-up levels can't farm them.
+	if not is_level():
+		add_stat("coins_collected")
+		report_run("run_coins", run_coins)
 	sfx.play("coin", randf_range(0.97, 1.06))
 	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": COIN_COLOR})
 	_update_hud()
@@ -475,7 +517,8 @@ func _stop() -> void:
 
 func _break_wall(c: Vector2i) -> void:
 	tower.set_tile(c, TowerScript.EMPTY)
-	add_stat("walls_broken")
+	if not is_level():
+		add_stat("walls_broken")
 	sfx.play("break")
 	vibrate(25)
 	bursts.append({"pos": _tile_center(c), "t": 0.0, "color": Color(_wall_skin().base, 1.0)})
@@ -499,7 +542,9 @@ func _update_lava(delta: float) -> void:
 ## Red glow and a heartbeat as the lava closes in.
 func _update_danger(delta: float) -> void:
 	var target := 0.0
-	if state == State.PLAYING:
+	if state == State.PLAYING and is_level():
+		target = clampf(1.0 - time_left / LEVEL_WARN_TIME, 0.0, 1.0)
+	elif state == State.PLAYING:
 		var gap := (lava_y - _player_center().y) / TILE
 		target = clampf(1.0 - (gap - 1.0) / (DANGER_GAP - 1.0), 0.0, 1.0)
 	danger = move_toward(danger, target, delta * 3.0)
@@ -526,6 +571,8 @@ func _draw_danger() -> void:
 
 
 func _update_floor() -> void:
+	if is_level():
+		return
 	var f: int = tower.room_of(cell.y) + 1
 	if f > run_floor:
 		# A slide can carry you through more than one door at once.
@@ -565,6 +612,9 @@ func _update_floor() -> void:
 
 
 func _die(reason: String, cause: String) -> void:
+	if is_level():
+		_level_lost(cause)
+		return
 	if shield:
 		_use_shield()
 		return
@@ -600,7 +650,8 @@ func pause() -> void:
 	# The slide is frozen, not stopped, so pausing can't be used to turn mid-slide.
 	state = State.PAUSED
 	pause_button.visible = false
-	_show_message("%s\n\n%s   ● %d\n\n%s" % [tr("PAUSED"), tr("Floor %d") % run_floor, run_coins, tr("Tap to carry on")])
+	var where := _clock(time_left) if is_level() else tr("Floor %d") % run_floor
+	_show_message("%s\n\n%s   ● %d\n\n%s" % [tr("PAUSED"), where, run_coins, tr("Tap to carry on")])
 	# Only the settings show while paused; the shop and trophies wait for the menu.
 	menu_bar.visible = false
 
@@ -654,8 +705,11 @@ func _update_revive_button() -> void:
 	revive_button.disabled = total_coins < revive_cost()
 
 
-## Only reachable when a test gives the tower an exit.
+## Reached in levels, or when a test gives the tower an exit.
 func _win() -> void:
+	if is_level():
+		_level_won()
+		return
 	state = State.WON
 	state_time = 0.0
 	move_dir = Vector2i.ZERO
@@ -676,7 +730,8 @@ func _bank_run() -> void:
 # --- Input -----------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible:
+	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible \
+			or levels_screen.visible or level_editor.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -731,6 +786,10 @@ func _on_swipe(d: Vector2i) -> void:
 	match state:
 		State.READY:
 			state = State.PLAYING
+			if is_level():
+				_hide_message()
+				try_move(d)
+				return
 			_start_mission_run()
 			add_stat("runs")
 			if daily_mode:
@@ -769,6 +828,9 @@ func is_idle() -> bool:
 # --- Camera and HUD --------------------------------------------------------
 
 func _camera_target() -> Vector2:
+	if is_level():
+		# The whole level fits on screen, just below the HUD.
+		return Vector2(tower.width * TILE * 0.5, -tower.height * TILE + LEVEL_TOP_GAP)
 	# Keep the player a little below centre so you see more of what's above.
 	return Vector2(tower.width * TILE * 0.5, _player_center().y - TILE * 2)
 
@@ -849,13 +911,14 @@ func _build_hud() -> void:
 
 	menu_bar = HBoxContainer.new()
 	menu_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	menu_bar.offset_left = -165
-	menu_bar.offset_right = 165
+	menu_bar.offset_left = -172
+	menu_bar.offset_right = 172
 	menu_bar.offset_top = -74
 	menu_bar.offset_bottom = -20
-	menu_bar.add_theme_constant_override("separation", 10)
+	menu_bar.add_theme_constant_override("separation", 6)
 	hud.add_child(menu_bar)
 	shop_button = _menu_button("SHOP", _open_shop)
+	_menu_button("LEVELS", _open_levels)
 	daily_button = _menu_button("DAILY", func():
 		daily_mode = not daily_mode
 		reset())
@@ -873,6 +936,22 @@ func _build_hud() -> void:
 	pause_button.pressed.connect(pause)
 	pause_button.visible = false
 	hud.add_child(pause_button)
+
+	level_bar = HBoxContainer.new()
+	level_bar.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	level_bar.offset_left = -172
+	level_bar.offset_right = 172
+	level_bar.offset_top = -74
+	level_bar.offset_bottom = -20
+	level_bar.add_theme_constant_override("separation", 6)
+	level_bar.visible = false
+	hud.add_child(level_bar)
+	level_back_button = _bar_button(level_bar, "LEVELS", _leave_level)
+	_bar_button(level_bar, "RETRY", func():
+		if state == State.PAUSED:
+			state = State.DEAD
+		reset())
+	level_next_button = _bar_button(level_bar, "NEXT", func(): start_campaign_level(level_index + 1))
 
 	revive_button = Button.new()
 	revive_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -942,6 +1021,14 @@ func _build_hud() -> void:
 	settings_screen.setup(self)
 	settings_screen.closed.connect(_close_settings)
 
+	levels_screen = LevelsScreen.new()
+	hud.add_child(levels_screen)
+	levels_screen.setup(self)
+
+	level_editor = LevelEditor.new()
+	hud.add_child(level_editor)
+	level_editor.setup(self)
+
 	achievements_screen = AchievementsScreen.new()
 	hud.add_child(achievements_screen)
 	achievements_screen.setup(self)
@@ -964,6 +1051,13 @@ func _make_label(parent: Node, size: int, align: HorizontalAlignment) -> Label:
 
 
 func _update_hud() -> void:
+	if is_level():
+		coins_label.text = "● %d/%d" % [run_coins, level_coins]
+		floor_label.text = _clock(time_left)
+		floor_label.add_theme_color_override("font_color", Color("ff6b5b") if time_left <= LEVEL_WARN_TIME else Color.WHITE)
+		chest_label.text = level_title()
+		return
+	floor_label.remove_theme_color_override("font_color")
 	coins_label.text = "● %d" % run_coins
 	floor_label.text = tr("Floor %d") % run_floor
 	var every := TowerScript.CHEST_EVERY
@@ -978,12 +1072,20 @@ func _update_hud() -> void:
 
 func _show_message(text: String) -> void:
 	pause_button.visible = false
-	missions_panel.visible = state != State.PAUSED
+	missions_panel.visible = state != State.PAUSED and not is_level()
 	revive_button.visible = false
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
-	menu_bar.visible = true
+	menu_bar.visible = not is_level()
+	level_bar.visible = is_level()
+	if is_level():
+		level_back_button.text = "EDIT" if level_source == "test" else "LEVELS"
+		level_next_button.visible = level_source == "campaign" and level_index + 1 < Levels.LEVELS.size() \
+				and levels_cleared.has(level_index) and state != State.PAUSED
+		_fit_bar(level_bar)
+	else:
+		_fit_bar(menu_bar)
 	gear_button.visible = true
 
 
@@ -994,18 +1096,38 @@ func _hide_message() -> void:
 	message_label.visible = false
 	message_backdrop.visible = false
 	menu_bar.visible = false
+	level_bar.visible = false
 	gear_button.visible = false
 	revive_button.visible = false
 
 
 func _menu_button(text: String, action: Callable) -> Button:
+	return _bar_button(menu_bar, text, action)
+
+
+func _bar_button(bar: HBoxContainer, text: String, action: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 17)
+	b.size_flags_stretch_ratio = 1.0
+	b.add_theme_font_size_override("font_size", 16)
+	b.clip_text = true
 	b.pressed.connect(action)
-	menu_bar.add_child(b)
+	bar.add_child(b)
 	return b
+
+
+## Shrinks the bar buttons' text to fit, after the language changes.
+func _fit_bar(bar: HBoxContainer) -> void:
+	var count := bar.get_child_count()
+	for b: Button in bar.get_children():
+		b.add_theme_font_size_override("font_size", 16)
+		var label := Label.new()
+		label.text = b.text
+		label.add_theme_font_size_override("font_size", 16)
+		fit_font(label, (344.0 - 6.0 * (count - 1)) / count - 12.0, 10)
+		b.add_theme_font_size_override("font_size", label.get_theme_font_size("font_size"))
+		label.free()
 
 
 ## A gear drawn in code, so it looks the same whatever the font.
@@ -1388,7 +1510,7 @@ func owns(item: Dictionary) -> bool:
 
 
 func buy(kind: String, item: Dictionary) -> bool:
-	if owns(item) or item.get("chest_only", false) or item.has("achievement") or total_coins < item.price:
+	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or total_coins < item.price:
 		return false
 	total_coins -= item.price
 	owned.append(item.id)
@@ -1455,6 +1577,9 @@ func _load_save() -> void:
 		equipped_lava = cfg.get_value("shop", "lava", "classic")
 		equipped_hat = cfg.get_value("shop", "hat", "no_hat")
 		missions = cfg.get_value("missions", "active", [])
+		levels_cleared = cfg.get_value("levels", "cleared", [])
+		level_times = cfg.get_value("levels", "times", {})
+		custom_levels = cfg.get_value("levels", "custom", [])
 
 
 func _save() -> void:
@@ -1469,6 +1594,9 @@ func _save() -> void:
 	cfg.set_value("shop", "lava", equipped_lava)
 	cfg.set_value("shop", "hat", equipped_hat)
 	cfg.set_value("missions", "active", missions)
+	cfg.set_value("levels", "cleared", levels_cleared)
+	cfg.set_value("levels", "times", level_times)
+	cfg.set_value("levels", "custom", custom_levels)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.set_value("achievements", "unlocked", unlocked)
@@ -1524,7 +1652,8 @@ func _draw() -> void:
 	for b in bursts:
 		var k: float = b.t / 0.35
 		draw_arc(b.pos, 6.0 + k * 18.0, 0, TAU, 20, Color(b.color, 1.0 - k), 3.0)
-	_draw_lava(view)
+	if not is_level():
+		_draw_lava(view)
 
 
 func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
@@ -1548,6 +1677,12 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 				]), SPIKE_COLOR)
 		TowerScript.CRACKED:
 			Skins.draw_cracked(self, r, _wall_skin(), anim_time)
+		TowerScript.FAKE:
+			# In levels fake floor is always a trap, so it's shown, faintly.
+			if is_level():
+				draw_rect(r.grow(-3), Color(0, 0, 0, 0.28))
+				draw_line(r.position + Vector2(7, 9), r.get_center() + Vector2(2, 1), Color(0, 0, 0, 0.4), 1.5)
+				draw_line(r.get_center() + Vector2(2, 1), r.end - Vector2(8, 6), Color(0, 0, 0, 0.4), 1.5)
 		TowerScript.GOAL:
 			var pulse := 0.5 + 0.5 * sin(anim_time * 5.0)
 			draw_circle(mid, 12.0 + pulse * 4.0, Color(COIN_COLOR, 0.35))
@@ -1696,3 +1831,137 @@ func _draw_lava(view: Vector2) -> void:
 	# Frozen lava turns icy blue, thawing back over its last second.
 	Skins.draw_lava(self, Skins.find(Skins.LAVA, equipped_lava), -view.x, tower.width * TILE + view.x,
 			lava_y, lava_y + view.y * 2, anim_time, clampf(freeze_time, 0.0, 1.0))
+
+
+# --- Levels ----------------------------------------------------------------
+
+func is_level() -> bool:
+	return not level.is_empty()
+
+
+## Plays a level instead of the tower. `source` is "campaign" (with its
+## `index`), "custom" or "test" (straight from the editor).
+func start_level(lv: Dictionary, source: String, index := -1) -> void:
+	level = lv
+	level_source = source
+	level_index = index
+	daily_mode = false
+	levels_screen.visible = false
+	level_editor.visible = false
+	reset()
+
+
+func start_campaign_level(i: int) -> void:
+	if i >= 0 and i < Levels.LEVELS.size():
+		start_level(Levels.level(i), "campaign", i)
+
+
+func campaign_unlocked(i: int) -> bool:
+	return i == 0 or levels_cleared.has(i - 1)
+
+
+func level_title() -> String:
+	if level_source == "campaign":
+		return tr("Level %d") % (level_index + 1) + ": " + tr(level.name)
+	return level.name if level.name != "" else tr("Untitled level")
+
+
+func _level_best_text() -> String:
+	var text := tr("Time limit: %s") % _clock(level.time)
+	if level_source == "campaign":
+		var best: float = level_times.get(level_index, 0.0)
+		if best > 0.0:
+			text += "\n" + tr("Best: %.1f s") % best
+		elif not levels_cleared.has(level_index):
+			text += "\n" + tr("Reward: %s") % Achievements.reward_text(Levels.LEVELS[level_index].reward)
+	return text
+
+
+## Back to the tower, and to the levels list or the editor it came from.
+func _leave_level() -> void:
+	var from_editor := level_source == "test"
+	level = {}
+	level_source = ""
+	reset()
+	if from_editor:
+		level_editor.open_again()
+	else:
+		_open_levels()
+
+
+func _open_levels() -> void:
+	levels_screen.open()
+
+
+func _clock(seconds: float) -> String:
+	var s := ceili(seconds)
+	return "%d:%02d" % [s / 60, s % 60]
+
+
+func _level_won() -> void:
+	state = State.WON
+	state_time = 0.0
+	move_dir = Vector2i.ZERO
+	queued_dir = Vector2i.ZERO
+	sfx.play("reward")
+	vibrate(60)
+	_celebrate("")
+	var lines: Array = [tr("LEVEL CLEAR!"), "%s   ● %d/%d" % [tr("%.1f seconds") % elapsed, run_coins, level_coins]]
+	match level_source:
+		"campaign":
+			var best: float = level_times.get(level_index, 0.0)
+			if best == 0.0 or elapsed < best:
+				level_times[level_index] = snappedf(elapsed, 0.1)
+				if best > 0.0:
+					lines.append(tr("New best time!"))
+			if not levels_cleared.has(level_index):
+				levels_cleared.append(level_index)
+				var reward: Dictionary = Levels.LEVELS[level_index].reward
+				_grant_level_reward(reward)
+				lines.append(tr("Reward: %s") % Achievements.reward_text(reward))
+			_save()
+		"test":
+			level_editor.mark_tested()
+	lines.append("")
+	lines.append(tr("Swipe to play again"))
+	_show_message("\n".join(lines))
+
+
+func _grant_level_reward(reward: Dictionary) -> void:
+	if reward.has("coins"):
+		total_coins += reward.coins
+	elif not owned.has(reward.item[1]):
+		owned.append(reward.item[1])
+		equip(reward.item[0], reward.item[1])
+	check_achievements()
+
+
+func _level_lost(cause: String) -> void:
+	state = State.DEAD
+	state_time = 0.0
+	move_dir = Vector2i.ZERO
+	queued_dir = Vector2i.ZERO
+	sfx.play("death")
+	vibrate(150)
+	shake = 0.35
+	var reason := {"spikes": "Spiked!", "fake": "The floor gave way!", "time": "Out of time!"}.get(cause, "Out of time!") as String
+	_show_message("%s\n\n%s" % [tr(reason), tr("Swipe to try again")])
+
+
+## Adds a level the player made or was sent to their list (or updates it
+## in place at `index`). Returns its place in the list.
+func save_custom_level(lv: Dictionary, index := -1) -> int:
+	var code := LevelCode.encode(lv)
+	if index >= 0 and index < custom_levels.size():
+		custom_levels[index] = code
+	else:
+		custom_levels.append(code)
+		index = custom_levels.size() - 1
+	_save()
+	return index
+
+
+func delete_custom_level(index: int) -> void:
+	if index >= 0 and index < custom_levels.size():
+		custom_levels.remove_at(index)
+		_save()

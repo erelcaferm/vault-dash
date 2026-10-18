@@ -7,7 +7,7 @@ extends SceneTree
 
 const TowerScript := preload("res://scripts/tower.gd")
 const Rooms := preload("res://scripts/rooms.gd")
-const Solver := preload("res://tests/solver.gd")
+const Solver := preload("res://scripts/solver.gd")
 
 var game
 var route: Array = []

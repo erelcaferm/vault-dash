@@ -121,6 +121,14 @@ The **II** button at the top pauses a run (Esc or P on a keyboard), and the game
 
 When you die, a **REVIVE** button offers one second chance per run for 50 coins plus 2 per floor (rounded to 10). You go back to where your last slide started, the lava drops 8 tiles below you and waits 1.5 seconds. Coins from before the death are already banked, so the run's counter starts again from 0. The button is greyed out when you can't afford it. Tune the `REVIVE_*` constants in `scripts/main.gd`. A "watch an ad to revive" option could slot in here later.
 
+## Levels and the level editor
+
+**LEVELS** on the menu opens 12 handmade levels and the player's own. A level has no lava: you slide to an exit (the gold ring) before the time limit runs out, and the screen pulses red in the last 5 seconds. Fake floor is always a trap in levels, so it's drawn faintly cracked. Coins in levels are only a score (●&nbsp;7/10), so made-up levels can't be used to farm coins or missions.
+
+- **Handmade levels** (`scripts/levels.gd`): each unlocks the next and pays once, the first time it's cleared: coins, or one of four level-only cosmetics (Pathfinder hero on 3, Explorer hat on 6, Breadcrumbs trail on 9, Laurel hat on 12). The best time is kept. The layouts came from a search for levels whose shortest solution grows from 7 to 19 moves, with a new hazard every few levels; `moves` in each entry is that shortest solution.
+- **Editor** (`scripts/level_editor.gd`): paint walls, floor, coins, spikes, cracked walls, fake floor, the start and exits on a 13 × 18 grid, and set a time limit from 10 seconds to 5 minutes. **TEST** refuses a level with no way to an exit. A level can only be shared after its maker has beaten it since the last change, so every shared level is possible in its time.
+- **Share codes** (`scripts/level_code.gd`): a level becomes a code of about 130 characters starting `VD1`, which **SHARE** shows and copies. **ADD CODE** takes one (with a Paste button). A checksum rejects codes that were cut short or mistyped. The same format could back an online level browser later: upload the code, list codes, download one.
+
 ## Settings and languages
 
 The gear at the top of the screen (shown on the title and death screens, never during a run) opens **Settings**: sound, vibration and language. The choice is saved. Until a player picks a language, the game follows the phone's language, falling back to English.
@@ -179,6 +187,7 @@ godot --headless --path . --script res://tests/test_pause.gd
 godot --headless --path . --script res://tests/test_missions.gd
 godot --headless --path . --script res://tests/test_powerups.gd
 godot --headless --path . --script res://tests/test_settings.gd
+godot --headless --path . --script res://tests/test_levels.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

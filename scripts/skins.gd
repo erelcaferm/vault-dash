@@ -3,6 +3,7 @@ extends RefCounted
 ## Prices are in coins. Items priced 0 are owned from the start.
 ## Items marked chest_only can't be bought; they only drop from chests.
 ## Items with an "achievement" id are earned by unlocking that achievement.
+## Items with a "level" number are the reward for clearing that level.
 
 const HERO := [
 	{"id": "white", "name": "White", "price": 0, "color": Color("f4f1de")},
@@ -26,6 +27,7 @@ const HERO := [
 	{"id": "speedster", "name": "Speedster", "price": -1, "achievement": "speedrunner", "color": Color("ffe94d"), "glow": Color(1.0, 0.6, 0.0, 0.35)},
 	{"id": "ghost", "name": "Ghost", "price": -1, "achievement": "never_give_up", "color": Color(0.85, 0.9, 1.0, 0.55)},
 	{"id": "sunrise", "name": "Sunrise", "price": -1, "achievement": "week_streak", "color": Color("ff8f5e"), "glow": Color(1.0, 0.75, 0.3, 0.4)},
+	{"id": "pathfinder", "name": "Pathfinder", "price": -1, "level": 3, "color": Color("2ec4b6"), "glow": Color(0.2, 0.9, 0.8, 0.35)},
 	{"id": "brick", "name": "Brick", "price": -1, "achievement": "wrecking_ball", "color": Color("b5523b")},
 ]
 
@@ -66,6 +68,7 @@ const TRAILS := [
 	{"id": "fire", "name": "Fire", "price": 500, "style": "fire"},
 	{"id": "comet", "name": "Comet", "price": -1, "chest_only": true, "style": "comet"},
 	{"id": "gold_dust", "name": "Gold Dust", "price": -1, "achievement": "daily_goal", "style": "sparkle", "color": Color("ffd23f")},
+	{"id": "breadcrumbs", "name": "Breadcrumbs", "price": -1, "level": 9, "style": "bubbles", "color": Color("d9a066")},
 ]
 
 ## Hats worn on top of the hero. `style` picks how it's drawn.
@@ -80,6 +83,8 @@ const HATS := [
 	{"id": "crown", "name": "Crown", "price": -1, "chest_only": true, "style": "crown", "color": Color("ffc300")},
 	{"id": "horns", "name": "Horns", "price": -1, "achievement": "pincushion", "style": "horns", "color": Color("c1121f")},
 	{"id": "halo", "name": "Halo", "price": -1, "achievement": "mission_master", "style": "halo", "color": Color("fff3a8")},
+	{"id": "explorer", "name": "Explorer", "price": -1, "level": 6, "style": "explorer", "color": Color("d4a373")},
+	{"id": "laurel", "name": "Laurel", "price": -1, "level": 12, "style": "laurel", "color": Color("6a994e")},
 ]
 
 ## What rises from below. `color` fills it, `glow` lines the surface, and
@@ -217,6 +222,19 @@ static func draw_hat(canvas: CanvasItem, item: Dictionary, center: Vector2, size
 				canvas.draw_colored_polygon(PackedVector2Array([
 					root - Vector2(w * 0.12, 0), root + Vector2(side * w * 0.12, -w * 0.42), root + Vector2(w * 0.12, 0),
 				]), c)
+		"explorer":
+			canvas.draw_rect(Rect2(x - w * 0.65, top - w * 0.08, w * 1.3, w * 0.12), c.darkened(0.15))
+			canvas.draw_circle(Vector2(x, top - w * 0.08), w * 0.4, c)
+			canvas.draw_rect(Rect2(x - w * 0.41, top - w * 0.2, w * 0.82, w * 0.08), Color("6b4423"))
+		"laurel":
+			# Two branches of leaves curving round the top of the head.
+			var hub := Vector2(x, top + w * 0.18)
+			for side in [-1.0, 1.0]:
+				for i in 5:
+					var a := deg_to_rad(100.0 - i * 16.0)
+					var p := hub + Vector2(side * sin(a), -cos(a)) * w * 0.52
+					canvas.draw_circle(p, w * (0.1 - i * 0.008), c.lightened(0.08 * (i % 2)))
+			canvas.draw_circle(Vector2(x, top - w * 0.3), w * 0.06, Color("ffd23f"))
 		"halo":
 			var bob := sin(time * 3.0) * w * 0.04
 			canvas.draw_arc(Vector2(x, top - w * 0.3 + bob), w * 0.36, 0, TAU, 24, Color(c, 0.35), w * 0.16)

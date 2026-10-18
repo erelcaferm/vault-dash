@@ -15,6 +15,10 @@ var solution: Array = []
 ## because cracked walls in rooms you have left stop mattering, but then it
 ## only proves the top is reachable: stuck checks need the full search.
 var upward_only := false
+## Stop after this many states (0 = no limit), so a huge player-made level
+## can't hang the game. `gave_up` says whether that happened.
+var max_states := 0
+var gave_up := false
 
 
 func _init(t) -> void:
@@ -39,6 +43,9 @@ func run() -> void:
 	while head < queue.size():
 		var k: String = queue[head]
 		head += 1
+		if max_states > 0 and states.size() > max_states:
+			gave_up = true
+			break
 		var s: Dictionary = states[k]
 		edges[k] = []
 		for dir: Vector2i in DIRS:

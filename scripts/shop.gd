@@ -150,6 +150,8 @@ func _card(item: Dictionary) -> Button:
 		status = _label("Chest only", 14, Color("ffd700"))
 	elif item.has("achievement"):
 		status = _label(Achievements.find(item.achievement).get("name", "Achievement"), 13, Color("7fd6ff"))
+	elif item.has("level"):
+		status = _label(tr("Level %d") % item.level, 13, Color("7fd6ff"))
 	elif pending_buy == item.id:
 		status = _label("Tap to buy!", 14, GOLD)
 	elif game.total_coins >= item.price:
@@ -166,7 +168,7 @@ func _on_card(item: Dictionary) -> void:
 	if game.owns(item):
 		game.equip(tab, item.id)
 		pending_buy = ""
-	elif item.get("chest_only", false) or item.has("achievement"):
+	elif item.get("chest_only", false) or item.has("achievement") or item.has("level"):
 		pending_buy = ""
 	elif pending_buy == item.id:
 		game.buy(tab, item)
