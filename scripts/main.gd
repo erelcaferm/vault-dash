@@ -15,6 +15,7 @@ const BAR_COLOR := Color(0.24, 0.25, 0.29, 0.62)
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const DailyGift := preload("res://scripts/daily_gift.gd")
+const VaultGame := preload("res://scripts/vault_game.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
@@ -175,6 +176,11 @@ var stats := {}                  # saved counters that achievements watch
 var unlocked: Array = []         # saved ids of unlocked achievements
 var achievements_screen: Control
 var daily_gift: Control
+var vault_game: Control
+var vault_button: Button
+var vault_day := ""                # the day the vault counts below are for
+var vault_free_used := 0
+var vault_ads_used := 0
 var gift_day := 0                  # which of the 7 daily gifts is next (0-6)
 var gift_date := ""                # the day the last gift was claimed
 var menu_bar: HBoxContainer
@@ -382,7 +388,7 @@ func _process(delta: float) -> void:
 	state_time += delta
 	_update_shop_glow()
 	if state == State.READY and not (shop.visible or achievements_screen.visible or settings_screen.visible \
-			or levels_screen.visible or level_editor.visible):
+			or levels_screen.visible or level_editor.visible or vault_game.visible):
 		_maybe_show_gift()
 	if state == State.PLAYING:
 		elapsed += delta
@@ -1030,7 +1036,7 @@ func _end_run(text: String) -> void:
 	if pending_chests > 0:
 		# The menus wait until the saved chests are open.
 		menu_bar.visible = false
-		gear_button.visible = false
+		_show_top_buttons(false)
 		missions_panel.visible = false
 
 
@@ -1051,7 +1057,7 @@ func _bank_run() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible \
-			or levels_screen.visible or level_editor.visible or daily_gift.visible:
+			or levels_screen.visible or level_editor.visible or daily_gift.visible or vault_game.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -1324,6 +1330,7 @@ func _build_hud() -> void:
 	gear_button.draw.connect(_draw_gear)
 	gear_button.pressed.connect(_open_settings)
 	hud.add_child(gear_button)
+	vault_button = _top_icon(gear_button.get_parent(), -64, "VAULT", _draw_vault_icon, func(): vault_game.open())
 
 	banner = PanelContainer.new()
 	var banner_style := StyleBoxFlat.new()
@@ -1373,6 +1380,12 @@ func _build_hud() -> void:
 	hud.add_child(achievements_screen)
 	achievements_screen.setup(self)
 	achievements_screen.closed.connect(func(): achievements_screen.visible = false)
+	vault_game = VaultGame.new()
+	hud.add_child(vault_game)
+	vault_game.setup(self)
+	vault_game.closed.connect(func():
+		vault_game.visible = false
+		reset())
 	daily_gift = DailyGift.new()
 	hud.add_child(daily_gift)
 	daily_gift.setup(self)
@@ -1422,7 +1435,7 @@ func _apply_safe_area() -> void:
 	safe_root.offset_right = -inset[2]
 	safe_root.offset_bottom = -inset[3]
 	# Full-screen menus keep their background edge to edge.
-	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen, daily_gift]:
+	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen, daily_gift, vault_game]:
 		var bg: Control = screen.get_child(0)
 		if bg is ColorRect:
 			bg.offset_left = -inset[0]
@@ -1482,7 +1495,7 @@ func _show_message(text: String) -> void:
 		_fit_bar(level_bar)
 	else:
 		_fit_bar(menu_bar)
-	gear_button.visible = true
+	_show_top_buttons(true)
 
 
 func _hide_message() -> void:
@@ -1493,7 +1506,7 @@ func _hide_message() -> void:
 	message_backdrop.visible = false
 	menu_bar.visible = false
 	level_bar.visible = false
-	gear_button.visible = false
+	_show_top_buttons(false)
 	revive_button.visible = false
 	ad_bar.visible = false
 
@@ -1552,6 +1565,78 @@ func _fit_bar(bar: HBoxContainer) -> void:
 		fit_font(label, 344.0 / count - 22.0, 10)
 		b.add_theme_font_size_override("font_size", label.get_theme_font_size("font_size"))
 		label.free()
+
+
+## The small round buttons beside the gear (vault, pets), with a caption.
+func _top_icon(parent: Node, x: float, caption: String, drawer: Callable, action: Callable) -> Button:
+	var b := Button.new()
+	b.flat = true
+	b.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	b.offset_left = x - 22
+	b.offset_right = x + 22
+	b.offset_top = 2
+	b.offset_bottom = 50
+	b.draw.connect(drawer.bind(b))
+	b.pressed.connect(action)
+	parent.add_child(b)
+	var label := _make_label(b, 9, HORIZONTAL_ALIGNMENT_CENTER)
+	label.text = caption
+	label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	label.offset_top = -13
+	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+	return b
+
+
+func _show_top_buttons(on: bool) -> void:
+	gear_button.visible = on
+	vault_button.visible = on and not is_level() and state != State.PAUSED
+
+
+func _draw_vault_icon(b: Button) -> void:
+	var c := Vector2(b.size.x * 0.5, 18)
+	var color := Color(1, 1, 1, 0.9)
+	b.draw_circle(c, 12, color)
+	b.draw_circle(c, 9.5, Color(0.08, 0.08, 0.12))
+	b.draw_circle(c, 3, color)
+	for i in 3:
+		b.draw_line(c, c + Vector2.from_angle(TAU * i / 3.0 - PI * 0.5) * 8, color, 1.5)
+	if vault_free_left() > 0:
+		b.draw_circle(c + Vector2(10, -9), 3.5, Color("ff4d4d"))
+
+
+## Crack the Vault tries: FREE_PER_DAY free, then AD_PER_DAY more for ads
+## (Steam has no ads, so it gets those as free tries instead).
+func _vault_new_day() -> void:
+	if vault_day != today():
+		vault_day = today()
+		vault_free_used = 0
+		vault_ads_used = 0
+
+
+func vault_free_left() -> int:
+	_vault_new_day()
+	var free := VaultGame.FREE_PER_DAY + (0 if ads.can_show_rewarded() else VaultGame.AD_PER_DAY)
+	return maxi(free - vault_free_used, 0)
+
+
+func vault_ad_left() -> int:
+	_vault_new_day()
+	return maxi(VaultGame.AD_PER_DAY - vault_ads_used, 0) if ads.can_show_rewarded() else 0
+
+
+## Spends a free try; ad tries are granted by vault_use_ad first.
+func vault_take_try() -> bool:
+	if vault_free_left() <= 0:
+		return false
+	vault_free_used += 1
+	_save()
+	return true
+
+
+func vault_use_ad() -> void:
+	_vault_new_day()
+	vault_ads_used += 1
+	vault_free_used -= 1    # the ad hands back one try, which _start spends
 
 
 ## A gear drawn in code, so it looks the same whatever the font.
@@ -2147,6 +2232,9 @@ func _load_save() -> void:
 		deal_day = cfg.get_value("shop", "deal_day", "")
 		deal_id = cfg.get_value("shop", "deal_id", "")
 		gift_day = cfg.get_value("gift", "day", 0)
+		vault_day = cfg.get_value("vault", "day", "")
+		vault_free_used = cfg.get_value("vault", "free_used", 0)
+		vault_ads_used = cfg.get_value("vault", "ads_used", 0)
 		gift_date = cfg.get_value("gift", "date", "")
 		trap_meter = cfg.get_value("secret", "meter", 0.0)
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
@@ -2195,6 +2283,9 @@ func _save() -> void:
 	cfg.set_value("shop", "deal_day", deal_day)
 	cfg.set_value("shop", "deal_id", deal_id)
 	cfg.set_value("gift", "day", gift_day)
+	cfg.set_value("vault", "day", vault_day)
+	cfg.set_value("vault", "free_used", vault_free_used)
+	cfg.set_value("vault", "ads_used", vault_ads_used)
 	cfg.set_value("gift", "date", gift_date)
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)

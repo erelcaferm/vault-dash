@@ -410,3 +410,14 @@ Levels cleared,Levels cleared,Niveles superados,Niveaux réussis,Geschaffte Leve
 Level stars,Level stars,Estrellas de nivel,Étoiles de niveau,Level-Sterne,Seviye yıldızı,Звёзды уровней,关卡星星,關卡星星
 Missions finished,Missions finished,Misiones completadas,Missions terminées,Erledigte Missionen,Biten görev,Выполнено заданий,完成任务,完成任務
 Cosmetics owned,Cosmetics owned,Cosméticos obtenidos,Cosmétiques possédés,Eigene Kosmetik,Sahip olunan kozmetik,Косметики собрано,拥有外观,擁有外觀
+Tumblers: %d / %d,Tumblers: %d / %d,Cerrojos: %d / %d,Crans : %d / %d,Zuhaltungen: %d / %d,Kilit: %d / %d,Штифты: %d / %d,锁芯：%d / %d,鎖芯：%d / %d
+VAULT OPEN!,VAULT OPEN!,¡CÁMARA ABIERTA!,COFFRE OUVERT !,TRESOR OFFEN!,KASA AÇILDI!,СЕЙФ ОТКРЫТ!,金库打开了！,金庫打開了！
+%d of 3 tumblers.,%d of 3 tumblers.,%d de 3 cerrojos.,%d crans sur 3.,%d von 3 Zuhaltungen.,3 kilitten %d.,%d из 3 штифтов.,3 个锁芯中的 %d 个。,3 個鎖芯中的 %d 個。
+Missed! The vault stays shut.,Missed! The vault stays shut.,¡Fallaste! La cámara sigue cerrada.,Raté ! Le coffre reste fermé.,Daneben! Der Tresor bleibt zu.,Kaçırdın! Kasa kapalı kaldı.,Мимо! Сейф закрыт.,没对准！金库没打开。,沒對準！金庫沒打開。
+Open all three for %d coins.,Open all three for %d coins.,Abre los tres por %d monedas.,Ouvrez les trois pour %d pièces.,Öffne alle drei für %d Münzen.,"Üçünü aç, %d altın kazan.",Открой все три за %d монет.,打开全部三个得 %d 金币。,打開全部三個得 %d 金幣。
+PLAY (%d left today),PLAY (%d left today),JUGAR (quedan %d hoy),JOUER (encore %d aujourd'hui),SPIELEN (heute noch %d),OYNA (bugün %d kaldı),ИГРАТЬ (сегодня ещё %d),开始（今天还剩 %d 次）,開始（今天還剩 %d 次）
+AD: play again (%d),AD: play again (%d),ANUNCIO: otra vez (%d),PUB : rejouer (%d),WERBUNG: nochmal (%d),REKLAM: tekrar oyna (%d),РЕКЛАМА: ещё раз (%d),广告：再玩一次（%d）,廣告：再玩一次（%d）
+Come back tomorrow for another try.,Come back tomorrow for another try.,Vuelve mañana para otro intento.,Revenez demain pour un autre essai.,Komm morgen für einen neuen Versuch.,Yeni deneme için yarın gel.,Возвращайся завтра.,明天再来试试吧。,明天再來試試吧。
+CRACK THE VAULT,CRACK THE VAULT,ABRE LA CÁMARA,CRAQUE LE COFFRE,KNACK DEN TRESOR,KASAYI KIR,ВЗЛОМАЙ СЕЙФ,破解金库,破解金庫
+Tap when the needle is on the glowing mark.,Tap when the needle is on the glowing mark.,Toca cuando la aguja esté en la marca.,Touchez quand l'aiguille est sur la marque.,"Tippe, wenn die Nadel auf der Markierung ist.",İbre parlayan işarete gelince dokun.,"Нажми, когда стрелка на метке.",指针转到发光标记时点击。,指針轉到發光標記時點擊。
+VAULT,VAULT,CÁMARA,COFFRE,TRESOR,KASA,СЕЙФ,金库,金庫
