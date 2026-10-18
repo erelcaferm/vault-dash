@@ -70,7 +70,7 @@ In a debug build (running from the editor), press **F2** to open a chest without
 
 ## Trophies (achievements)
 
-The **TROPHIES** button lists 28 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
+The **TROPHIES** button lists 30 achievements with your progress on each. A banner pops up when you earn one. Each pays coins or unlocks a skin you can't get any other way:
 
 - **Climbing:** floors 5, 25, 50 (Cloud hero), 100 (Royal hero) and 200 (Marble walls), plus Speedrunner: floor 20 within 60 seconds (Speedster hero).
 - **Coins:** collect 10, 250 and 1,000 (Treasure walls).
@@ -78,9 +78,14 @@ The **TROPHIES** button lists 28 achievements with your progress on each. A bann
 - **Chests:** open 1 and 5, get a Legendary, and find a bonus chest.
 - **Tower:** break 100 cracked walls (Brick hero), reach 25 trap floors (Frozen walls), revive once, and play 25 runs.
 - **Daily Climb:** play one (coins), hit the daily goal 10 times (Gold Dust trail), play 7 days in a row (Sunrise hero), and play on 30 days.
+- **Missions:** finish 10 and 50.
 - **Collecting:** own 5 hero colours.
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
+
+## Missions
+
+Three missions show at the top of the menu, such as "Collect 15 coins in one run", "Break 10 cracked walls" or "Reach floor 8 in the Daily Climb". Finishing one pays coins straight away and swaps in a new one with no waiting. Every 3 missions finished, new ones get bigger and pay more. "In one run" missions start from 0 each run. The others count from when the mission appeared. The templates live in `scripts/missions.gd`.
 
 ## Daily Climb
 
@@ -132,6 +137,7 @@ godot --headless --path . --script res://tests/test_achievements.gd
 godot --headless --path . --script res://tests/test_daily.gd
 godot --headless --path . --script res://tests/test_revive.gd
 godot --headless --path . --script res://tests/test_pause.gd
+godot --headless --path . --script res://tests/test_missions.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

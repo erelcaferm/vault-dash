@@ -11,6 +11,7 @@ const ChestScreen := preload("res://scripts/chest_screen.gd")
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
 const Sfx := preload("res://scripts/sfx.gd")
+const Missions := preload("res://scripts/missions.gd")
 
 const TILE := 27
 const SLIDE_SPEED := 24.0        # tiles per second while sliding
@@ -139,6 +140,10 @@ var pause_button: Button
 var best_at_start := 0           # best floor before this run, for the "New best!" moment
 var new_best_shown := false
 var idle_time := 0.0             # seconds standing still, for the new-player hints
+var missions: Array = []         # saved; the active missions, see missions.gd
+var mission_rng := RandomNumberGenerator.new()
+var missions_panel: PanelContainer
+var missions_rows: VBoxContainer
 var marker_floor := 0            # the best to beat, drawn as a line on the tower
 ## For tests: pretends today is this date ("YYYY-MM-DD").
 var test_today := ""
@@ -148,6 +153,8 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	_load_save()
+	mission_rng.randomize()
+	_fill_missions()
 	camera = Camera2D.new()
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 8.0
@@ -204,8 +211,8 @@ func reset() -> void:
 		return
 	var best := ""
 	if best_floor > 0:
-		best = "\n\nBest floor: %d\nCoins banked: %d" % [best_floor, total_coins]
-	_show_message("VAULT DASH\n\nSwipe to slide.\nClimb as high as you can\nbefore the lava gets you.%s" % best)
+		best = "\n\nBest floor %d   ● %d" % [best_floor, total_coins]
+	_show_message("VAULT DASH\n\nSwipe to slide.\nClimb before the lava\ngets you.%s" % best)
 
 
 # --- Game loop -------------------------------------------------------------
@@ -267,6 +274,7 @@ func _advance() -> void:
 		tower.set_tile(cell, TowerScript.EMPTY)
 		run_coins += 1
 		add_stat("coins_collected")
+		report_run("run_coins", run_coins)
 		sfx.play("coin", randf_range(0.97, 1.06))
 		bursts.append({"pos": _tile_center(cell), "t": 0.0, "color": COIN_COLOR})
 		_update_hud()
@@ -335,6 +343,9 @@ func _update_floor() -> void:
 				add_stat("trap_floors")
 				add_trap_meter(passed, meter_rng.randf_range(TRAP_METER_MIN, TRAP_METER_MAX))
 		run_floor = f
+		report_run("run_floor", f)
+		if daily_mode:
+			report_run("daily_floor", f)
 		if f > best_floor:
 			best_floor = f
 			check_achievements()
@@ -523,6 +534,7 @@ func _on_swipe(d: Vector2i) -> void:
 	match state:
 		State.READY:
 			state = State.PLAYING
+			_start_mission_run()
 			add_stat("runs")
 			if daily_mode:
 				_start_daily_run()
@@ -596,9 +608,31 @@ func _build_hud() -> void:
 	message_label = _make_label(hud, 24, HORIZONTAL_ALIGNMENT_CENTER)
 	message_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	message_label.offset_left = 24
+	# Leave room for the missions panel above and the buttons below.
+	message_label.offset_top = 150
+	message_label.offset_bottom = -170
 	message_label.offset_right = -24
 	message_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	missions_panel = PanelContainer.new()
+	var missions_style := StyleBoxFlat.new()
+	missions_style.bg_color = Color(0.05, 0.05, 0.09, 0.85)
+	missions_style.border_color = Color(1, 0.82, 0.25, 0.5)
+	missions_style.set_border_width_all(1)
+	missions_style.set_corner_radius_all(8)
+	missions_style.set_content_margin_all(8)
+	missions_panel.add_theme_stylebox_override("panel", missions_style)
+	missions_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	missions_panel.offset_left = -160
+	missions_panel.offset_right = 160
+	missions_panel.offset_top = 70
+	missions_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(missions_panel)
+	missions_rows = VBoxContainer.new()
+	missions_rows.add_theme_constant_override("separation", 3)
+	missions_rows.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	missions_panel.add_child(missions_rows)
+	_update_missions_label()
 	toast_label = _make_label(hud, 28, HORIZONTAL_ALIGNMENT_CENTER)
 	toast_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	toast_label.offset_top = 70
@@ -736,6 +770,8 @@ func _update_hud() -> void:
 
 func _show_message(text: String) -> void:
 	pause_button.visible = false
+	missions_panel.visible = state != State.PAUSED
+	revive_button.visible = false
 	message_label.text = text
 	message_label.visible = true
 	message_backdrop.visible = true
@@ -745,6 +781,7 @@ func _show_message(text: String) -> void:
 
 func _hide_message() -> void:
 	pause_button.visible = state == State.PLAYING
+	missions_panel.visible = false
 	message_label.visible = false
 	message_backdrop.visible = false
 	menu_bar.visible = false
@@ -804,6 +841,90 @@ func stat(id: String) -> int:
 func add_stat(id: String, amount := 1) -> void:
 	stats[id] = stats.get(id, 0) + amount
 	check_achievements()
+	check_missions()
+
+
+# --- Missions --------------------------------------------------------------
+
+## Tops the list back up to Missions.ACTIVE, each from a different template.
+func _fill_missions() -> void:
+	while missions.size() < Missions.ACTIVE:
+		missions.append(Missions.make(mission_rng, stat("missions_done"), _mission_ids(), stat))
+
+
+func _mission_ids() -> Array:
+	return missions.map(func(m): return m.id)
+
+
+## Reports a within-one-run value (run_coins, run_floor or daily_floor).
+func report_run(key: String, value: int) -> void:
+	for m in missions:
+		if Missions.find(m.id).get("run", "") == key:
+			m.progress = maxi(m.progress, value)
+	check_missions()
+
+
+## Pays out finished missions and swaps each for a new one.
+func check_missions() -> void:
+	var done := false
+	for i in missions.size():
+		var m: Dictionary = missions[i]
+		var t := Missions.find(m.id)
+		if t.is_empty():
+			missions[i] = {}
+			continue
+		if t.has("stat"):
+			m.progress = stat(t.stat) - m.start
+		if m.progress < m.goal:
+			continue
+		total_coins += m.reward
+		banner_queue.append("MISSION DONE\n%s\n+%d coins" % [Missions.describe(m), m.reward])
+		stats["missions_done"] = stats.get("missions_done", 0) + 1
+		missions[i] = {}
+		done = true
+	missions = missions.filter(func(m): return not m.is_empty())
+	if done or missions.size() < Missions.ACTIVE:
+		_fill_missions()
+		check_achievements()
+		_save()
+	_update_missions_label()
+
+
+## Within-one-run missions start from 0 each run.
+func _start_mission_run() -> void:
+	for m in missions:
+		if Missions.find(m.id).has("run"):
+			m.progress = 0
+
+
+func _update_missions_label() -> void:
+	if missions_rows == null:
+		return
+	for c in missions_rows.get_children():
+		missions_rows.remove_child(c)
+		c.queue_free()
+	var title := _plain_label("MISSIONS", 13, Color("ffd23f"))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	missions_rows.add_child(title)
+	for m in missions:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var what := _plain_label(Missions.describe(m), 14, Color.WHITE)
+		what.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		what.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(what)
+		row.add_child(_plain_label("%d/%d" % [mini(m.progress, m.goal), m.goal], 14, Color(1, 1, 1, 0.6)))
+		row.add_child(_plain_label("● %d" % m.reward, 14, Color("ffd23f")))
+		missions_rows.add_child(row)
+
+
+func _plain_label(text: String, size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_color_override("font_color", color)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return label
 
 
 func check_achievements() -> void:
@@ -1019,6 +1140,7 @@ func _load_save() -> void:
 		equipped_hero = cfg.get_value("shop", "hero", "white")
 		equipped_wall = cfg.get_value("shop", "wall", "rubble")
 		equipped_trail = cfg.get_value("shop", "trail", "afterimage")
+		missions = cfg.get_value("missions", "active", [])
 
 
 func _save() -> void:
@@ -1030,6 +1152,7 @@ func _save() -> void:
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("shop", "trail", equipped_trail)
+	cfg.set_value("missions", "active", missions)
 	cfg.set_value("secret", "meter", trap_meter)
 	cfg.set_value("secret", "chest_owed", bonus_chest_owed)
 	cfg.set_value("achievements", "unlocked", unlocked)

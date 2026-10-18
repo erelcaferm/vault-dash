@@ -36,6 +36,9 @@ func _initialize() -> void:
 	for a in Achievements.LIST:
 		if not game.unlocked.has(a.id) and a.stat != "daily_streak":
 			game.unlocked.append(a.id)
+	# ...and park the missions on goals out of reach.
+	for m in game.missions:
+		m.goal = 99999
 	var coins_before: int = game.total_coins
 	_reach_floor(game, 14)
 	_expect(not game.daily_claimed, "floor 14 isn't the daily goal")

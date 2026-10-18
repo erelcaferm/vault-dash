@@ -41,6 +41,9 @@ const LIST := [
 	{"id": "daily_goal", "name": "Goal Getter", "desc": "Hit the daily goal 10 times", "stat": "daily_goals", "goal": 10, "item": ["trail", "gold_dust"]},
 	{"id": "week_streak", "name": "On a Roll", "desc": "Play the Daily Climb 7 days in a row", "stat": "daily_streak", "goal": 7, "item": ["hero", "sunrise"]},
 	{"id": "devoted", "name": "Devoted", "desc": "Play the Daily Climb on 30 days", "stat": "daily_days", "goal": 30, "coins": 300},
+	# Missions
+	{"id": "busy_bee", "name": "Busy Bee", "desc": "Finish 10 missions", "stat": "missions_done", "goal": 10, "coins": 100},
+	{"id": "mission_master", "name": "Mission Master", "desc": "Finish 50 missions", "stat": "missions_done", "goal": 50, "coins": 400},
 	# Collecting
 	{"id": "fashionista", "name": "Fashionista", "desc": "Own 5 hero colours", "stat": "heroes_owned", "goal": 5, "coins": 100},
 ]
