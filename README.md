@@ -32,6 +32,7 @@ To play on an Android phone, use Godot's one-click deploy: **Editor → Manage E
 | Pet station (eggs, feeding) | `scripts/pet_station.gd` |
 | Crack the Vault minigame | `scripts/vault_game.gd` |
 | Daily gift | `scripts/daily_gift.gd` |
+| Moving blocks and spike traps | `scripts/hazards.gd` |
 | Shop preview window | `scripts/look_preview.gd` |
 | Bottom bar pill buttons | `scripts/pill_style.gd` |
 
@@ -45,7 +46,7 @@ Every run builds a new endless tower. After the start room, each floor picks one
 
 **Trap floors:** each layout has fake floor tiles at fixed spots, often on the quickest route or under a coin. On normal floors they're ordinary floor; on trap floors they give way and end the run. On trap floors they look like normal floor with a dark crack edged in white, so they're easy to spot. A safe route always exists. Which floors are traps is decided as each floor loads: floors 1–5 never are, every 30th floor always is, and any other floor rolls for one. The chance starts at 6% (only 1% straight after another trap floor) and steps up every 25 floors until it reaches 80% at floor 200. Floors load one at a time as they come into view, so only the first 2–3 exist when a run starts.
 
-The biome changes every 5 floors, cycling through Crypt, Ice Caves and Jungle Temple. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
+The biome changes every 5 floors, cycling through The Crypt, Ice Caves, Jungle Temple, Crystal Mine, Deep Sea, Lava Forge and Sky Ruins. Each has its own colours and a faint, partly animated background pattern on open tiles (mortar lines, icicles, swaying vines, glowing crystal shards, seaweed and bubbles, rising embers, drifting clouds), kept dim so coins and hazards always read first. They're in `BIOMES` and `_draw_deco` in `scripts/main.gd`. The lava speeds up over time and never falls more than 11 tiles behind you. Coins and your best floor are saved between runs.
 
 ## Shop
 
@@ -133,6 +134,23 @@ The **TROPHIES** button lists 32 achievements with your progress on each. A bann
 - **Collecting:** own 5 hero colours.
 
 Stats and trophies are saved. To add an achievement, add a line to `scripts/achievements.gd`. For a skin reward, also add the skin to `scripts/skins.gd` with `"achievement": "<id>"`.
+
+## Moving blocks and spike traps
+
+Two hazards on the endless tower, from `scripts/hazards.gd`. Neither appears in levels or the Daily Climb (so medal times stay fair), and both are rolled per floor from their own seed.
+
+**Moving blocks** (from floor 8, on 15% of floors rising to 50% by floor 150; two on some floors from floor 60). A spiky block with angry eyes and a red glow wanders its room one tile at a time, about 2.6 tiles a second. It goes straight, sometimes turns at a side opening, and turns or reverses when something is in the way. It can't leave its room or pass walls or cracked walls. Touching it ends the run (a shield saves you, as with spikes). It looks different in each background: a stone block, an ice cube, a mossy block, a crystal, a pufferfish, molten rock or a storm cloud, always with the spikes and red rim.
+
+Fairness rules, so a block is an obstacle to time, never a wall:
+- **Standing still is always safe.** A block never steps onto the tile you're standing on; it turns away instead. The danger is only in sliding through its path, so you can wait for a gap.
+- **No dead ends.** Blocks only use tiles with at least two ways out (dead ends and doorways are peeled away), so a block can't get cornered by you standing in its only exit.
+- **Room to roam.** A block only spawns where its area is at least 10 tiles and no single row or column holds more than half of it, so it can't patrol the one corridor you must use.
+- It never spawns within 4 tiles of where you land in the room or in front of the bottom door, and never on chest floors.
+- After a shield or revive, hazards can't hurt you for 1.5 seconds. The freeze power-up stops blocks and traps too.
+
+**Spike traps** (from floor 12, on 20% of floors rising to 45%). 2–4 dark plates with a red rim and spike tips just showing. They only go on open tiles with nothing solid on any side, so you can only slide over them, never stop on one. Every 3 seconds the spikes poke out and flash (warning), then shoot up; sliding over one while it's up kills you. All traps in a room share one timer.
+
+The first time you reach a floor with hazards, a tip says standing still is safe. `test_hazards.gd` checks the placement rules and that blocks never step onto a standing player. `test_hazard_climb.gd` has a patient player climb 80 floors along the solver's route with hazards on, waiting before each slide until it's clear; it must never die or wait more than 15 seconds (the longest wait is about 5).
 
 ## Power-ups
 
@@ -263,6 +281,8 @@ godot --headless --path . --script res://tests/test_levels.gd
 godot --headless --path . --script res://tests/test_gift.gd
 godot --headless --path . --script res://tests/test_vault.gd
 godot --headless --path . --script res://tests/test_pets.gd
+godot --headless --path . --script res://tests/test_hazards.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/test_hazard_climb.gd
 ```
 
 The tests use their own save file, so they never touch your coins.

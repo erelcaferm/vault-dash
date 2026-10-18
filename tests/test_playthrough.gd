@@ -32,6 +32,8 @@ func _initialize() -> void:
 	game.save_path = "user://test_save.cfg"
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game.test_seed = SEED
+	# The route is followed blindly, so no moving blocks or spike traps (test_hazards.gd covers them).
+	game.hazards_on = false
 	game.test_room_limit = HEIGHT
 	root.add_child(game)
 

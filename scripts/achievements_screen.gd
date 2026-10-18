@@ -142,6 +142,8 @@ func stat_rows() -> Array:
 		["  by lava", str(game.stat("deaths_lava"))],
 		["  by spikes", str(game.stat("deaths_spikes"))],
 		["  by fake floors", str(game.stat("deaths_fake"))],
+		["  by moving blocks", str(game.stat("deaths_mover"))],
+		["  by spike traps", str(game.stat("deaths_trap"))],
 		["Revives", str(game.stat("revives"))],
 		["Daily Climbs played", str(game.stat("daily_days"))],
 		["Daily gold medals", str(game.stat("daily_golds"))],

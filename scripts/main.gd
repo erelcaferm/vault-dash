@@ -18,6 +18,7 @@ const DailyGift := preload("res://scripts/daily_gift.gd")
 const VaultGame := preload("res://scripts/vault_game.gd")
 const Pets := preload("res://scripts/pets.gd")
 const PetStation := preload("res://scripts/pet_station.gd")
+const Hazards := preload("res://scripts/hazards.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
@@ -96,6 +97,7 @@ const REVIVE_BASE_COST := 50
 const REVIVE_COST_PER_FLOOR := 2
 const REVIVE_LAVA_GAP := 8.0     # tiles between you and the lava after a revive
 const REVIVE_GRACE := 1.5        # seconds the lava waits after a revive
+const HAZARD_GRACE := 1.5        # seconds blocks and traps can't hurt you after a shield or revive
 ## Levels: the screen glows red and a heartbeat plays in the last seconds.
 const LEVEL_WARN_TIME := 5.0
 const LEVEL_HUD_GAP := 70.0      # screen space kept clear for the HUD above a level
@@ -105,10 +107,16 @@ enum State { READY, PLAYING, DEAD, WON, CHEST, PAUSED }
 
 # One biome per five rooms. Swapping these colours is the seed of the
 # environment cosmetics.
+# Each has a faint background pattern (`deco`, see _draw_deco) drawn on
+# open tiles, kept dim so coins, spikes and traps always read first.
 const BIOMES := [
-	{"name": "The Crypt", "bg": Color("1d2030"), "wall": Color("4a5068"), "edge": Color("7a82a3")},
-	{"name": "Ice Caves", "bg": Color("0f2236"), "wall": Color("2f6f99"), "edge": Color("9fdcf7")},
-	{"name": "Jungle Temple", "bg": Color("132519"), "wall": Color("3d6638"), "edge": Color("8fc275")},
+	{"name": "The Crypt", "bg": Color("1d2030"), "wall": Color("4a5068"), "edge": Color("7a82a3"), "deco": "bricks"},
+	{"name": "Ice Caves", "bg": Color("0f2236"), "wall": Color("2f6f99"), "edge": Color("9fdcf7"), "deco": "icicles"},
+	{"name": "Jungle Temple", "bg": Color("132519"), "wall": Color("3d6638"), "edge": Color("8fc275"), "deco": "vines"},
+	{"name": "Crystal Mine", "bg": Color("1e1430"), "wall": Color("553a7a"), "edge": Color("c39bff"), "deco": "crystals"},
+	{"name": "Deep Sea", "bg": Color("082a2e"), "wall": Color("1f5f63"), "edge": Color("6fe0d0"), "deco": "bubbles"},
+	{"name": "Lava Forge", "bg": Color("2a1612"), "wall": Color("6b3424"), "edge": Color("ff9a4d"), "deco": "embers"},
+	{"name": "Sky Ruins", "bg": Color("1b2440"), "wall": Color("8a8fa6"), "edge": Color("f4e7c5"), "deco": "clouds"},
 ]
 const COIN_COLOR := Color("ffd23f")
 const SPIKE_COLOR := Color("e84855")
@@ -188,6 +196,9 @@ var eggs_hatched := 0
 var pet_pos := Vector2.ZERO         # where the following pet is drawn
 var pet_facing := 1.0
 var food_cell := Vector2i(-1, -1)   # this level's food for the equipped pet, if any
+var hazards := Hazards.new()        # moving blocks and spike traps
+var hazards_on := true              # tests that follow a fixed route turn them off
+var hazard_grace := 0.0             # seconds hazards can't hurt you, after a shield or revive
 var pet_rng := RandomNumberGenerator.new()
 var vault_button: Button
 var vault_day := ""                # the day the vault counts below are for
@@ -323,6 +334,12 @@ func reset() -> void:
 	magnet_time = 0.0
 	freeze_time = 0.0
 	_roll_powerups(3)
+	hazards = Hazards.new()
+	hazards.has_chest = has_chest
+	hazards.blocked_cells = func(): return powerups.keys() + [food_cell]
+	hazards.setup(tower, seed_value + 2, hazards_on and not is_level() and not daily_mode)
+	hazards.roll(3)
+	hazard_grace = 0.0
 	_update_effects()
 	tower.room_limit = test_room_limit
 	if daily_mode and test_room_limit < 0 and not is_level():
@@ -421,6 +438,7 @@ func _process(delta: float) -> void:
 		_update_hud()
 	elif state == State.PLAYING:
 		_update_powerups(delta)
+		_update_hazards(delta)
 		_update_lava(delta)
 		if daily_mode:
 			while recording.size() * GHOST_STEP <= elapsed:
@@ -489,6 +507,9 @@ func _advance() -> void:
 		return
 	elif t == TowerScript.GOAL:
 		_win()
+		return
+	if hazards.trap_state(cell) == 2 and hazard_grace <= 0.0:
+		_die("Spiked by a trap on floor %d", "trap")
 		return
 	_update_floor()
 	var ahead: String = tower.get_tile(cell + move_dir)
@@ -593,6 +614,7 @@ func _use_shield() -> void:
 	vibrate(80)
 	bursts.append({"pos": _player_center(), "t": 0.0, "color": POWERUP_COLORS.shield})
 	_toast("Shield saved you!")
+	hazard_grace = HAZARD_GRACE
 	_update_effects()
 
 
@@ -655,6 +677,15 @@ func _update_lava(delta: float) -> void:
 		_die("Melted on floor %d", "lava")
 
 
+## Moves the blocks and checks whether one touched you. Freeze stops them too.
+func _update_hazards(delta: float) -> void:
+	hazard_grace = maxf(hazard_grace - delta, 0.0)
+	var rest := cell if move_dir == Vector2i.ZERO else Vector2i(-1, -1)
+	hazards.update(0.0 if freeze_time > 0.0 else delta, rest, run_floor - 3)
+	if hazard_grace <= 0.0 and hazards.mover_hits(_player_center() / TILE - Vector2(0.5, 0.5)):
+		_die("Hit by a moving block on floor %d", "mover")
+
+
 ## The music speeds up as the lava does (and in a level's last seconds),
 ## and goes quiet behind menus and the pause screen.
 func _update_music() -> void:
@@ -713,6 +744,7 @@ func _update_floor() -> void:
 		_count_daily_floors(f - run_floor)
 		run_floor = f
 		_roll_powerups(f + 3)
+		hazards.roll(f + 3)
 		report_run("run_floor", f)
 		if daily_mode:
 			report_run("daily_floor", f)
@@ -730,6 +762,9 @@ func _update_floor() -> void:
 		if tower.is_trap(f - 1):
 			_toast(tr("Floor %d") % f + "\n" + tr("Watch your step..."))
 			sfx.play("trap")
+		elif hazards.has_hazards(f - 1) and stat("hazard_tip") == 0:
+			add_stat("hazard_tip")
+			_toast(tr("Moving blocks and spike traps!") + "\n" + tr("Standing still is safe. Wait for a gap."))
 	var biome := _biome_index(cell.y)
 	if biome != last_biome:
 		last_biome = biome
@@ -876,6 +911,7 @@ func _revive_now() -> void:
 	queued_dir = Vector2i.ZERO
 	lava_y = _player_center().y + REVIVE_LAVA_GAP * TILE
 	lava_grace = REVIVE_GRACE
+	hazard_grace = HAZARD_GRACE
 	state = State.PLAYING
 	state_time = 0.0
 	_hide_message()
@@ -2511,6 +2547,7 @@ func _draw() -> void:
 		for x in tower.width:
 			_draw_tile(Vector2i(x, y), biome)
 
+	hazards.draw(self, TILE, y0, y1, anim_time, func(row): return BIOMES[_biome_index(row)].deco)
 	_draw_chests(y0, y1)
 	_draw_powerups(y0, y1)
 	_draw_best_marker(top, bottom)
@@ -2532,6 +2569,8 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 	var t: String = tower.get_tile(c)
 	var r := Rect2(Vector2(c) * TILE, Vector2(TILE, TILE))
 	var mid := r.get_center()
+	if t != TowerScript.WALL:
+		_draw_deco(c, r, biome)
 	match t:
 		TowerScript.WALL:
 			draw_rect(r, biome.wall)
@@ -2559,6 +2598,73 @@ func _draw_tile(c: Vector2i, biome: Dictionary) -> void:
 			draw_circle(mid, 12.0 + pulse * 4.0, Color(COIN_COLOR, 0.35))
 			draw_circle(mid, 9.0, COIN_COLOR)
 			draw_circle(mid, 4.0, Color.WHITE)
+
+
+## The biome's faint background pattern on one open tile. Which tiles get
+## a detail comes from a hash of the tile, so it stays put as you climb.
+func _draw_deco(c: Vector2i, r: Rect2, biome: Dictionary) -> void:
+	var h := absi(hash(c)) % 97
+	var ink := Color(biome.edge, 0.09)
+	var p := r.position
+	var wall_above: bool = tower.get_tile(c + Vector2i.UP) == TowerScript.WALL
+	var wall_below: bool = tower.get_tile(c + Vector2i.DOWN) == TowerScript.WALL
+	match biome.deco:
+		"bricks":
+			# Mortar lines, offset every other row.
+			draw_line(p + Vector2(0, TILE * 0.5), p + Vector2(TILE, TILE * 0.5), ink, 1.0)
+			var x := TILE * (0.25 if posmod(c.y, 2) == 0 else 0.75)
+			draw_line(p + Vector2(x, 0), p + Vector2(x, TILE * 0.5), ink, 1.0)
+			draw_line(p + Vector2(fposmod(x + TILE * 0.5, TILE), TILE * 0.5), p + Vector2(fposmod(x + TILE * 0.5, TILE), TILE), ink, 1.0)
+		"icicles":
+			if wall_above and h % 2 == 0:
+				for i in 3:
+					var x := p.x + TILE * (0.2 + 0.3 * i)
+					var drop := TILE * (0.25 + 0.12 * ((h + i) % 3))
+					draw_colored_polygon(PackedVector2Array([Vector2(x - 3, p.y), Vector2(x + 3, p.y), Vector2(x, p.y + drop)]), Color(biome.edge, 0.22))
+			elif h % 11 == 0:
+				var a := 0.15 + 0.1 * sin(anim_time * 3.0 + h)
+				var m := r.get_center()
+				draw_line(m - Vector2(3, 0), m + Vector2(3, 0), Color(1, 1, 1, a), 1.0)
+				draw_line(m - Vector2(0, 3), m + Vector2(0, 3), Color(1, 1, 1, a), 1.0)
+		"vines":
+			if wall_above and h % 3 == 0:
+				var x := p.x + TILE * (0.3 + 0.4 * (h % 2))
+				var pts := PackedVector2Array()
+				for i in 5:
+					pts.append(Vector2(x + sin(i * 1.3 + anim_time * 1.5 + h) * 2.5, p.y + i * TILE * 0.2))
+				draw_polyline(pts, Color(biome.edge, 0.2), 2.0)
+				draw_circle(pts[3] + Vector2(3, 0), 2.5, Color(biome.edge, 0.2))
+			elif h % 13 == 0:
+				draw_circle(r.get_center(), 3.0, Color(biome.edge, 0.07))
+		"crystals":
+			if wall_below and h % 3 == 0:
+				var x := p.x + TILE * (0.25 + 0.5 * float(h % 5) / 4.0)
+				var tall := TILE * (0.3 + 0.1 * (h % 3))
+				var glow := 0.18 + 0.08 * sin(anim_time * 2.0 + h)
+				draw_colored_polygon(PackedVector2Array([Vector2(x - 4, r.end.y), Vector2(x, r.end.y - tall), Vector2(x + 4, r.end.y)]), Color(biome.edge, glow))
+				draw_colored_polygon(PackedVector2Array([Vector2(x + 3, r.end.y), Vector2(x + 6, r.end.y - tall * 0.55), Vector2(x + 9, r.end.y)]), Color(biome.edge, glow * 0.8))
+		"bubbles":
+			if wall_below and h % 4 == 0:
+				var pts := PackedVector2Array()
+				var x := p.x + TILE * 0.5
+				for i in 5:
+					pts.append(Vector2(x + sin(i * 0.9 + anim_time * 2.0 + h) * 3.0, r.end.y - i * TILE * 0.18))
+				draw_polyline(pts, Color(biome.edge, 0.18), 2.0)
+			if h % 9 == 0:
+				var rise := fposmod(anim_time * 0.5 + h * 0.37, 1.0)
+				draw_arc(Vector2(p.x + TILE * 0.5 + sin(rise * 6.0) * 3.0, r.end.y - rise * TILE), 2.0 + h % 3, 0, TAU, 10, Color(biome.edge, 0.22 * (1.0 - rise)), 1.0)
+		"embers":
+			if wall_below:
+				draw_rect(Rect2(p.x, r.end.y - 3, TILE, 3), Color(biome.edge, 0.08 + 0.05 * sin(anim_time * 2.0 + c.x)))
+			if h % 8 == 0:
+				var rise := fposmod(anim_time * 0.6 + h * 0.21, 1.0)
+				draw_circle(Vector2(p.x + TILE * (0.3 + 0.4 * float(h % 3) / 2.0) + sin(rise * 8.0) * 2.0, r.end.y - rise * TILE), 1.5, Color(biome.edge, 0.4 * (1.0 - rise)))
+		"clouds":
+			if h % 10 == 0:
+				var drift := fposmod(anim_time * 4.0 + h * 5.0, TILE * 2.0) - TILE * 0.5
+				var m := Vector2(p.x + drift, p.y + TILE * 0.5)
+				for i in 3:
+					draw_circle(m + Vector2(i * 5 - 5, -2 * (i % 2)), 5.0, Color(biome.edge, 0.06))
 
 
 ## Whether a wall at `c` shows its lit top edge: only when nothing solid
