@@ -14,6 +14,7 @@ const Ads := preload("res://scripts/ads.gd")
 const BAR_COLOR := Color(0.24, 0.25, 0.29, 0.62)
 const Achievements := preload("res://scripts/achievements.gd")
 const AchievementsScreen := preload("res://scripts/achievements_screen.gd")
+const DailyGift := preload("res://scripts/daily_gift.gd")
 const Sfx := preload("res://scripts/sfx.gd")
 const Missions := preload("res://scripts/missions.gd")
 const SettingsScreen := preload("res://scripts/settings_screen.gd")
@@ -173,6 +174,9 @@ var end_message := ""            # the death or win message, shown again after t
 var stats := {}                  # saved counters that achievements watch
 var unlocked: Array = []         # saved ids of unlocked achievements
 var achievements_screen: Control
+var daily_gift: Control
+var gift_day := 0                  # which of the 7 daily gifts is next (0-6)
+var gift_date := ""                # the day the last gift was claimed
 var menu_bar: HBoxContainer
 var banner: PanelContainer
 var banner_label: Label
@@ -206,6 +210,8 @@ var ad_double_button: Button
 var doubled := false               # this run's coins were already doubled by an ad
 var ad_coins_day := ""             # the day ad_coins_today counts
 var ad_coins_today := 0            # shop coin ads watched that day
+var deal_day := ""                 # the day deal_id was picked
+var deal_id := ""                  # today's discounted shop item ("" if none left)
 var pause_button: Button
 var best_at_start := 0           # best floor before this run, for the "New best!" moment
 var new_best_shown := false
@@ -373,6 +379,9 @@ func _process(delta: float) -> void:
 	rainbow_phase += delta * (Skins.RAINBOW_SLIDE_SPEED if moving else Skins.RAINBOW_IDLE_SPEED)
 	state_time += delta
 	_update_shop_glow()
+	if state == State.READY and not (shop.visible or achievements_screen.visible or settings_screen.visible \
+			or levels_screen.visible or level_editor.visible):
+		_maybe_show_gift()
 	if state == State.PLAYING:
 		elapsed += delta
 		_update_slide(delta)
@@ -1035,7 +1044,7 @@ func _bank_run() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if shop.visible or chest_screen.visible or achievements_screen.visible or settings_screen.visible \
-			or levels_screen.visible or level_editor.visible:
+			or levels_screen.visible or level_editor.visible or daily_gift.visible:
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -1357,6 +1366,10 @@ func _build_hud() -> void:
 	hud.add_child(achievements_screen)
 	achievements_screen.setup(self)
 	achievements_screen.closed.connect(func(): achievements_screen.visible = false)
+	daily_gift = DailyGift.new()
+	hud.add_child(daily_gift)
+	daily_gift.setup(self)
+	daily_gift.claimed.connect(_claim_gift)
 	# The banner goes on top of every other screen.
 	hud.add_child(banner)
 	chest_rng.randomize()
@@ -1402,7 +1415,7 @@ func _apply_safe_area() -> void:
 	safe_root.offset_right = -inset[2]
 	safe_root.offset_bottom = -inset[3]
 	# Full-screen menus keep their background edge to edge.
-	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen]:
+	for screen in [shop, chest_screen, settings_screen, levels_screen, level_editor, achievements_screen, daily_gift]:
 		var bg: Control = screen.get_child(0)
 		if bg is ColorRect:
 			bg.offset_left = -inset[0]
@@ -1834,6 +1847,33 @@ func _open_achievements() -> void:
 
 # --- Daily Climb -----------------------------------------------------------
 
+## The daily gift waits on the title screen once a day, from the second
+## run on (a brand-new player gets the game first).
+func gift_ready() -> bool:
+	return gift_date != today() and stat("runs") >= 1 and not is_level()
+
+
+func _maybe_show_gift() -> void:
+	if state == State.READY and gift_ready() and not daily_gift.visible and not chest_screen.visible:
+		daily_gift.open()
+
+
+func _claim_gift(gift: Dictionary) -> void:
+	gift_date = today()
+	gift_day = (gift_day + 1) % DailyGift.GIFTS.size()
+	add_stat("gifts")
+	if gift.has("chest"):
+		pending_chests += 1
+		_save()
+		_open_next_chest(State.READY)
+		return
+	total_coins += gift.coins
+	sfx.play("reward")
+	_toast(tr("+%d coins") % gift.coins)
+	_save()
+	reset()
+
+
 func today() -> String:
 	return test_today if test_today != "" else Time.get_date_string_from_system()
 
@@ -2005,14 +2045,49 @@ func _close_shop() -> void:
 		reset()    # refreshes the title screen's coin count
 
 
+## Today's deal: one shop item you don't own, DEAL_OFF cheaper, picked once
+## a day. Returns [kind, item], or [] when there's nothing left to discount.
+const DEAL_OFF := 0.3
+const DEAL_KINDS := ["hero", "hat", "walls", "trail", "lava"]
+
+func deal() -> Array:
+	if deal_day != today():
+		deal_day = today()
+		deal_id = ""
+		var choices: Array = []
+		for kind in DEAL_KINDS:
+			for item in Skins.list(kind):
+				if item.price > 0 and not owns(item):
+					choices.append(item.id)
+		if not choices.is_empty():
+			var rng := RandomNumberGenerator.new()
+			rng.seed = ("deal-" + deal_day).hash()
+			deal_id = choices[rng.randi_range(0, choices.size() - 1)]
+		_save()
+	if deal_id == "":
+		return []
+	for kind in DEAL_KINDS:
+		for item in Skins.list(kind):
+			if item.id == deal_id and not owns(item):
+				return [kind, item]
+	return []
+
+
+## What an item costs today, after any deal.
+func price(item: Dictionary) -> int:
+	if item.id == deal_id and deal_day == today():
+		return snappedi(roundi(item.price * (1.0 - DEAL_OFF)), 10)
+	return item.price
+
+
 func owns(item: Dictionary) -> bool:
 	return item.price == 0 or owned.has(item.id)
 
 
 func buy(kind: String, item: Dictionary) -> bool:
-	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or total_coins < item.price:
+	if owns(item) or item.get("chest_only", false) or item.has("achievement") or item.has("level") or total_coins < price(item):
 		return false
-	total_coins -= item.price
+	total_coins -= price(item)
 	sfx.play("buy")
 	owned.append(item.id)
 	equip(kind, item.id)
@@ -2062,6 +2137,10 @@ func _load_save() -> void:
 		ads.no_forced_ads = cfg.get_value("shop", "no_forced_ads", false)
 		ad_coins_day = cfg.get_value("ads", "day", "")
 		ad_coins_today = cfg.get_value("ads", "today", 0)
+		deal_day = cfg.get_value("shop", "deal_day", "")
+		deal_id = cfg.get_value("shop", "deal_id", "")
+		gift_day = cfg.get_value("gift", "day", 0)
+		gift_date = cfg.get_value("gift", "date", "")
 		trap_meter = cfg.get_value("secret", "meter", 0.0)
 		bonus_chest_owed = cfg.get_value("secret", "chest_owed", false)
 		unlocked = cfg.get_value("achievements", "unlocked", [])
@@ -2106,6 +2185,10 @@ func _save() -> void:
 	cfg.set_value("shop", "no_forced_ads", ads.no_forced_ads)
 	cfg.set_value("ads", "day", ad_coins_day)
 	cfg.set_value("ads", "today", ad_coins_today)
+	cfg.set_value("shop", "deal_day", deal_day)
+	cfg.set_value("shop", "deal_id", deal_id)
+	cfg.set_value("gift", "day", gift_day)
+	cfg.set_value("gift", "date", gift_date)
 	cfg.set_value("shop", "hero", equipped_hero)
 	cfg.set_value("shop", "wall", equipped_wall)
 	cfg.set_value("shop", "trail", equipped_trail)

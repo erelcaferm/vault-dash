@@ -8,6 +8,7 @@ const Skins := preload("res://scripts/skins.gd")
 const Preview := preload("res://scripts/skin_preview.gd")
 const Achievements := preload("res://scripts/achievements.gd")
 const PillStyle := preload("res://scripts/pill_style.gd")
+const LookPreview := preload("res://scripts/look_preview.gd")
 
 const GOLD := Color("ffd23f")
 const DIM := Color(1, 1, 1, 0.5)
@@ -20,6 +21,10 @@ var _scroll: ScrollContainer
 var _grid: GridContainer
 var _tab_buttons := {}
 var _ad_button: Button
+var _deal_button: Button
+var _offers: HBoxContainer
+var _look: Control               # try-on window
+var _look_label: Label
 
 
 func setup(main_game) -> void:
@@ -74,18 +79,35 @@ func setup(main_game) -> void:
 		tabs.add_child(b)
 		_tab_buttons[t[0]] = b
 
-	_ad_button = Button.new()
-	_ad_button.custom_minimum_size.y = 40
-	_ad_button.add_theme_font_size_override("font_size", 15)
-	for key in ["normal", "hover", "pressed", "disabled"]:
-		_ad_button.add_theme_stylebox_override(key, PillStyle.new(Color("3aa856") if key != "disabled" else Color("3a4a3e"), key == "pressed"))
-	_ad_button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	_ad_button.add_theme_color_override("font_outline_color", Color("10361a"))
-	_ad_button.add_theme_constant_override("outline_size", 4)
+	_look = LookPreview.new()
+	_look.game = game
+	_look.clip_contents = true
+	_look.custom_minimum_size.y = 96
+	_look.mouse_filter = MOUSE_FILTER_IGNORE
+	column.add_child(_look)
+	_look_label = _label("", 13, Color(1, 1, 1, 0.75))
+	_look_label.set_anchors_and_offsets_preset(PRESET_TOP_WIDE)
+	_look_label.offset_top = 4
+	_look.add_child(_look_label)
+
+	# One pill: watch an ad for coins | today's deal.
+	_offers = HBoxContainer.new()
+	_offers.add_theme_constant_override("separation", 0)
+	_offers.custom_minimum_size.y = 40
+	column.add_child(_offers)
+	_ad_button = _offer_button(Color(0.23, 0.66, 0.34, 0.75))
 	_ad_button.pressed.connect(func():
 		if game.ad_shop_coins():
 			_refresh())
-	column.add_child(_ad_button)
+	_deal_button = _offer_button(Color(0.85, 0.6, 0.1, 0.75))
+	_deal_button.pressed.connect(func():
+		var d: Array = game.deal()
+		if d.is_empty():
+			return
+		_show_tab(d[0])
+		_look.trying[d[0]] = d[1]
+		_scroll_to(d[1])
+		_refresh())
 
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = SIZE_EXPAND_FILL
@@ -103,6 +125,7 @@ func setup(main_game) -> void:
 	back.custom_minimum_size.y = 52
 	back.add_theme_font_size_override("font_size", 22)
 	back.pressed.connect(func():
+		_look.trying.clear()
 		_mark_tab_seen()
 		closed.emit())
 	column.add_child(back)
@@ -111,6 +134,7 @@ func setup(main_game) -> void:
 
 func open() -> void:
 	pending_buy = ""
+	_look.trying.clear()
 	visible = true
 	# Start on a tab with something new in it.
 	for t in _tab_buttons:
@@ -131,10 +155,26 @@ func _show_tab(t: String) -> void:
 
 func _refresh() -> void:
 	_coins_label.text = "● %d" % game.total_coins
+	var tried: Array = _look.trying.values()
+	_look_label.text = tr("Preview: %s") % tr(tried[0].name) if tried.size() == 1 \
+			else (tr("Your look") if tried.is_empty() else tr("Preview: %d items") % tried.size())
 	var left: int = game.ad_coins_left()
 	_ad_button.visible = game.ads.can_show_rewarded()
 	_ad_button.disabled = left <= 0
-	_ad_button.text = tr("Watch an ad: +%d coins (%d left today)") % [game.Ads.SHOP_COINS, left] if left > 0 else tr("No more ads today")
+	_ad_button.text = tr("AD: +%d coins (%d)") % [game.Ads.SHOP_COINS, left] if left > 0 else tr("No more ads today")
+	var d: Array = game.deal()
+	_deal_button.visible = not d.is_empty()
+	if not d.is_empty():
+		_deal_button.text = tr("DEAL: %s -%d%%") % [tr(d[1].name), roundi(game.DEAL_OFF * 100)]
+	_offers.visible = _ad_button.visible or _deal_button.visible
+	game._style_bar(_offers)
+	for b: Button in _offers.get_children():
+		var label := Label.new()
+		label.text = b.text
+		label.add_theme_font_size_override("font_size", 14)
+		game.fit_font(label, (size.x - 28.0) / maxf(_offers.get_children().filter(func(c): return c.visible).size(), 1) - 20.0, 9)
+		b.add_theme_font_size_override("font_size", label.get_theme_font_size("font_size"))
+		label.free()
 	var keep := _scroll.scroll_vertical
 	for c in _grid.get_children():
 		_grid.remove_child(c)
@@ -195,6 +235,8 @@ func _card(item: Dictionary) -> Button:
 		status = _label(tr("Level %d") % item.level, 13, Color("7fd6ff"))
 	elif pending_buy == item.id:
 		status = _label("Tap to buy!", 14, GOLD)
+	elif game.price(item) < item.price:
+		status = _label("● %d  -%d%%" % [game.price(item), roundi(game.DEAL_OFF * 100)], 14, Color("ffb347") if game.total_coins >= game.price(item) else DIM)
 	elif game.total_coins >= item.price:
 		status = _label("● %d" % item.price, 15, GOLD)
 	else:
@@ -224,12 +266,41 @@ func _on_card(item: Dictionary) -> void:
 	elif pending_buy == item.id:
 		game.buy(tab, item)
 		pending_buy = ""
-	elif game.total_coins >= item.price:
+	elif game.total_coins >= game.price(item):
 		pending_buy = item.id
 	else:
 		pending_buy = ""
 		game.sfx.play("error")
+	# Tapping an item you don't own shows it on your hero in the window above.
+	if game.owns(item):
+		_look.trying.erase(tab)
+	else:
+		_look.trying[tab] = item
 	_refresh()
+
+
+func _offer_button(color: Color) -> Button:
+	var b := Button.new()
+	b.size_flags_horizontal = SIZE_EXPAND_FILL
+	b.clip_text = true
+	b.add_theme_font_size_override("font_size", 14)
+	for key in ["normal", "hover", "pressed", "disabled"]:
+		b.add_theme_stylebox_override(key, PillStyle.new(color if key != "disabled" else Color(0.3, 0.3, 0.34, 0.6), key == "pressed"))
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
+	b.add_theme_constant_override("outline_size", 4)
+	_offers.add_child(b)
+	return b
+
+
+## Scrolls the grid so `item`'s card is in view.
+func _scroll_to(item: Dictionary) -> void:
+	var i: int = Skins.list(tab).find(item)
+	if i < 0:
+		return
+	await get_tree().process_frame
+	var card: Control = _grid.get_child(i)
+	_scroll.scroll_vertical = int(card.position.y)
 
 
 func _has_new(t: String) -> bool:
