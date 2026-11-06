@@ -1,8 +1,18 @@
-# Vault Dash (prototype)
+# Vault Dash
 
-Swipe to slide across each room until you hit a wall. Climb an endless tower as high as you can before the lava catches you.
+A mobile puzzle climber for Android, built in Godot 4 (GDScript) with Python tooling. Swipe to slide across each room until you hit a wall, and climb an endless tower before the lava catches you.
 
-This is the first playable prototype. Its only job is to answer one question: is the core loop fun after 20 runs? There are no menus, no art and no monetization yet. The design brief lives in the project's `design/game-design-brief.md`.
+**Status:** in development (2026). Playable from start to finish, with a shop, chests, pets, achievements, daily challenges, a level editor and 8 languages. Ads are stubbed and not connected to any ad network yet.
+
+## Engineering highlights
+
+- **Solver that proves levels are beatable.** `scripts/solver.gd` runs a breadth-first search over every place the player can stop, using the same slide rules as the game. It finds the shortest route, detects rooms where a player could get stuck, and has a state limit so a huge player-made level can't hang the game. The level editor uses it to refuse levels with no way out.
+- **Procedural room generator.** `tools/generate_rooms.py` generates thousands of random rooms, keeps only those that pass reachability, no-dead-end and minimum-difficulty checks, then picks 100 spread from easiest to hardest.
+- **Automated tests.** 21 headless test scripts in `tests/` cover the rooms, shop, chests, missions, hazards and power-ups, plus full simulated playthroughs that climb 100+ floors along the solver's route.
+- **Data-driven balancing.** `tools/economy_sim.gd` plays the real game as a simulated player over many days to measure how fast coins come in and set shop prices, and `tests/test_daily_skill.gd` checks that daily challenge medals land at the intended skill levels.
+- **Localization.** All UI text runs through `translations/strings.csv` (English, Spanish, French, German, Turkish, Russian and Simplified and Traditional Chinese), built by `tools/build_translations.py`.
+
+Everything below is the detailed design and developer documentation.
 
 ## Play it
 
@@ -14,7 +24,7 @@ Controls: swipe with the mouse (click and drag), or use the arrow keys or WASD. 
 
 To play on an Android phone, use Godot's one-click deploy: **Editor → Manage Export Templates**, then **Project → Export → Add… → Android**. Then connect the phone with USB debugging on and press the Android icon at the top right.
 
-## What's in the prototype
+## Where things are
 
 | Thing | Where |
 |---|---|
